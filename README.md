@@ -1,4 +1,4 @@
-# mxevent
+# m3event
 
 ## Project setup
 ```
