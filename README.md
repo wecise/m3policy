@@ -1,4 +1,4 @@
-# m3event
+# m3Event
 
 ## Project setup
 ```
