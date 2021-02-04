@@ -1,5 +1,5 @@
 <template>		
-    <el-container v-if="auth.isAdmin" style="border:unset!important;color:#ffffff;">
+    <el-container v-if="auth.isAdmin" style="border:unset!important;color:#ffffff;height: unset!important;">
         <el-main v-if="model.length > limit">
             <el-dropdown>
                 <span class="el-dropdown-link">

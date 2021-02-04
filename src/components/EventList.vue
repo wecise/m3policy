@@ -14,35 +14,6 @@
                 </el-button>
             </el-tooltip>
             
-            <el-tooltip :content="$t('event.actions.export')" placement="top" >
-                <el-dropdown @command="onExport" style="cursor:pointer;font-size:16px;padding-left:10px;">
-                    <span class="el-dropdown-link">
-                        <i class="el-icon-download el-icon--right"></i>
-                    </span>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item command="csv">CSV</el-dropdown-item>
-                        <el-dropdown-item command="json">JSON</el-dropdown-item>
-                        <!--el-dropdown-item command="pdf">PDF</el-dropdown-item-->
-                        <el-dropdown-item command="png">PNG</el-dropdown-item>
-                        <!--el-dropdown-item command="sql">SQL</el-dropdown-item-->
-                        <el-dropdown-item command="xls">XLS (Excel 2000 HTML format)</el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-            </el-tooltip>
-            
-            <!--el-tooltip :content="$t('event.actions.runningMode')" placement="top" >
-                <el-dropdown style="margin-left:10px;">
-                    <span class="el-dropdown-link">
-                        <el-button type="text" icon="el-icon-s-platform"></el-button>
-                    </span>
-                    <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item command="m">{{ $t('event.actions.monitorModel') }}</el-dropdown-item>
-                        <el-dropdown-item command="o">{{ $t('event.actions.operationModel') }}</el-dropdown-item>
-                        <el-dropdown-item command="f" divided>{{ $t('event.actions.fullscreenModel') }}</el-dropdown-item>
-                        <el-dropdown-item command="e">{{ $t('event.actions.exitFullscreenModel') }}</el-dropdown-item>
-                    </el-dropdown-menu>
-                </el-dropdown>
-            </el-tooltip-->
             <el-tooltip :content="control.ifRefresh?'自动刷新启用中':'自动刷新关闭中'" placement="top" >
                 <span style="float:right;">
                     {{ control.ifRefresh ? '自动刷新' : '刷新关闭' }}
@@ -100,11 +71,51 @@
                                 </el-switch>
                             </p>
                         </div>
+                        <div class="tool">
+                            <div>视图定制</div>
+                            <p>
+                                <el-button type="text" @click="onContextmenuKeep">
+                                    <span class="el-icon-s-platform" style="cursor:pointer;font-size:16px;"></span>
+                                </el-button>
+                            </p>
+                        </div>
+                        <div class="tool">
+                            <div>通知管理</div>
+                            <p>
+                                <el-button type="text" @click="onContextmenuKeep">
+                                    <span class="el-icon-phone" style="cursor:pointer;font-size:16px;"></span>
+                                </el-button>
+                            </p>
+                        </div>
+                        <div class="tool">
+                            <div>告警屏蔽</div>
+                            <p>
+                                <el-button type="text" @click="onContextmenuKeep">
+                                    <span class="el-icon-error" style="cursor:pointer;font-size:16px;"></span>
+                                </el-button>
+                            </p>
+                        </div>
+                        <div class="tool">
+                            <div>右键工具</div>
+                            <p>
+                                <el-button type="text" @click="onContextmenuKeep">
+                                    <span class="el-icon-menu" style="cursor:pointer;font-size:16px;"></span>
+                                </el-button>
+                            </p>
+                        </div>
+                        <div class="tool">
+                            <div>实体抽取</div>
+                            <p>
+                                <el-button type="text" @click="onEntityEtl">
+                                    <span class="el-icon-coin" style="cursor:pointer;font-size:16px;"></span>
+                                </el-button>
+                            </p>
+                        </div>
                         <!-- 一般工具 -->
                         <div class="tool">
                             <div>选择导出</div>
                             <p>
-                                <el-dropdown style="cursor:pointer;font-size:16px;padding-left:10px;">
+                                <el-dropdown style="cursor:pointer;font-size:16px;">
                                     <span class="el-icon-download"></span>
                                     <el-dropdown-menu slot="dropdown">
                                         <el-dropdown-item command="csv">CSV</el-dropdown-item>
@@ -370,7 +381,7 @@ export default {
     methods: {
         startTimer(duration, display) {
             var timer = duration, minutes, seconds;
-            setInterval( ()=> {
+            window.countdownInterval = setInterval( ()=> {
                 minutes = parseInt(timer / 60, 10)
                 seconds = parseInt(timer % 60, 10);
 
@@ -532,14 +543,43 @@ export default {
                 }
             });
         },
+        /* 实体抽取 */
+        onEntityEtl(){
+            let row = {id:_.now()};
+            let menu = {
+                "name": "实体抽取", 
+                "icon": "",
+                "type": "component",
+                "callback": "EntityEtlView",
+                "subMenu":[]
+                };
+            this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row, menu);
+        },
+        /* 右键菜单 */
+        onContextmenuKeep(){
+            let row = {id:_.now()};
+            let menu = {
+                "name": "菜单维护", 
+                "icon": "",
+                "type": "component",
+                "callback": "CtmenuKeepView",
+                "subMenu":[]
+                };
+            this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row, menu);
+        },
         /* 倒计时刷新 */
         onCountdownTimeRefresh(val){
             if(val){
                 let display = document.querySelector('#countDownTimer');
                 this.startTimer(60, display);
             } else {
+                
+                if (window.countdownInterval != null) {
+                    clearInterval(window.countdownInterval);
+                    window.countdownInterval = null;
+                }
                 let display = document.querySelector('#countDownTimer');
-                display.textContent('00:00');
+                display.textContent = "";
             }
         },  
         /* 智能分组 */
@@ -655,13 +695,23 @@ export default {
 
 .tool-box{
     display:flex;
+    flex-wrap: wrap;
     align-items:flex-start;
     padding:20px;
+    width: 355px;
 }
 .tool-box .tool{
     text-align:center;
     padding:20px;
     margin:5px;
+    border:1px solid #efefef;
+    height: 60px;
+    width: 65px;
+    border-radius: 5px;
+}
+.tool-box .tool:hover{
+    cursor: pointer;
+    background: rgba(125, 202, 253,.2);
 }
 
 </style>
