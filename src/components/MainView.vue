@@ -69,7 +69,7 @@ import _ from 'lodash';
 import $ from 'jquery';
 import EventList from '../components/EventList.vue'
 import DiagnosisView from '../components/diagnosis/DiagnosisView';
-import CtmenuKeepView from '../components/CtmenuKeepView';
+import CtmenuKeepView from '../components/contextmenu/CtmenuKeepView';
 
 const m3 = require("@cnwangzd/m3js");
 
