@@ -1,5 +1,9 @@
 const webpack = require('webpack')
+
+const WebpackZipPlugin = require('webpack-zip-plugin')
+
 module.exports = {
+
     devServer: {
         proxy: 'http://47.92.151.165:8080'
     },
@@ -7,11 +11,16 @@ module.exports = {
     configureWebpack: {
         plugins: [
             new webpack.ProvidePlugin({
-                $:"jquery",
-                jQuery:"jquery",
-                "windows.jQuery":"jquery",
-                m3: "@cnwangzd/m3js"
-            })
+                
+            }),
+            // new WebpackZipPlugin({
+            //     initialFile: './app',
+            //     endPath: './',
+            //     zipName: 'app.zip',
+            //     //frontShell: 'sed -i "s/src="/src="\/app\/matrix\/m3event/g ./app/matrix/m3event/index.html && sed -i "s/href="/href="\/app\/matrix\/m3event/g ./app/matrix/m3event/index.html',
+            //     //frontShell: 'ls -lsa && ls',
+            //     //behindShell: 'echo ********** && ls -lsa ./app.zip'
+            // })
         ]
     },
 

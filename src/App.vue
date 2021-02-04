@@ -60,7 +60,7 @@
         </el-row>
       </el-header>
     <el-main>
-      <MainView :global="global"></MainView>
+      <MainView :global="global" v-if="global"></MainView>
     </el-main>
   </el-container>
 </template>
@@ -83,11 +83,11 @@ export default {
     }
   },
   mounted(){
-    
     setTimeout(()=>{
       this.global = m3.global;
       this.auth = m3.auth.signedUser;
-    },1000)
+      m3.setTitle(this.auth);
+    },500)
   },
   methods: {
     onSelect(key) {
@@ -95,7 +95,7 @@ export default {
             window.open(key, '_blank');
         } else {
             if(key === 'home'){
-                //sideBar.appAsHome({url:'/home'});
+                m3.setAppAsHome(this,{url:'/home'});
             } else if(key==='signout'){
                 window.open(`/user/logout/${this.auth.Company.name}`,'_parent');
             } 
@@ -109,13 +109,16 @@ export default {
   body{
     overflow: hidden!important;
     font-size: 12px;
-    margin: 0;
-      padding: 0px;
+    font-family: "PingFang SC",Arial,"Microsoft YaHei",sans-serif;
+    margin: 0px;
+    padding: 0px;
   }
+
   .m3 > .el-header{
     height: 50px!important;
     line-height: 50px;
-    background: rgb(37, 45, 71);
+    /* background: rgb(37, 45, 71); */
+    background: #252D47;
     color: #ffffff;
     padding: 0px 0px 0px 10px;
   }

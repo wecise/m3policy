@@ -1,7 +1,7 @@
 <template>
-  <el-container v-loading="loading">
+  <el-container>
     <el-main style="padding:0px 10px;">
-      <el-tabs value="event-list">
+      <el-tabs v-model="tabs.activeTab" closable @tab-remove="removeTab">
         <el-tab-pane label="事件列表" name="event-list">
           <el-container>
             <el-header>
@@ -10,6 +10,7 @@
                 v-model="search.model.term"
                 class="input-with-select"
                 clearable
+                @clear="onSearch"
                 @keyup.enter.native="onSearch"
               >
                 <el-select
@@ -34,11 +35,29 @@
                 ></el-button>
               </el-input>
             </el-header>
-            <el-main>
-              <EventList :model="search.result" :global="global"></EventList>
+            <el-main :loading="loading">
+              <EventList :model="search.result" :global="global" @onSearch="onSearch"></EventList>
             </el-main>
             
           </el-container>
+        </el-tab-pane>
+        <el-tab-pane :name="item.name" :key="item.name" v-for="item in tabs.list">
+            <span slot="label">
+              <span v-if="item.callback==='DiagnosisView'">
+                
+                  <el-button
+                      type="default"
+                      :style="'position:absolute;top:15px;left:5px;padding: 5px;border-radius: 15px;color:#ffffff;background:' + global.register.event.severity[item.data.severity][2]">
+                      <!-- {{ global.register.event.severity[item.data.severity][1] }} <span style="font-variant: all-small-caps;">{{global.register.event.severity[item.data.severity][0]}}</span> -->
+                  </el-button>
+                  {{item.title}} {{ item.data.id }}
+              </span>
+              <span v-else>
+                 {{item.title}}
+              </span>
+            </span>
+          <DiagnosisView :model="item.data" :global="global" v-if="item.callback==='DiagnosisView'"></DiagnosisView>
+          <CtmenuKeepView :model="item.data" :global="global" v-else-if="item.callback==='CtmenuKeepView'"></CtmenuKeepView>
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -46,17 +65,23 @@
 </template>
 
 <script>
-const m3 = require("@cnwangzd/m3js");
-
+import _ from 'lodash';
+import $ from 'jquery';
 import EventList from '../components/EventList.vue'
+import DiagnosisView from '../components/diagnosis/DiagnosisView';
+import CtmenuKeepView from '../components/CtmenuKeepView';
+
+const m3 = require("@cnwangzd/m3js");
 
 export default {
   name: "MainView",
   props: {
-    global: Object,
+    global: Object
   },
   components:{
-    EventList
+    EventList,
+    DiagnosisView,
+    CtmenuKeepView
   },
   data() {
     return {
@@ -69,12 +94,39 @@ export default {
         },
         result: null
       },
+      tabs: {
+        activeTab: 'event-list',
+        list: []
+      }
     };
+  },
+  watch: {
+    'tabs.list':{
+        handler(val){
+            if(val.length > 0){
+                $("#tab-event-list").show();
+            }else {
+                $("#tab-event-list").hide();
+            }
+        },
+        deep:true
+    },
   },
   created(){
     this.onSearch();
   },
+  mounted(){
+    this.hideTabEventViewConsoleUl();
+  },
   methods: {
+    hideTabEventViewConsoleUl(){
+      if($('#tab-event-list').is(':visible')) {
+          $("#tab-event-list").hide();
+          $("#tab-event-list > span").hide();
+      } else {
+          setTimeout(this.hideTabEventViewConsoleUl, 50);
+      } 
+    },
     onSearch() {
       
       this.loading = true;
@@ -95,8 +147,43 @@ export default {
       }).catch( ()=>{
         this.loading = false;
       } );
+
     },
-  },
+    addTab(row,menu){
+
+      let find = _.find(this.tabs.list, {name:row.id});
+      
+      if(find){
+        this.tabs.activeTab = row.id;
+        
+      } else {
+        let tabObj = {name: row.id, title: menu.name, type: menu.type, callback: menu.callback, data: row};
+        this.tabs.list.push(tabObj);
+        this.tabs.activeTab = row.id;
+      }
+
+      
+    },
+    removeTab(targetName){
+      let tabs = this.tabs.list;
+        let activeName = this.tabs.activeTab;
+        if (activeName === targetName) {
+          tabs.forEach((tab, index) => {
+            if (tab.name === targetName) {
+              let nextTab = tabs[index + 1] || tabs[index - 1];
+              if (nextTab) {
+                activeName = nextTab.name;
+              } else {
+                activeName = 'event-list';
+              }
+            }
+          });
+        }
+        
+        this.tabs.activeTab = activeName;
+        this.tabs.list = tabs.filter(tab => tab.name !== targetName);
+    }
+  }
 };
 </script>
 
