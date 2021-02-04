@@ -61,42 +61,21 @@
                 </span>
                 <el-dropdown-menu slot="dropdown">
                     <div class="tool-box">
-                        <div class="tool">
-                            <div>{{control.mode.m?'监控模式开':'监控模式关'}}</div>
+                        <!-- 运行模式 -->
+                        <div class="tool" :key="item.name" v-for="item in control.mode.list">
+                            <div>{{item.value?item.title+'开':item.title+'关'}}</div>
                             <p>
                                 <el-switch
-                                    v-model="control.mode.m"
+                                    v-model="item.value"
                                     active-color="#13ce66"
                                     inactive-color="#dddddd"
                                     :active-value="true"
-                                    :inactive-value="false">
+                                    :inactive-value="false"
+                                    @change="control.mode.value=item">
                                 </el-switch>
                             </p>
                         </div>
-                        <div class="tool">
-                            <div>{{control.mode.r?'运维模式开':'运维模式关'}}</div>
-                            <p>
-                                <el-switch
-                                    v-model="control.mode.r"
-                                    active-color="#13ce66"
-                                    inactive-color="#dddddd"
-                                    :active-value="true"
-                                    :inactive-value="false">
-                                </el-switch>
-                            </p>
-                        </div>
-                        <div class="tool">
-                            <div>{{control.mode.f?'全屏模式开':'全屏模式关'}}</div>
-                            <p>
-                                <el-switch
-                                    v-model="control.mode.f"
-                                    active-color="#13ce66"
-                                    inactive-color="#dddddd"
-                                    :active-value="true"
-                                    :inactive-value="false">
-                                </el-switch>
-                            </p>
-                        </div>
+                        <!-- 业务工具 -->
                         <div class="tool">
                             <div>{{control.ifSmartGroup?'智能分组':'智能分组'}}</div>
                             <p>
@@ -121,6 +100,7 @@
                                 </el-switch>
                             </p>
                         </div>
+                        <!-- 一般工具 -->
                         <div class="tool">
                             <div>选择导出</div>
                             <p>
@@ -302,9 +282,12 @@ export default {
                 ifSmartGroup: false,
                 ifRefresh: false,
                 mode: {
-                    m: false,
-                    r: false,
-                    f: false
+                    value: {name:'r',title:'运维模式',value:true},
+                    list: [
+                        {name:'m',title:'监控模式',value:false},
+                        {name:'r',title:'运维模式',value:true},
+                        {name:'f',title:'全屏模式',value:false}
+                    ]
                 }
             }
         }
@@ -338,9 +321,9 @@ export default {
                 this.onToogleSmartGroup(val);
             }
         },
-        'control.mode':{
-            handler(val,oldVal){
-                this.onToogleRunMode(val,oldVal);
+        'control.mode.value':{
+            handler(val){
+                this.onToogleRunMode(val);
             },
             deep: true
         }
@@ -574,15 +557,36 @@ export default {
             }
         },
         /* 运行模式 */
-        onToogleRunMode(val,oldVal){
-            console.log(val,oldVal)
-            /* if(val === 'm'){
+        onToogleRunMode(val){
+            
+            // 设置当前运行模式
+            this.control.mode.value = val;
 
-            } else if(val === 'r'){
+            // 设置其它模式为关闭
+            let xor = _.xorBy(this.control.mode.list,[val],'name');
+            _.forEach(xor,(v)=>{
+                v.value = false;
+            })
 
-            } else if(val === 'f'){
-                if(val.f)
-            }  */
+            // 如果都是关闭，默认选择运维模式
+            if(!this.control.mode.value.value){
+                this.control.mode.value = this.control.mode.list[1];
+                this.control.mode.value.value = true;
+            }
+
+            // 模式逻辑切换
+            // 全屏模式
+            if(this.control.mode.value.name === 'f'){
+                m3.fullScreen(true);
+            } 
+            // 监控模式
+            else if(this.control.mode.value.name === 'm'){
+                m3.fullScreen(false);
+            }
+            // 运维模式
+            else {
+                m3.fullScreen(false);
+            }
             
         }
     }
