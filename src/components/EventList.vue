@@ -1,6 +1,6 @@
 <template>
-    <el-container>
-        <el-header>
+    <el-container :style="dtContainerHeight">
+        <el-header v-if="dtOptions.header">
             
             <el-tooltip :content="$t('event.actions.runningMode')"  placement="top">
                 <el-button type="text" @click="onToggle">
@@ -133,12 +133,13 @@
             </el-dropdown>
         </el-header>   
         
-        <el-main @mouseup.native="onMainClick">
+        <el-main @mouseup.native="onMainClick" :style="dtMainStyle">
             <el-table
                 :data="dt.rows"
                 :highlight-current-row="true"
                 :row-class-name="rowClassName"                
                 @row-contextmenu="onRowContextmenu"
+                @row-dblclick="onRowContextmenu"
                 ref="table"
                 style="width:100%;">
                 <el-table-column type="selection" align="center"></el-table-column> 
@@ -249,7 +250,8 @@ export default {
   name: "EventList",
     props: {
         model: Object,
-        global: Object
+        global: Object,
+        options: Object
     },
     components: {
         VueContext,
@@ -258,6 +260,9 @@ export default {
     data(){
         return {
             dt:{
+                options: {
+                    header:true,
+                },
                 rows:[],
                 columns: [],
                 selected: [],
@@ -346,6 +351,22 @@ export default {
             } catch(err){
                 return [];
             }
+        },
+        dtOptions(){
+            return _.extend(this.dt.options,this.options);
+        },
+        dtContainerHeight(){
+            return `height:calc(100vh - ${this.dtOptions.dtContainerHeight})!important;`
+        },
+        dtMainStyle(){
+            if(this.dtOptions.header){
+                return `border-top: 1px solid #dddddd;
+                        padding: 0px;
+                        overflow: hidden;`
+            } else {
+                return `padding: 0px;
+                        overflow: hidden;`
+            }
         }
     },
     created(){
@@ -417,7 +438,7 @@ export default {
         },
         initData(){
             
-            _.extend(this.dt, {columns: _.map(this.model.template, function(v){
+            _.extend(this.dt, {columns: _.map(this.model.template || this.model.columns, function(v){
                 
                 if(_.isUndefined(v.visible)){
                     _.extend(v, { visible: true });
@@ -632,86 +653,81 @@ export default {
     }
 }
 </script>
+
 <style scoped>
 
-.el-container{
-    height:calc(100vh - 115px)!important;
-    border: 1px solid #dddddd!important;
-}
+    .el-container{
+        border: 1px solid #dddddd!important;
+    }
 
-.el-header{
-    height:30px!important;
-    line-height:30px;
-    background:#f2f2f2;
-    padding:0 10px;
-    border-bottom: 1px solid #ffffff;
-}
+    .el-header{
+        height:30px!important;
+        line-height:30px;
+        background:#f2f2f2;
+        padding:0 10px;
+        border-bottom: 1px solid #ffffff;
+    }
 
-.el-main{
-    border-top: 1px solid #dddddd;
-    padding: 0px;
-    overflow: hidden;
-}
+    
+    .el-main > .el-table{
+        height: 100%;
+        overflow: auto;
+    }
 
-.el-main > .el-table{
-    height: 100%;
-    overflow: auto;
-}
+    .el-main > .el-table .el-table--small td{
+        padding: 0px;
+    }
 
-.el-main > .el-table .el-table--small td{
-    padding: 0px;
-}
+    .el-footer{
+        height: auto!important;
+        padding: 5px 0 0 0;
+    }
 
-.el-footer{
-    height: auto!important;
-    padding: 5px 0 0 0;
-}
+    .el-footer > .toolbar {
+    padding: 0 0 5px 5px;
+    border-bottom: 1px solid #dddddd;
+    }
+    .el-footer > .footbar{
+        border-top: 1px solid #ffffff;
+        height:30px;
+        line-height: 30px;
+        padding: 0 0 0 10px;
+        font-size: 12px;
+        background: #f2f2f2;
+    }
 
-.el-footer > .toolbar {
-  padding: 0 0 5px 5px;
-  border-bottom: 1px solid #dddddd;
-}
-.el-footer > .footbar{
-    border-top: 1px solid #ffffff;
-    height:30px;
-    line-height: 30px;
-    padding: 0 0 0 10px;
-    font-size: 12px;
-    background: #f2f2f2;
-}
+    .el-table {
+        height:100%!important;
+        overflow: hidden!important;
+    }
 
-.el-table {
-    height:100%!important;
-    overflow: hidden!important;
-}
+    .el-table--small td, .el-table--small th {
+        padding: 4px 0;
+    }
 
-.el-table--small td, .el-table--small th {
-    padding: 4px 0;
-}
+    .el-divider{
+        margin: 0px;
+    }
 
-.el-divider{
-    margin: 0px;
-}
-
-.tool-box{
-    display:flex;
-    flex-wrap: wrap;
-    align-items:flex-start;
-    padding:20px;
-    width: 355px;
-}
-.tool-box .tool{
-    text-align:center;
-    padding:20px;
-    margin:5px;
-    border:1px solid #efefef;
-    height: 60px;
-    width: 65px;
-    border-radius: 5px;
-}
-.tool-box .tool:hover{
-    cursor: pointer;
-    background: rgba(125, 202, 253,.2);
-}
+    .tool-box{
+        display:flex;
+        flex-wrap: wrap;
+        align-items:flex-start;
+        padding:20px;
+        width: 355px;
+    }
+    .tool-box .tool{
+        text-align:center;
+        padding:20px;
+        margin:5px;
+        border:1px solid #efefef;
+        height: 60px;
+        width: 65px;
+        border-radius: 5px;
+    }
+    .tool-box .tool:hover{
+        cursor: pointer;
+        background: rgba(125, 202, 253,.2);
+    }
 
 </style>

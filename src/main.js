@@ -9,6 +9,8 @@ import './assets/theme/element-#252D47/index.css'
 // import './assets/theme/element-#409EFF/index.css'
 import moment from 'moment'
 import animate from 'animate.css'
+import VueSplit from 'vue-split-panel'
+Vue.use(VueSplit)
 
 Vue.use(animate);
 Vue.use(VueI18n);

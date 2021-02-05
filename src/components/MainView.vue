@@ -36,7 +36,7 @@
               </el-input>
             </el-header>
             <el-main :loading="loading">
-              <EventList :model="search.result" :global="global" @onSearch="onSearch"></EventList>
+              <EventList :model="search.result.list" :global="global" :options="search.result.options" @onSearch="onSearch"></EventList>
             </el-main>
             
           </el-container>
@@ -92,7 +92,12 @@ export default {
           term: "",
           view: "all",
         },
-        result: null
+        result: {
+          list: null,
+          options: {
+            dtContainerHeight: '115px',
+          }
+        }
       },
       tabs: {
         activeTab: 'event-list',
@@ -142,7 +147,7 @@ export default {
         "/matrix/eventConsole/event_list.js",
         encodeURIComponent(JSON.stringify(param))
       ).then( (rtn)=>{
-          this.search.result = rtn.message; 
+          this.search.result.list = rtn.message; 
           this.loading = false;
       }).catch( ()=>{
         this.loading = false;
