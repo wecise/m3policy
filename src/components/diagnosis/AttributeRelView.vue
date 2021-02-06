@@ -8,21 +8,26 @@
                 </span>
                 <el-dropdown-menu slot="dropdown" style="width:30vw;padding:20px;">
                     <el-container>
-                        <el-header style="line-height: 60px;" v-show="attr.dt.selected.length > 1">
+                        <el-header style="height: 40px;line-height: 40px;padding:0px;" v-if="attr.dt.selected.length > 1">
                             <span style="float:right;">
                                 <el-button type="success" @click="onAttrSelect(';')">选择（OR）</el-button>
                                 <el-button type="warning" @click="onAttrSelect('|')">选择（AND）</el-button>
                             </span>
                         </el-header>
-                        <el-header style="line-height: 60px;" v-show="attr.dt.selected.length == 1">
+                        <el-header style="height: 40px;line-height: 40px;padding:0px;" v-else-if="attr.dt.selected.length == 1">
                             <span style="float:right;">
                                 <el-button type="primary" @click="onAttrSelect(',')">选择</el-button>
+                            </span>
+                        </el-header>
+                        <el-header style="height: 40px;line-height: 40px;padding:0px;" v-else>
+                            <span>选择属性
                             </span>
                         </el-header>
                         <el-main style="padding: 10px 0 0 0;">
                             <el-table
                                 ref="attrTable"
                                 border
+                                stripe
                                 :data="attr.dt.rows"
                                 tooltip-effect="dark"
                                 style="width: 100%"
@@ -87,12 +92,14 @@ export default {
               // 属性列表
               rows: [],
               // 选择的属性
-              selected: []
+              selected: [],
+              // 初始化的属性
+              init: ['biz','host','entity']
           },
           // 根据选择的属性生成的tag条件
           tag: {
               list:[],
-              type: _.sample(['success','info','danger','warning'])
+              type: _.sample(['info'])
           }
       },
       result: {
@@ -121,6 +128,8 @@ export default {
   created(){
      this.initData();
      this.onTip();
+     // 初始化维度查询
+     this.initAttr();
   },
   methods: {
     initData(){
@@ -134,6 +143,15 @@ export default {
                                 return {name:k, value:v};
                             }));
     },
+    initAttr(){
+        this.attr.dt.selected = _.filter(this.attr.dt.rows, (v)=>{
+                                    if( _.indexOf(this.attr.dt.init,v.name) !== -1 ){
+                                        return v;
+                                    }
+                                });
+        
+        this.onAttrSelect(" ; ");
+    },
     onAttrSelectionChange(val){
         this.attr.dt.selected = val;
     },
@@ -143,6 +161,10 @@ export default {
         }).join(` ${val} `);
         
         if( _.indexOf(this.attr.tag.list,selected) !== -1 ) {
+            this.$message({
+                type: "info",
+                message: "已选择属性"
+            })
             return;
         } else {
             this.attr.tag.list.push( selected );
@@ -164,6 +186,7 @@ export default {
         const h = this.$createElement;
         this.$notify({
           title: '多维度关联性告警',
+          position: 'top-left',
           message: h('i', { style: 'color: teal'}, '选则当前告警属性，可多选、可单选，通过选择不同的属性组合进行关联告警的查找、分析，从而通过相关告警快速定位问题所在。')
         });
     }
