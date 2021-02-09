@@ -11,7 +11,6 @@
 </template>
 
 <script>
-// const m3 = require("@cnwangzd/m3js");
 
 export default {
   name: "DiagnosisView",

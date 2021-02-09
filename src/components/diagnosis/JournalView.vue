@@ -3,7 +3,7 @@
     <el-main @dblclick.native="reverse=!reverse">
       <el-timeline :reverse="reverse">
             <el-timeline-item
-            v-for="(row, index) in dt.rows"
+            v-for="row in dt.rows"
             :key="row.id"
             :color="row.severity | pickSeverityColor"
             :timestamp="row.vtime | formatDateTime">
@@ -21,7 +21,6 @@
 </template>
 
 <script>
-const m3 = require("@cnwangzd/m3js");
 
 export default {
   name: "JournalView",
@@ -44,7 +43,7 @@ export default {
           return window.global.register.event.status[val][1];
       },
       formatDateTime(val){
-          return moment(val).format(window.global.register.format);
+          return new Date(val).toLocaleString();//format(window.global.register.format);
       }
   },
   created(){
@@ -53,7 +52,7 @@ export default {
   methods: {
     initData(){
         let term = encodeURIComponent(JSON.stringify(this.model).replace(/%/gi,'%25'));
-        m3.callFS("/matrix/eventConsole/diagnosis/journal.js", term).then((rtn)=>{
+        this.m3.callFS("/matrix/eventConsole/diagnosis/journal.js", term).then((rtn)=>{
             this.dt.rows = rtn.message;
         })
     }
@@ -64,5 +63,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-  
+  .el-container{
+    height: calc(100vh - 220px);
+  }
 </style>

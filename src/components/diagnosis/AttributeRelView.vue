@@ -16,7 +16,7 @@
                         </el-header>
                         <el-header style="height: 40px;line-height: 40px;padding:0px;" v-else-if="attr.dt.selected.length == 1">
                             <span style="float:right;">
-                                <el-button type="primary" @click="onAttrSelect(',')">选择</el-button>
+                                <el-button type="primary" @click="onAttrSelect(',')">选择同一 {{ attr.dt.selected | pickAttrName }}</el-button>
                             </span>
                         </el-header>
                         <el-header style="height: 40px;line-height: 40px;padding:0px;" v-else>
@@ -62,7 +62,7 @@
             </div>
         </el-header>
         <el-main style="padding:0px;overflow:hidden;">
-            <EventList :model="result.dt" :global="global" :options="result.dt.options" v-if="result.dt.rows"></EventList>
+            <EventList :model="result.dt" :global="global" :options="result.dt.options" @onDiagnosis="onDiagnosis" v-if="result.dt.rows"></EventList>
         </el-main>
     </el-container>
 
@@ -71,7 +71,6 @@
 <script>
 import EventList from '../EventList.vue'
 import _ from 'lodash';
-const m3 = require("@cnwangzd/m3js");
 
 export default {
   name: "AttributeRelView",
@@ -109,6 +108,7 @@ export default {
               options:{
                   header:false,
                   dtContainerHeight: '320px',
+                  severityBar: false
                 }
           }
       }
@@ -125,16 +125,21 @@ export default {
           }
       }
   },
+  filters: {
+      pickAttrName(val){
+          return _.map(val,'name')[0];
+      }
+  },
   created(){
      this.initData();
-     this.onTip();
+     
      // 初始化维度查询
      this.initAttr();
   },
   methods: {
     initData(){
         let term = encodeURIComponent(JSON.stringify(this.model).replace(/%/gi,'%25'));
-        m3.callFS("/matrix/eventConsole/diagnosis/journal.js", term).then((rtn)=>{
+        this.m3.callFS("/matrix/eventConsole/diagnosis/journal.js", term).then((rtn)=>{
             this.dt.rows = rtn.message;
         })
 
@@ -170,25 +175,22 @@ export default {
             this.attr.tag.list.push( selected );
         }
 
-        this.attr.dt.selected = [];
-        this.$refs.attrTable.clearSelection();
+        if(!_.isEmpty(this.attr.dt.selected)){
+            this.attr.dt.selected = [];
+            this.$refs.attrTable.clearSelection();
+        }
     },
     onAttrTagClose(tag){
         this.attr.tag.list.splice(this.attr.tag.list.indexOf(tag), 1);
     },
     onSearchByTags(val){
         let term = encodeURIComponent(JSON.stringify(  val.join(" | ") ).replace(/%/gi,'%25'));
-        m3.callFS("/matrix/eventConsole/diagnosis/attributeRel.js", term).then( (rtn)=>{
+        this.m3.callFS("/matrix/eventConsole/diagnosis/attributeRel.js", term).then( (rtn)=>{
             this.result.dt = rtn.message;
         } )
     },
-    onTip(){
-        const h = this.$createElement;
-        this.$notify({
-          title: '多维度关联性告警',
-          position: 'top-left',
-          message: h('i', { style: 'color: teal'}, '选则当前告警属性，可多选、可单选，通过选择不同的属性组合进行关联告警的查找、分析，从而通过相关告警快速定位问题所在。')
-        });
+    onDiagnosis(data){
+        this.eventHub.$emit("event-diagnosis", data);
     }
 
   },
@@ -199,6 +201,7 @@ export default {
 <style scoped>
 .el-container{
     height:calc(100vh - 220px);
+    border:unset!important;
 }
 
 .el-main{

@@ -59,7 +59,7 @@
                                 </el-switch>
                             </p>
                         </div>
-                        <div class="tool">
+                        <!--div class="tool">
                             <div>{{control.ifSmart?'智能分析':'智能分析'}}</div>
                             <p>
                                 <el-switch
@@ -70,7 +70,7 @@
                                     :inactive-value="false">
                                 </el-switch>
                             </p>
-                        </div>
+                        </div-->
                         <div class="tool">
                             <div>视图定制</div>
                             <p>
@@ -141,6 +141,7 @@
                 @row-contextmenu="onRowContextmenu"
                 @row-dblclick="onRowContextmenu"
                 ref="table"
+                class="event-list"
                 style="width:100%;">
                 <el-table-column type="selection" align="center"></el-table-column> 
                 <!--el-table-column type="expand">
@@ -182,12 +183,11 @@
             <div class="toolbar">
                 <el-button-group v-if="global">
                     <el-button
-                    type="default"
-                    v-for="(btn,key) in global.register.event.severity"
-                    :key="btn[1]"
-                    :style="'color:#ffffff;background:' + btn[2]"
-                    >
-                    {{ btn[1] }} <span style="font-variant: all-small-caps;">{{btn[0]}}</span> {{ dt.summary[key]?dt.summary[key].length:0 }}
+                        type="default"
+                        v-for="(btn,key) in global.register.event.severity"
+                        :key="btn[1]"
+                        :style="btn[2] | severityBtnStyle(dt.summary[key],dtOptions)">
+                        {{ btn[1] }} <span style="font-variant: all-small-caps;">{{btn[0]}}</span> {{ dt.summary[key]?dt.summary[key].length:0 }}
                     </el-button>
                 </el-button-group>
             </div>
@@ -203,18 +203,11 @@
             v-show="dt.contextmenu.show">
             <li>
                 <el-link @click.prevent="onContextmenuClick(data,null)" :underline="false"> 
-                    <!-- <el-button
-                        type="default"
-                        :style="'padding: 5px;border-radius: 15px;color:#ffffff;background:' + global.register.event.severity[data.severity][2]"
-                        >
-                        {{ global.register.event.severity[data.severity][1] }} <span style="font-variant: all-small-caps;">{{global.register.event.severity[data.severity][0]}}</span>
-                    </el-button> -->
                     <span> {{data.id}}</span>
                     <span style="position: absolute;top: 3px;left: 10px;">
                         <el-button
                             type="default"
-                            :style="'padding: 5px;border-radius: 15px;color:#ffffff;background:' + global.register.event.severity[data.severity][2]">
-                            <!-- {{ global.register.event.severity[data.severity][1] }} <span style="font-variant: all-small-caps;">{{global.register.event.severity[data.severity][0]}}</span> -->
+                            :style="'padding: 5px;border-radius: 15px;color:#ffffff;background:'+ global.register.event.severity[data.severity][2]">
                         </el-button>
                     </span>
                 </el-link>
@@ -243,7 +236,6 @@ import jsPanel from 'jspanel4/dist/jspanel.min.js';
 import 'jspanel4/dist/jspanel.min.css';
 import TagView from './tags/TagView';
 
-const m3 = require("@cnwangzd/m3js");
 window.moment = require("moment");
 
 export default {
@@ -262,6 +254,7 @@ export default {
             dt:{
                 options: {
                     header:true,
+                    severityBar: true
                 },
                 rows:[],
                 columns: [],
@@ -314,6 +307,9 @@ export default {
                 this.dt.rows = [];
                 this.initData();
                 this.dt.summary = _.groupBy(this.dt.rows,'severity');
+                _.delay(()=>{
+                    this.$refs.table.doLayout();
+                },1000)
             },
             deep:true
         },
@@ -369,15 +365,41 @@ export default {
             }
         }
     },
-    created(){
-        m3.callFS("/matrix/eventConsole/getContextMenu.js").then( (rtn)=>{
-            this.dt.contextmenu.list = rtn.message;
-        } );
+    filters: {
+        severityBtnStyle(color, dt, options){
+            
+            let hexToRGB = (hex, alpha)=>{
+                var r = parseInt(hex.slice(1, 3), 16),
+                    g = parseInt(hex.slice(3, 5), 16),
+                    b = parseInt(hex.slice(5, 7), 16);
 
-        document.addEventListener('click',(event)=>{
-            event.preventDefault();
-            this.dt.contextmenu.show = false;
-        })
+                if (alpha) {
+                    return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+                } else {
+                    return "rgb(" + r + ", " + g + ", " + b + ")";
+                }
+            };
+            let rtn = "";
+            if(_.isEmpty(dt)){
+                rtn = `color:#ffffff;background:${ hexToRGB(color,0.3) };${!options.severityBar?'display:none;':''}`;
+            } else {
+                
+                if(dt.length > 0){
+                    rtn = `color:#ffffff;background:${ color };`;
+                } else {
+                    rtn = `color:#ffffff;background:${ hexToRGB(color,0.3) };${!options.severityBar?'display:none;':''}`;
+                }
+
+            }
+            
+            return rtn;
+        }
+    },
+    created(){
+        
+        this.initContextMenu();
+
+        
     },
     mounted(){  
         this.initData();
@@ -400,6 +422,15 @@ export default {
 
     },
     methods: {
+        initContextMenu(){
+            this.m3.callFS("/matrix/eventConsole/getContextMenu.js").then( (rtn)=>{
+                this.dt.contextmenu.list = rtn.message;
+            } );
+            document.addEventListener('click',(event)=>{
+                event.preventDefault();
+                this.dt.contextmenu.show = false;
+            })
+        },
         startTimer(duration, display) {
             var timer = duration, minutes, seconds;
             window.countdownInterval = setInterval( ()=> {
@@ -474,12 +505,19 @@ export default {
         },
         // 右键菜单事件
         onContextmenuClick(row,menu){
-            console.log(row,menu)
+            
             if(menu){
                 if(menu.type === 'url'){
                     window.open(menu.url,menu.target?menu.target:'_blank');
+                } else if(menu.type === 'action'){
+                     if (menu.callback != "") {
+                        let term =  JSON.stringify({id:row.id, value: menu.value}) ;
+                        let fn = new Function('term',menu.callback);
+                        fn(term);
+                        row.status = menu.value;
+                     }
                 } else if(menu.type === 'component'){
-                     this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row,menu);
+                     this.$emit("onDiagnosis",{row:row,menu:menu});
                 } else {
                     this.openPanel(row);
                 } 
@@ -608,13 +646,23 @@ export default {
             if(val){
                 this.$message({
                     type: "info",
-                    message: "自动分组开启"
+                    message: "智能分组开启"
                 })
+                let row = {id: "smartGroup"};
+                let menu = {
+                    "name": "智能分组", 
+                    "icon": "",
+                    "type": "component",
+                    "callback": "SmartGroupView",
+                    "subMenu":[]
+                    };
+                this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row, menu);
             } else {
                 this.$message({
                     type: "info",
-                    message: "自动分组关闭"
+                    message: "智能分组关闭"
                 })
+                this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.removeTab("smartGroup");
             }
         },
         /* 运行模式 */
@@ -638,15 +686,15 @@ export default {
             // 模式逻辑切换
             // 全屏模式
             if(this.control.mode.value.name === 'f'){
-                m3.fullScreen(true);
+                this.m3.fullScreen(true);
             } 
             // 监控模式
             else if(this.control.mode.value.name === 'm'){
-                m3.fullScreen(false);
+                this.m3.fullScreen(false);
             }
             // 运维模式
             else {
-                m3.fullScreen(false);
+                this.m3.fullScreen(false);
             }
             
         }
@@ -696,15 +744,6 @@ export default {
         background: #f2f2f2;
     }
 
-    .el-table {
-        height:100%!important;
-        overflow: hidden!important;
-    }
-
-    .el-table--small td, .el-table--small th {
-        padding: 4px 0;
-    }
-
     .el-divider{
         margin: 0px;
     }
@@ -728,6 +767,28 @@ export default {
     .tool-box .tool:hover{
         cursor: pointer;
         background: rgba(125, 202, 253,.2);
+    }
+
+
+    .event-list .el-table {
+        height:100%!important;
+        overflow: hidden!important;
+    }
+
+    .event-list .el-table--small td, 
+    .event-list .el-table--small th {
+        padding: 4px 0;
+    }
+
+    .event-list .el-table .cell {
+        white-space: nowrap!important;
+        line-height: 18px!important;
+    }
+
+    .event-list .el-table .el-table__body-wrapper {
+        overflow: auto;
+        position: relative;
+        height: calc(100% - 50px)!important;
     }
 
 </style>

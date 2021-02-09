@@ -36,7 +36,7 @@
               </el-input>
             </el-header>
             <el-main :loading="loading">
-              <EventList :model="search.result.list" :global="global" :options="search.result.options" @onSearch="onSearch"></EventList>
+              <EventList ref="eventList" :model="search.result.list" :global="global" :options="search.result.options" @onSearch="onSearch" @onDiagnosis="((data)=>{ addTab(data.row,data.menu) })"></EventList>
             </el-main>
             
           </el-container>
@@ -57,6 +57,7 @@
               </span>
             </span>
           <DiagnosisView :model="item.data" :global="global" v-if="item.callback==='DiagnosisView'"></DiagnosisView>
+          <SmartGroupView :model="item.data" :global="global" v-else-if="item.callback==='SmartGroupView'"></SmartGroupView>
           <CtmenuKeepView :model="item.data" :global="global" v-else-if="item.callback==='CtmenuKeepView'"></CtmenuKeepView>
         </el-tab-pane>
       </el-tabs>
@@ -69,9 +70,8 @@ import _ from 'lodash';
 import $ from 'jquery';
 import EventList from '../components/EventList.vue'
 import DiagnosisView from '../components/diagnosis/DiagnosisView';
+import SmartGroupView from '../components/diagnosis/SmartGroupView'
 import CtmenuKeepView from '../components/contextmenu/CtmenuKeepView';
-
-const m3 = require("@cnwangzd/m3js");
 
 export default {
   name: "MainView",
@@ -81,7 +81,8 @@ export default {
   components:{
     EventList,
     DiagnosisView,
-    CtmenuKeepView
+    CtmenuKeepView,
+    SmartGroupView
   },
   data() {
     return {
@@ -119,6 +120,10 @@ export default {
   },
   created(){
     this.onSearch();
+
+    this.eventHub.$on("event-diagnosis",(data)=>{
+      this.addTab(data.row,data.menu)
+    })
   },
   mounted(){
     this.hideTabEventViewConsoleUl();
@@ -143,7 +148,7 @@ export default {
           : this.search.type,
       };
 
-      m3.callFS(
+      this.m3.callFS(
         "/matrix/eventConsole/event_list.js",
         encodeURIComponent(JSON.stringify(param))
       ).then( (rtn)=>{
@@ -160,9 +165,13 @@ export default {
       
       if(find){
         this.tabs.activeTab = row.id;
-        
       } else {
-        let tabObj = {name: row.id, title: menu.name, type: menu.type, callback: menu.callback, data: row};
+        let data = row;
+        /* 智能分组需要传入ids */
+        if(row.id === 'smartGroup'){
+          data = _.map(this.$refs.eventList.dt.rows,'id');
+        }
+        let tabObj = {name: row.id, title: menu.name, type: menu.type, callback: menu.callback, data: data};
         this.tabs.list.push(tabObj);
         this.tabs.activeTab = row.id;
       }
@@ -187,6 +196,9 @@ export default {
         
         this.tabs.activeTab = activeName;
         this.tabs.list = tabs.filter(tab => tab.name !== targetName);
+
+        // 关闭智能分组
+        this.$refs.eventList.control.ifSmartGroup = false;
     }
   }
 };

@@ -67,7 +67,6 @@
 
 <script>
 import MainView from './components/MainView.vue'
-const m3 = require("@cnwangzd/m3js");
 import _ from 'lodash';
 
 export default {
@@ -84,9 +83,9 @@ export default {
   },
   mounted(){
     setTimeout(()=>{
-      this.global = m3.global;
-      this.auth = m3.auth.signedUser;
-      m3.setTitle(this.auth);
+      this.global = this.m3.global;
+      this.auth = this.m3.auth.signedUser;
+      this.m3.setTitle(this.auth);
     },500)
   },
   methods: {
@@ -95,7 +94,7 @@ export default {
             window.open(key, '_blank');
         } else {
             if(key === 'home'){
-                m3.setAppAsHome(this,{url:'/home'});
+                this.m3.setAppAsHome(this,{url:'/home'});
             } else if(key==='signout'){
                 window.open(`/user/logout/${this.auth.Company.name}`,'_parent');
             } 
@@ -139,25 +138,6 @@ export default {
     color: #ffffff;
   }
 
-  .el-table--enable-row-hover .el-table__body tr:hover>td {
-      background-color: #409eff!important;
-  }
-  
-  .el-table__body tr.current-row>td {
-      background-color:#409eff!important;;
-  }
-
-  .el-table .cell {
-      white-space: nowrap!important;
-      line-height: 18px!important;
-  }
-
-  .el-table .el-table__body-wrapper {
-    overflow: auto;
-    position: relative;
-    height: calc(100% - 50px)!important;
-}
-
   .topbar-el-menu .el-submenu__icon-arrow.el-icon-arrow-down{
 		color: #ffffff;
 	}
@@ -188,5 +168,13 @@ export default {
   .el-menu--horizontal>.el-menu-item:not(.is-disabled):hover, 
   .el-menu--horizontal>.el-submenu .el-submenu__title:hover {
       background-color: #409dfe!important;
+  }
+
+  /* el-table hover actived style */
+  .el-table--enable-row-hover .el-table__body tr:hover>td {
+        background-color: #3c99f7!important;
+  }
+  .el-table__body tr.current-row>td {
+        background-color:#3c99f7!important;;
   }
 </style>

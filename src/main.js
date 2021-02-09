@@ -19,6 +19,7 @@ Vue.config.productionTip = false;
 
 Vue.prototype.moment = moment;
 Vue.prototype.moment.locale(window.M3_LANG);
+Vue.prototype.eventHub = new Vue();
 
 window.M3_LANG = 'zh-CN';
 
@@ -26,6 +27,8 @@ window.M3_LANG = 'zh-CN';
  * 测试环境
 */
 const m3 = require("@cnwangzd/m3js");
+Vue.prototype.m3 = m3;
+window.m3 = m3;
 
 if(process.env.NODE_ENV === "development"){
   m3.connect("47.92.151.165",8080,"wecise","admin","admin");
