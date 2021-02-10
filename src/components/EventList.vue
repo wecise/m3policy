@@ -204,10 +204,10 @@
             <li>
                 <el-link @click.prevent="onContextmenuClick(data,null)" :underline="false"> 
                     <span> {{data.id}}</span>
-                    <span style="position: absolute;top: 3px;left: 10px;">
+                    <span style="position: absolute;top: 4px;left: 10px;">
                         <el-button
                             type="default"
-                            :style="'padding: 5px;border-radius: 15px;color:#ffffff;background:'+ global.register.event.severity[data.severity][2]">
+                            :style="'padding: 3px;border-radius: 15px;color:#ffffff;background:'+ global.register.event.severity[data.severity][2]">
                         </el-button>
                     </span>
                 </el-link>
@@ -217,7 +217,7 @@
                 <div v-if="menu.name && menu.type==='tag'" style="height:40px;line-height:40px;">
                     <TagView domain='event' :model.sync="data.tags" :id="data.id" :limit="4"></TagView>
                 </div>
-                <el-link @click.prevent="onContextmenuClick(data,menu)" :underline="false" v-else-if="menu.name">
+                <el-link @click.prevent="onContextmenuClick(data,menu)" :underline="false" v-else-if="menu.name" :disabled="data.status==menu.value">
                     {{ menu.name }}
                 </el-link>
                 <el-divider v-else></el-divider>
@@ -602,18 +602,6 @@ export default {
                 }
             });
         },
-        /* 实体抽取 */
-        onEntityEtl(){
-            let row = {id:_.now()};
-            let menu = {
-                "name": "实体抽取", 
-                "icon": "",
-                "type": "component",
-                "callback": "EntityEtlView",
-                "subMenu":[]
-                };
-            this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row, menu);
-        },
         /* 右键菜单 */
         onContextmenuKeep(){
             let row = {id:_.now()};
@@ -664,6 +652,19 @@ export default {
                 })
                 this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.removeTab("smartGroup");
             }
+        },
+        /* 实体抽取 */
+        onEntityEtl(){
+            
+            let row = {id: "entityEtl"};
+            let menu = {
+                "name": "实体抽取", 
+                "icon": "",
+                "type": "component",
+                "callback": "EntityView",
+                "subMenu":[]
+                };
+            this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row, menu);
         },
         /* 运行模式 */
         onToogleRunMode(val){

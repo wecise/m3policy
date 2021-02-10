@@ -2,7 +2,7 @@
   <el-container>
     <el-main style="overflow:hidden;">
         <Split :direction="vertical">
-            <SplitArea :size="30" style="overflow:hidden;">
+            <SplitArea :size="30" :minSize="0" style="overflow:hidden;">
                 <el-container>
                     <el-main style="padding:0 20px 0 0;overflow:hidden;">
                         <el-table
@@ -36,7 +36,7 @@
                     </el-main>
                 </el-container>
             </SplitArea>
-            <SplitArea :size="70" style="overflow:hidden;">
+            <SplitArea :size="70" :minSize="0" style="overflow:hidden;">
                 <el-container>
                     <el-main style="padding:0 0px 0 20px;overflow:hidden;">  
                         <el-tabs value="list" type="border-card">
@@ -51,6 +51,7 @@
                             </el-tab-pane>
                             <el-tab-pane name="graph">
                                 <span slot="label">图</span>
+                                <GraphView :model="graph.model"></GraphView>
                             </el-tab-pane>
                         </el-tabs>
                     </el-main>
@@ -95,6 +96,9 @@ export default {
                 dtContainerHeight: '320px',
                 severityBar: false
             }
+        },
+        graph: {
+            model: null
         }
     };
   },
@@ -103,6 +107,11 @@ export default {
           handler(val){
               this.loadEventListByGroup(val);
           }
+      },
+      'dt.rows':{
+          handler(val){
+              this.graph.model = _.compact(_.map(val,'entity'));
+          }
       }
   },
   created(){
@@ -110,10 +119,10 @@ export default {
         this.initData();  
       
   },
-  updated(){
+  mounted(){
         
         this.$refs.groupedTable.setCurrentRow(this.smartGroup.dt.rows[0]);
-        this.smartGroup.dt.selected = this.smartGroup.dt.rows[0].ids.split(";");;
+        this.smartGroup.dt.selected = this.smartGroup.dt.rows[0].ids.split(";");
       
   },
   methods: {
@@ -179,14 +188,15 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-  .el-container{
-    height: calc(100vh - 115px);
-    background: #f2f2f2;
-    border:unset!important;
-  }
-
-  .smartGroup-list .el-table .cell {
-    white-space: nowrap!important;
-    line-height: 18px!important;
+    .el-container{
+        height: calc(100vh - 115px);
+        background: #f2f2f2;
+        border:unset!important;
     }
+
+    .smartGroup-list .el-table .cell {
+        white-space: nowrap!important;
+        line-height: 18px!important;
+    }
+    
 </style>

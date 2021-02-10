@@ -177,4 +177,60 @@ export default {
   .el-table__body tr.current-row>td {
         background-color:#3c99f7!important;;
   }
+
+  /* mxgraph contextmenu style */
+  td.mxPopupMenuIcon div {
+    width:16px;
+    height:16px;
+  }
+  html div.mxPopupMenu {
+    -webkit-box-shadow:2px 2px 3px #d5d5d5;
+    -moz-box-shadow:2px 2px 3px #d5d5d5;
+    box-shadow:2px 2px 3px #d5d5d5;
+    _filter:progid:DXImageTransform.Microsoft.DropShadow(OffX=2, OffY=2, Color='#d0d0d0', Positive='true');
+    background:white;
+    position:absolute;
+    border:1px solid #e7e7e7;
+    padding:3px;
+  }
+  html table.mxPopupMenu {
+    border-collapse:collapse;
+    margin:0px;
+  }
+  html td.mxPopupMenuItem {
+    padding:7px 30px 7px 30px;
+    font-family: "微软雅黑";/* Microsoft YaHei,Helvetica Neue,Helvetica,Arial Unicode MS,Arial;*/
+    font-size:12px;
+  }
+  html td.mxPopupMenuIcon {
+    background-color:white;
+    padding:0px;
+  }
+  td.mxPopupMenuIcon .geIcon {
+    padding:2px;
+    padding-bottom:4px;
+    margin:2px;
+    border:1px solid transparent;
+    opacity:0.5;
+    _width:26px;
+    _height:26px;
+  }
+  td.mxPopupMenuIcon .geIcon:hover {
+    border:1px solid gray;
+    border-radius:2px;
+    opacity:1;
+  }
+  html tr.mxPopupMenuItemHover {
+    background-color: #f5f5f5;
+    color: black;
+  }
+  table.mxPopupMenu hr {
+    color:#cccccc;
+    background-color:#f5f5f5;
+    border:none;
+    height:1px;
+  }
+  table.mxPopupMenu tr {
+    font-size:4pt;
+  }
 </style>

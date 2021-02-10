@@ -59,6 +59,7 @@
           <DiagnosisView :model="item.data" :global="global" v-if="item.callback==='DiagnosisView'"></DiagnosisView>
           <SmartGroupView :model="item.data" :global="global" v-else-if="item.callback==='SmartGroupView'"></SmartGroupView>
           <CtmenuKeepView :model="item.data" :global="global" v-else-if="item.callback==='CtmenuKeepView'"></CtmenuKeepView>
+          <EntityView :model="item.data" :global="global" v-else-if="item.callback==='EntityView'"></EntityView>
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -68,9 +69,10 @@
 <script>
 import _ from 'lodash';
 import $ from 'jquery';
-import EventList from '../components/EventList.vue'
+import EventList from '../components/EventList.vue';
 import DiagnosisView from '../components/diagnosis/DiagnosisView';
-import SmartGroupView from '../components/diagnosis/SmartGroupView'
+import SmartGroupView from '../components/diagnosis/SmartGroupView';
+import EntityView from '../components/diagnosis/EntityView';
 import CtmenuKeepView from '../components/contextmenu/CtmenuKeepView';
 
 export default {
@@ -82,7 +84,8 @@ export default {
     EventList,
     DiagnosisView,
     CtmenuKeepView,
-    SmartGroupView
+    SmartGroupView,
+    EntityView
   },
   data() {
     return {
@@ -168,8 +171,10 @@ export default {
       } else {
         let data = row;
         /* 智能分组需要传入ids */
-        if(row.id === 'smartGroup'){
-          data = _.map(this.$refs.eventList.dt.rows,'id');
+        if( _.includes(['smartGroup'],row.id) ){
+            data = _.compact(_.map(this.$refs.eventList.dt.rows,'id'));
+        } else if(  _.includes(['entityEtl'],row.id) ){
+            data = _.compact(_.map(this.$refs.eventList.dt.rows,'entity'));
         }
         let tabObj = {name: row.id, title: menu.name, type: menu.type, callback: menu.callback, data: data};
         this.tabs.list.push(tabObj);

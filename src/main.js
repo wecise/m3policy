@@ -44,7 +44,7 @@ setTimeout(()=>{
   m3.lang().then( (rtn)=>{
     
     window.global = m3.global;
-    
+
     const i18n = new VueI18n({
       locale: window.M3_LANG,
       messages: rtn

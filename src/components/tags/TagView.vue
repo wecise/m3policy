@@ -113,11 +113,23 @@
             };
         },
         created(){
-            m3.callFS("/matrix/tags/getAllTags.js").then((rtn)=>{
-                this.allTags = _.filter(rtn.message, {domain: this.domain});
-            });
+            this.initTags();
         },
         methods: {
+            initTags(){
+                let key = `${this.domain}-cache`;
+                let cache = localStorage.getItem(key);
+
+                if(_.isEmpty(cache)){
+                    m3.callFS("/matrix/tags/getAllTags.js").then((rtn)=>{
+                        this.allTags = _.filter(rtn.message, {domain: this.domain});
+                        localStorage.setItem(key, JSON.stringify(this.allTags));
+                    });
+                } else {
+                    this.allTags = JSON.parse(cache);
+                }
+                
+            },
             onTagClose(tag) {
                 
                 this.model.splice(this.model.indexOf(tag), 1);

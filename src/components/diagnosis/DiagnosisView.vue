@@ -8,7 +8,7 @@
           <JournalView :model="model" v-else-if="item.type==='journal'"></JournalView>
           <AttributeRelView :model="model" :global="global" v-else-if="item.type==='attribute'"></AttributeRelView>
           <HistoryView :model="model" v-else-if="item.type==='history'"></HistoryView>
-          <GraphView :model="model" v-else-if="item.type==='graph'"></GraphView>
+          <GraphView :model="[model.entity]" v-else-if="item.type==='graph'"></GraphView>
         </el-tab-pane>
       </el-tabs>
     </el-main>
