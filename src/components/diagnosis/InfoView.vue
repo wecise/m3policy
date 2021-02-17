@@ -1,38 +1,18 @@
 <template>
-  <el-container>
-    <el-main>
-      <el-form :label-position="labelPosition" label-width="80px">
-        <el-form-item :label="k" :key="k" v-for="(v,k) in model">
-          <el-input :value="v"></el-input>
-        </el-form-item>
-      </el-form>
-    </el-main>
-  </el-container>
+  <FormView :term="model.id" :cHeight="20" v-if="model"></FormView>
 </template>
 
 <script>
+import FormView from '../utils/FormView.vue';
 
 export default {
-  name: "DiagnosisView",
+  name: "InfoView",
   props: {
     model: Object
   },
-  data() {
-    return {
-      labelPosition: 'right',
-      tabs: {
-          list: [],
-          activeTab: 'info'
-      }
-    };
-  },
-  created(){
-    
-  },
-  methods: {
-    
-
-  },
+  components:{
+    FormView
+  }
 };
 </script>
 
@@ -42,4 +22,7 @@ export default {
     height: calc(100vh - 220px);
   }
 
+  .el-main{
+    overflow: hidden;
+  }
 </style>

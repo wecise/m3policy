@@ -47,7 +47,7 @@
                 
                   <el-button
                       type="default"
-                      :style="'position:absolute;top:15px;left:5px;padding: 5px;border-radius: 15px;color:#ffffff;background:' + global.register.event.severity[item.data.severity][2]">
+                      :style="'position:absolute;top:15px;left:10px;padding: 3px;border-radius: 15px;color:#ffffff;background:' + global.register.event.severity[item.data.severity][2]">
                       <!-- {{ global.register.event.severity[item.data.severity][1] }} <span style="font-variant: all-small-caps;">{{global.register.event.severity[item.data.severity][0]}}</span> -->
                   </el-button>
                   {{item.title}} {{ item.data.id }}
@@ -56,10 +56,16 @@
                  {{item.title}}
               </span>
             </span>
+          <!-- 分析 -->
           <DiagnosisView :model="item.data" :global="global" v-if="item.callback==='DiagnosisView'"></DiagnosisView>
+          <!-- 智能分组 -->
           <SmartGroupView :model="item.data" :global="global" v-else-if="item.callback==='SmartGroupView'"></SmartGroupView>
+          <!-- 右键菜单 -->
           <CtmenuKeepView :model="item.data" :global="global" v-else-if="item.callback==='CtmenuKeepView'"></CtmenuKeepView>
+          <!-- 实体抽取 -->
           <EntityView :model="item.data" :global="global" v-else-if="item.callback==='EntityView'"></EntityView>
+          <!-- 级别定义 -->
+          <SeverityView :model="item.data" :global="global" v-else-if="item.callback==='SeverityView'"></SeverityView>
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -74,6 +80,7 @@ import DiagnosisView from '../components/diagnosis/DiagnosisView';
 import SmartGroupView from '../components/diagnosis/SmartGroupView';
 import EntityView from '../components/diagnosis/EntityView';
 import CtmenuKeepView from '../components/contextmenu/CtmenuKeepView';
+import SeverityView from './utils/SeverityView';
 
 export default {
   name: "MainView",
@@ -85,7 +92,8 @@ export default {
     DiagnosisView,
     CtmenuKeepView,
     SmartGroupView,
-    EntityView
+    EntityView,
+    SeverityView
   },
   data() {
     return {
@@ -175,7 +183,7 @@ export default {
             data = _.compact(_.map(this.$refs.eventList.dt.rows,'id'));
         } else if(  _.includes(['entityEtl'],row.id) ){
             data = _.compact(_.map(this.$refs.eventList.dt.rows,'entity'));
-        }
+        } 
         let tabObj = {name: row.id, title: menu.name, type: menu.type, callback: menu.callback, data: data};
         this.tabs.list.push(tabObj);
         this.tabs.activeTab = row.id;

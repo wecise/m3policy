@@ -106,12 +106,20 @@
                         <div class="tool">
                             <div>实体抽取</div>
                             <p>
-                                <el-button type="text" @click="onEntityEtl">
+                                <el-button type="text" @click="onToolsKeep({id:'entityEtl',name:'实体抽取',callback:'EntityView'})">
                                     <span class="el-icon-coin" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
                         </div>
                         <!-- 一般工具 -->
+                        <div class="tool">
+                            <div>级别定义</div>
+                            <p>
+                                <el-button type="text" @click="onToolsKeep({id:'severityKeep',name:'级别定义',callback:'SeverityView'})">
+                                    <span class="el-icon-warning" style="cursor:pointer;font-size:16px;"></span>
+                                </el-button>
+                            </p>
+                        </div>
                         <div class="tool">
                             <div>选择导出</div>
                             <p>
@@ -160,7 +168,8 @@
                         </el-container>
                     </template>
                 </el-table-column-->
-                <el-table-column :prop="item.field"
+                <el-table-column 
+                    :prop="item.field"
                     :label="item.title" 
                     sortable 
                     show-overflow-tooltip
@@ -168,7 +177,6 @@
                     :key="item.id"
                     :width="item.width"
                     :formatter="item.render">
-                    
                 </el-table-column>
                 <el-table-column label="标签" prop="tags" width="200">
                     <template slot-scope="scope">
@@ -653,15 +661,14 @@ export default {
                 this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.removeTab("smartGroup");
             }
         },
-        /* 实体抽取 */
-        onEntityEtl(){
+        onToolsKeep(data){
             
-            let row = {id: "entityEtl"};
+            let row = {id: data.id};
             let menu = {
-                "name": "实体抽取", 
+                "name": data.name, 
                 "icon": "",
                 "type": "component",
-                "callback": "EntityView",
+                "callback": data.callback,
                 "subMenu":[]
                 };
             this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row, menu);
