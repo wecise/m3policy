@@ -233,4 +233,11 @@ export default {
   table.mxPopupMenu tr {
     font-size:4pt;
   }
+
+.el-table{
+    -webkit-user-select:none;/*谷歌 /Chrome*/
+    -moz-user-select:none; /*火狐/Firefox*/
+    -ms-user-select:none;    /*IE 10+*/
+    user-select:none;
+}
 </style>

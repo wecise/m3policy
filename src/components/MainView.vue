@@ -66,6 +66,10 @@
           <EntityView :model="item.data" :global="global" v-else-if="item.callback==='EntityView'"></EntityView>
           <!-- 级别定义 -->
           <SeverityView :model="item.data" :global="global" v-else-if="item.callback==='SeverityView'"></SeverityView>
+          <!-- 视图定制 -->
+          <DashView :model="item.data" :global="global" v-else-if="item.callback==='DashView'"></DashView>
+          <!-- 通知管理 -->
+          <NotifyView :model="item.data" :global="global" v-else-if="item.callback==='NotifyView'"></NotifyView>
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -75,12 +79,14 @@
 <script>
 import _ from 'lodash';
 import $ from 'jquery';
-import EventList from '../components/EventList.vue';
-import DiagnosisView from '../components/diagnosis/DiagnosisView';
-import SmartGroupView from '../components/diagnosis/SmartGroupView';
-import EntityView from '../components/diagnosis/EntityView';
-import CtmenuKeepView from '../components/contextmenu/CtmenuKeepView';
+import EventList from './EventList.vue';
+import DiagnosisView from './diagnosis/DiagnosisView';
+import SmartGroupView from './diagnosis/SmartGroupView';
+import EntityView from './diagnosis/EntityView';
+import CtmenuKeepView from './contextmenu/CtmenuKeepView';
 import SeverityView from './utils/SeverityView';
+import DashView from './dashview/DashView';
+import NotifyView from './event/NotifyView';
 
 export default {
   name: "MainView",
@@ -93,7 +99,9 @@ export default {
     CtmenuKeepView,
     SmartGroupView,
     EntityView,
-    SeverityView
+    SeverityView,
+    DashView,
+    NotifyView
   },
   data() {
     return {

@@ -74,7 +74,7 @@
                         <div class="tool">
                             <div>视图定制</div>
                             <p>
-                                <el-button type="text" @click="onContextmenuKeep">
+                                <el-button type="text" @click="onToolsKeep({id:'dashView',name:'视图定制',callback:'DashView'})">
                                     <span class="el-icon-s-platform" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
@@ -82,7 +82,7 @@
                         <div class="tool">
                             <div>通知管理</div>
                             <p>
-                                <el-button type="text" @click="onContextmenuKeep">
+                                <el-button type="text" @click="onToolsKeep({id:'notifyView',name:'通知管理',callback:'NotifyView'})">
                                     <span class="el-icon-phone" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
@@ -90,7 +90,7 @@
                         <div class="tool">
                             <div>告警屏蔽</div>
                             <p>
-                                <el-button type="text" @click="onContextmenuKeep">
+                                <el-button type="text" @click="onToolsKeep({id:'shieldView',name:'告警屏蔽',callback:'ShieldView'})">
                                     <span class="el-icon-error" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
@@ -98,7 +98,7 @@
                         <div class="tool">
                             <div>右键工具</div>
                             <p>
-                                <el-button type="text" @click="onContextmenuKeep">
+                                <el-button type="text" @click="onToolsKeep({id:'contextMenu',name:'右键工具',callback:'CtmenuKeepView'})">
                                     <span class="el-icon-menu" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
@@ -148,6 +148,8 @@
                 :row-class-name="rowClassName"                
                 @row-contextmenu="onRowContextmenu"
                 @row-dblclick="onRowContextmenu"
+                @current-change="onCurrentChange"
+                @cell-click="onCellClick"
                 ref="table"
                 class="event-list"
                 style="width:100%;">
@@ -291,7 +293,10 @@ export default {
                     // This is how the component is able to find each menu item. Useful if you use non-recommended markup
                     itemSelector: ['.custom-item-class'],
                 },
-                summary: null
+                summary: null,
+                orderBy: [['severity','vtime'],['desc','desc']],
+                origin: -1, // 这里给一个变量作为起点
+                pin: false, 
             },
             info: [],
             control:{
@@ -407,7 +412,15 @@ export default {
         
         this.initContextMenu();
 
-        
+        document.onkeydown = ()=> {
+            let key = window.event.keyCode;
+            if (key === 16) {
+                this.dt.pin = true;
+            }
+        };
+        document.onkeyup = ()=> {
+            this.dt.pin = false;
+        };
     },
     mounted(){  
         this.initData();
@@ -461,8 +474,14 @@ export default {
                 }
             }, 1000);
         },
+        /* 
+            重新加载数据 
+            重置样式
+        */
         onRefresh(){
-            
+            this.onCellClick();
+            this.$refs.table.clearSort();
+            this.initData();
         },
         pickFtype(key){
 
@@ -492,7 +511,12 @@ export default {
             })});
             
             _.extend(this.dt, { rows: [] });
-            _.extend(this.dt, { rows: this.model.rows });
+            /* 
+             *   1、默认排序
+             *   2、配合多选
+             */
+            let rows = _.map(_.orderBy(this.model.rows,this.dt.orderBy[0], this.dt.orderBy[1]),(v,index)=>{  v.index = index; return v; });
+            _.extend(this.dt, { rows: rows });
             
         },
         rowClassName({rowIndex}){
@@ -500,7 +524,7 @@ export default {
         },
         // 监听鼠标操作 停止自动刷新
         onMainClick(){
-            this.$root.control.ifRefresh=0;
+            this.control.ifRefresh = false;
         },
         onSelectionChange(val) {
             this.dt.selected = val;
@@ -519,10 +543,25 @@ export default {
                     window.open(menu.url,menu.target?menu.target:'_blank');
                 } else if(menu.type === 'action'){
                      if (menu.callback != "") {
-                        let term =  JSON.stringify({id:row.id, value: menu.value}) ;
+                        
+                        let ids = [row.id];
+                        let rows = [row];
+
+                        // 多选
+                        if(!_.isEmpty(this.dt.selected)){
+                            ids = _.values(_.map(this.dt.selected,'id'));
+                            rows = this.dt.selected;
+                        }
+
+                        let term =  JSON.stringify({id: ids, value: menu.value}) ;
+                        
                         let fn = new Function('term',menu.callback);
                         fn(term);
-                        row.status = menu.value;
+
+                        _.forEach(rows,(v)=>{
+                            v.status = menu.value;
+                        })
+                        
                      }
                 } else if(menu.type === 'component'){
                      this.$emit("onDiagnosis",{row:row,menu:menu});
@@ -532,16 +571,38 @@ export default {
             }
             this.dt.contextmenu.show = !this.dt.contextmenu.show;
         },
-        onAction(evt){
-            if(_.isEmpty(this.dt.selected)){
-                this.$message({
-                    type: "info",
-                    message: "请选择事件！"
-                });
-                return false;
+        /* shift 多选 */
+        onCurrentChange(row,oldRow){
+            const data = this.dt.rows;
+            let origin = oldRow.index;
+            let endIdx = row.index;
+            if (this.dt.pin) { // 判断按住
+                const sum = Math.abs(origin - endIdx) + 1;// 终点
+                const min = Math.min(origin, endIdx);// 起点
+                let i = 0;
+                while (i < sum) {
+                    const index = min + i;
+                    console.log(sum,min,index)
+                    this.$refs.table.toggleRowSelection(data[index], true);
+                    this.dt.selected.push(data[index]);
+                    $(`.el-table .row-${index}`).addClass("current-row");
+                    i++;
+                }
+                _.delay(()=>{
+                    $(`.el-table .row-${min}`).addClass("current-row");
+                },50)
+            } else {
+                // this.dt.origin = row.index; // 没按住记录起点
+                this.dt.selected = [];
             }
-
-            this.$root.action( {list: this.dt.selected, action:evt});
+        },
+        /* shift多选后，单点恢复样式 */
+        onCellClick(){
+            if (!this.dt.pin) {
+                this.$refs.table.clearSelection();
+                this.dt.selected = [];
+                $(`.el-table .current-row`).removeClass("current-row");
+            }
         },
         onToggle(){
             this.$root.toggleModel(_.without(['view-normal','view-tags'],window.EVENT_VIEW).join(""));
@@ -609,18 +670,6 @@ export default {
 
                 }
             });
-        },
-        /* 右键菜单 */
-        onContextmenuKeep(){
-            let row = {id:_.now()};
-            let menu = {
-                "name": "菜单维护", 
-                "icon": "",
-                "type": "component",
-                "callback": "CtmenuKeepView",
-                "subMenu":[]
-                };
-            this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row, menu);
         },
         /* 倒计时刷新 */
         onCountdownTimeRefresh(val){
@@ -797,6 +846,14 @@ export default {
         overflow: auto;
         position: relative;
         height: calc(100% - 50px)!important;
+    }
+
+    /* 多选选中文字状态 */
+    .cell-user-select{
+        -webkit-user-select:none;/*谷歌 /Chrome*/
+        -moz-user-select:none; /*火狐/Firefox*/
+        -ms-user-select:none;    /*IE 10+*/
+        user-select:none;
     }
 
 </style>
