@@ -30,18 +30,9 @@ const m3 = require("@cnwangzd/m3js");
 Vue.prototype.m3 = m3;
 window.m3 = m3;
 
-if(process.env.NODE_ENV === "development"){
-  m3.connect("47.92.151.165",8080,"wecise","admin","admin");
-  // m3.connect("18.188.85.82",8080,"wecise","admin","admin").then( (rtn)=>{
-  //   console.log(rtn);
-  // })
-} else {
-  m3.init();
-}
+let init = async function(){
 
-setTimeout(()=>{
-
-  m3.lang().then( (rtn)=>{
+  await m3.lang().then( (rtn)=>{
     
     window.global = m3.global;
 
@@ -51,7 +42,7 @@ setTimeout(()=>{
     });
 
     // ElementUI Setup
-    ElementUI.Tooltip.props.openDelay.default = 800;
+    ElementUI.Tooltip.props.openDelay.default = 1000;
 
     Vue.prototype.$ELEMENT = { 
       size: 'mini',
@@ -63,5 +54,30 @@ setTimeout(()=>{
       i18n
     }).$mount('#app')
   })
+};
 
-},2000)
+
+if(process.env.NODE_ENV === "development"){
+  /* env1 */
+  m3.connect("http","47.92.151.165",8080,"wecise","admin","admin").then(()=>{
+    setTimeout(()=>{
+      init();
+    },500)
+    
+  }).catch((err)=>{
+    console.log(err);
+  });
+  /* env2 */
+  /* m3.connect("https","18.188.85.82",8443,"wecise","admin","admin").then( ()=>{
+    setTimeout(()=>{
+      init();
+    },2000)
+  }).catch((err)=>{
+    console.log(err);
+  }); */
+} else {
+  m3.init();
+  setTimeout(()=>{
+    init();
+  },500)
+}

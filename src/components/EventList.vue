@@ -2,11 +2,11 @@
     <el-container :style="dtContainerHeight">
         <el-header v-if="dtOptions.header">
             
-            <el-tooltip :content="$t('event.actions.runningMode')"  placement="top">
+            <!--el-tooltip :content="$t('event.actions.runningMode')"  placement="top">
                 <el-button type="text" @click="onToggle">
                     <span class="el-icon-notebook-2" style="cursor:pointer;font-size:16px;"></span>
                 </el-button>
-            </el-tooltip>
+            </el-tooltip-->
 
             <el-tooltip :content="$t('event.actions.refresh')"  placement="top">
                 <el-button type="text" @click="onRefresh">
@@ -87,14 +87,14 @@
                                 </el-button>
                             </p>
                         </div>
-                        <div class="tool">
+                        <!--div class="tool">
                             <div>告警屏蔽</div>
                             <p>
                                 <el-button type="text" @click="onToolsKeep({id:'shieldView',name:'告警屏蔽',callback:'ShieldView'})">
                                     <span class="el-icon-error" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
-                        </div>
+                        </div-->
                         <div class="tool">
                             <div>右键工具</div>
                             <p>
@@ -104,13 +104,29 @@
                             </p>
                         </div>
                         <div class="tool">
+                            <div>规则管理</div>
+                            <p>
+                                <el-button type="text" @click="onToolsKeep({id:'ruleView',name:'规则管理',callback:'RuleView'})">
+                                    <span class="el-icon-notebook-2" style="cursor:pointer;font-size:16px;"></span>
+                                </el-button>
+                            </p>
+                        </div>
+                        <div class="tool">
+                            <div>任务管理</div>
+                            <p>
+                                <el-button type="text" @click="onToolsKeep({id:'jobView',name:'任务管理',callback:'JobView'})">
+                                    <span class="el-icon-date" style="cursor:pointer;font-size:16px;"></span>
+                                </el-button>
+                            </p>
+                        </div>
+                        <!--div class="tool">
                             <div>实体抽取</div>
                             <p>
                                 <el-button type="text" @click="onToolsKeep({id:'entityEtl',name:'实体抽取',callback:'EntityView'})">
                                     <span class="el-icon-coin" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
-                        </div>
+                        </div-->
                         <!-- 一般工具 -->
                         <div class="tool">
                             <div>级别定义</div>
@@ -123,7 +139,7 @@
                         <div class="tool">
                             <div>选择导出</div>
                             <p>
-                                <el-dropdown style="cursor:pointer;font-size:16px;">
+                                <el-dropdown style="cursor:pointer;font-size:16px;" @command="onExport">
                                     <span class="el-icon-download"></span>
                                     <el-dropdown-menu slot="dropdown">
                                         <el-dropdown-item command="csv">CSV</el-dropdown-item>
@@ -170,16 +186,17 @@
                         </el-container>
                     </template>
                 </el-table-column-->
-                <el-table-column 
-                    :prop="item.field"
-                    :label="item.title" 
-                    sortable 
-                    show-overflow-tooltip
-                    v-for="item in dt.columns"
-                    :key="item.id"
-                    :width="item.width"
-                    :formatter="item.render">
-                </el-table-column>
+                <template v-for="item in dt.columns">
+                    <el-table-column 
+                        :prop="item.field"
+                        :label="item.title" 
+                        sortable 
+                        show-overflow-tooltip
+                        :key="item.id"
+                        :width="item.width"
+                        :formatter="item.render">
+                    </el-table-column>
+                </template>
                 <el-table-column label="标签" prop="tags" width="200">
                     <template slot-scope="scope">
                         <div style="height:30px;line-height:30px;">
@@ -246,6 +263,8 @@ import jsPanel from 'jspanel4/dist/jspanel.min.js';
 import 'jspanel4/dist/jspanel.min.css';
 import TagView from './tags/TagView';
 
+const TableExport = require("tableexport");
+
 window.moment = require("moment");
 
 export default {
@@ -260,6 +279,7 @@ export default {
         TagView
     },
     data(){
+   
         return {
             dt:{
                 options: {
@@ -608,31 +628,36 @@ export default {
             this.$root.toggleModel(_.without(['view-normal','view-tags'],window.EVENT_VIEW).join(""));
         },
         onExport(type){
-    
-            let options = {
-                csvEnclosure: '',
-                csvSeparator: ', ',
-                csvUseBOM: true,
-                ignoreColumn: [0,1],
-                fileName: `tableExport_${this.moment().format("YYYY-MM-DD HH:mm:ss")}`,
-                type: type,
-            };
+            try{
+                let options = {
+                    csvEnclosure: '',
+                    csvSeparator: ', ',
+                    csvUseBOM: true,
+                    ignoreCols: [0,1],
+                    filename: `Export_${this.moment().format("YYYY-MM-DD HH:mm:ss")}`,
+                    type: type,
+                    exportButtons: false,
+                    bootstrap: true
+                };
 
-            if(type === 'png'){
-                $(this.$refs.table.$el.querySelector("table.el-table__body")).tableExport(options);
-            } else if(type === 'pdf'){
-                _.extend(options, {
-                    jspdf: {orientation: 'l',
-                            format: 'a3',
-                            margins: {left:10, right:10, top:20, bottom:20},
-                            autotable: {styles: {fillColor: 'inherit', 
-                                                    textColor: 'inherit'},
-                                        tableWidth: 'auto'}
-                    }
-                });
-                $(this.$refs.table.$el.querySelectorAll("table")).tableExport(options);
-            } else {
-                $(this.$refs.table.$el.querySelectorAll("table")).tableExport(options);
+                if(type === 'png'){
+                    $(this.$refs.table.$el.querySelector("table.el-table__body")).tableExport(options);
+                } else if(type === 'pdf'){
+                    _.extend(options, {
+                        jspdf: {orientation: 'l',
+                                format: 'a3',
+                                margins: {left:10, right:10, top:20, bottom:20},
+                                autotable: {styles: {fillColor: 'inherit', 
+                                                        textColor: 'inherit'},
+                                            tableWidth: 'auto'}
+                        }
+                    });
+                    $(this.$refs.table.$el.querySelectorAll("table")).tableExport(options);
+                } else {
+                    new TableExport(this.$refs.table.$el,options);
+                }
+            } catch(err){
+                console.log(err)
             }
             
         },
@@ -824,28 +849,6 @@ export default {
     .tool-box .tool:hover{
         cursor: pointer;
         background: rgba(125, 202, 253,.2);
-    }
-
-
-    .event-list .el-table {
-        height:100%!important;
-        overflow: hidden!important;
-    }
-
-    .event-list .el-table--small td, 
-    .event-list .el-table--small th {
-        padding: 4px 0;
-    }
-
-    .event-list .el-table .cell {
-        white-space: nowrap!important;
-        line-height: 18px!important;
-    }
-
-    .event-list .el-table .el-table__body-wrapper {
-        overflow: auto;
-        position: relative;
-        height: calc(100% - 50px)!important;
     }
 
     /* 多选选中文字状态 */

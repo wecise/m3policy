@@ -70,6 +70,10 @@
           <DashView :model="item.data" :global="global" v-else-if="item.callback==='DashView'"></DashView>
           <!-- 通知管理 -->
           <NotifyView :model="item.data" :global="global" v-else-if="item.callback==='NotifyView'"></NotifyView>
+          <!-- 规则管理 -->
+          <RuleView :model="item.data" :global="global" v-else-if="item.callback==='RuleView'"></RuleView>
+          <!-- 任务管理 -->
+          <JobView :model="item.data" :global="global" v-else-if="item.callback==='JobView'"></JobView>
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -86,7 +90,9 @@ import EntityView from './diagnosis/EntityView';
 import CtmenuKeepView from './contextmenu/CtmenuKeepView';
 import SeverityView from './utils/SeverityView';
 import DashView from './dashview/DashView';
-import NotifyView from './event/NotifyView';
+import NotifyView from './notify/NotifyView';
+import RuleView from './rule/RuleView';
+import JobView from './job/JobView';
 
 export default {
   name: "MainView",
@@ -101,7 +107,9 @@ export default {
     EntityView,
     SeverityView,
     DashView,
-    NotifyView
+    NotifyView,
+    RuleView,
+    JobView
   },
   data() {
     return {

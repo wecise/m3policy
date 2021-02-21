@@ -240,4 +240,43 @@ export default {
     -ms-user-select:none;    /*IE 10+*/
     user-select:none;
 }
+
+.el-dialog{
+      width: 90vw!important;
+      height:80vh;
+  }
+
+  /* Event Console Table */
+  .el-table {
+        height:100%!important;
+        overflow: hidden!important;
+    }
+
+    .el-table--small td, 
+    .el-table--small th {
+        padding: 4px 0;
+    }
+
+    .el-table .cell {
+        white-space: nowrap!important;
+        line-height: 18px!important;
+    }
+
+    .el-table .el-table__body-wrapper {
+        overflow: auto;
+        position: relative;
+        height: calc(100% - 50px)!important;
+    }
+
+    /* el-checkbox */
+    .el-checkbox__label {
+        font-size: 12px!important;
+    }
+
+    /* el-tabs */
+    .el-tabs--border-card>.el-tabs__header {
+      background-color: #f2f2f2!important;
+      border-bottom: unset!important;
+      border-top: 1px solid #dddddd;
+    }
 </style>

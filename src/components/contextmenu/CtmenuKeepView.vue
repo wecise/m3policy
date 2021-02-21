@@ -82,7 +82,6 @@
 
 <script>
 import _ from 'lodash';
-const m3 = require("@cnwangzd/m3js");
 
 export default {
   name: "CtmenuKeepView",
@@ -172,7 +171,7 @@ export default {
   },
   created(){
     this.load();
-    this.auth = m3.auth.signedUser;
+    this.auth = this.m3.auth.signedUser;
   },
   methods: {
     onMouseEnter(data){
@@ -204,7 +203,7 @@ export default {
 
     },
     load(){
-         m3.callFS("/matrix/eventConsole/getContextMenu.js").then( (rtn)=>{
+        this.m3.callFS("/matrix/eventConsole/getContextMenu.js").then( (rtn)=>{
             this.tree.list = _.filter(rtn.message,(v)=>{
                 return v.name;
             });
