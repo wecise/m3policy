@@ -115,7 +115,7 @@ export default {
                 list: []
             },
             theme: {
-                value: "merbivore",
+                value: "chrome",
                 list: [
                     {
                     name: "亮色",
@@ -189,12 +189,9 @@ export default {
     },
     onEditorInit(){
         require("brace/ext/language_tools"); //language extension prerequsite...
-        require("brace/mode/html");
-        require("brace/mode/toml");
-        require("brace/mode/javascript"); //language
-        require("brace/mode/less");
-        require("brace/theme/chrome");
-        require("brace/snippets/javascript"); //snippet
+        require(`brace/mode/${this.editor.lang.value}`); //language
+        require(`brace/snippets/${this.editor.lang.value}`); //snippet
+        require(`brace/theme/${this.editor.theme.value}`); //language
     },
     add(){
 

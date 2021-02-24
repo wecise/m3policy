@@ -2,13 +2,13 @@
 
     <el-container>
         <el-header style="height:30px;line-height:30px;text-align:right;">
-            <el-tooltip content="重置测试内容" open-delay="800">
+            <el-tooltip content="重置测试内容">
                 <el-button type="text" @click="onReset" icon="el-icon-refresh"></el-button>
             </el-tooltip>
-            <el-tooltip content="发送测试内容" open-delay="800">
+            <el-tooltip content="发送测试内容">
                 <el-button type="text" @click="onSubmit" icon="el-icon-s-promotion"></el-button>
             </el-tooltip>
-            <el-tooltip content="文件类型" open-delay="800">
+            <el-tooltip content="文件类型">
                 <el-dropdown @command="onHandleCommand" trigger="click" style="margin-left:10px;">
                     <span class="el-dropdown-link">
                         <i class="el-icon-document"></i>
@@ -51,7 +51,7 @@ export default {
                     list: []
                 },
                 theme: {
-                    value: "merbivore",
+                    value: "chrome",
                     list: [
                         {
                         name: "亮色",
@@ -118,10 +118,14 @@ export default {
         
     },
     methods: {
+        onReset(){
+            this.editor.content = "";
+        },
         onEditorInit(){
             require("brace/ext/language_tools"); //language extension prerequsite...
-            require("brace/mode/lua");
-            require("brace/snippets/javascript"); //snippet
+            require(`brace/mode/${this.editor.lang.value}`); //language
+            require(`brace/snippets/${this.editor.lang.value}`); //snippet
+            require(`brace/theme/${this.editor.theme.value}`); //language
         },
         onSubmit(){
             let editor = this.$refs.editorRef.editor;

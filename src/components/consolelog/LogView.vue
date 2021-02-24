@@ -223,8 +223,9 @@ export default {
     methods:{
         onEditorInit(){
             require("brace/ext/language_tools"); //language extension prerequsite...
-            require("brace/mode/lua");
-            require("brace/snippets/javascript"); //snippet
+            require(`brace/mode/${this.editor.lang.value}`); //language
+            require(`brace/snippets/${this.editor.lang.value}`); //snippet
+            require(`brace/theme/${this.editor.theme.value}`); //language
         },
         onLoad(){
             let param = {type:this.logType,name:this.fullname.replace(/\/script/g,""),param:this.consolelog};

@@ -39,8 +39,8 @@
             <SplitArea :size="70" :minSize="0" style="overflow:hidden;">
                 <el-container>
                     <el-main style="padding:0 0px 0 20px;overflow:hidden;">  
-                        <el-tabs value="list" type="border-card">
-                            <el-tab-pane name="list">
+                        <el-tabs value="listByGroup" type="border-card">
+                            <el-tab-pane name="listByGroup">
                                 <span slot="label">表</span>
                                 <EventList ref="eventList" 
                                     :model="dt" 
@@ -49,7 +49,7 @@
                                     @onDiagnosis="onDiagnosis">
                                 </EventList> 
                             </el-tab-pane>
-                            <el-tab-pane name="graph">
+                            <el-tab-pane name="graphByGroup">
                                 <span slot="label">图</span>
                                 <GraphView :model="graph.model"></GraphView>
                             </el-tab-pane>

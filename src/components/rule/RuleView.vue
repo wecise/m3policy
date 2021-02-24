@@ -57,7 +57,7 @@
                                             </el-dropdown-menu>
                                         </el-dropdown>
                                     </span>
-                                    <EditView :model="item.model" :ref="'EditView-'+item.name" @editor:change="(v)=>{control.save.show=v;saveStatus();}"></EditView>
+                                    <EditRuleView :model="item.model" :ref="'EditRuleView-'+item.name" @editor:change="(v)=>{control.save.show=v;saveStatus();}"></EditRuleView>
                                 </el-tab-pane>
                             </el-tabs>
                             
@@ -110,6 +110,9 @@
             当前编辑：{{configTabs.activeIndex}}  
             <el-divider direction="vertical"></el-divider>  
             打开：{{configTabs.tabs.length}}
+            <span style="float:right;" v-if="configTabs.activeIndex">
+                <el-button type="text" icon="el-icon-tickets" @click="configDegug(configTabs.activeIndex)"></el-button>
+            </span>
         </el-footer>
     </el-container>
 </template>
@@ -117,7 +120,7 @@
 <script>
 import _ from 'lodash';
 import TreeView from './TreeView';
-import EditView from './EditView';
+import EditRuleView from './EditRuleView';
 
 
 export default {
@@ -127,7 +130,7 @@ export default {
     },
     components:{
         TreeView,
-        EditView
+        EditRuleView
     },
     data() {
         return {
@@ -497,7 +500,7 @@ export default {
             }); */
         },
         configDegug(name){
-            this.$refs[`EditView-${name}`][0].debug.show = !this.$refs[`EditView-${name}`][0].debug.show
+            this.$refs[`EditRuleView-${name}`][0].debug.show = !this.$refs[`EditRuleView-${name}`][0].debug.show
         }
     }
 };
@@ -514,6 +517,7 @@ export default {
       height:30px!important;
       line-height: 30px;
       border-top:1px solid #ffffff;
+      color:#888888;
   }
 
   .el-tabs--border-card {

@@ -186,13 +186,13 @@
                         </el-container>
                     </template>
                 </el-table-column-->
-                <template v-for="item in dt.columns">
+                <template v-for="(item,index) in dt.columns">
                     <el-table-column 
                         :prop="item.field"
                         :label="item.title" 
                         sortable 
                         show-overflow-tooltip
-                        :key="item.id"
+                        :key="index"
                         :width="item.width"
                         :formatter="item.render">
                     </el-table-column>
@@ -208,11 +208,11 @@
         </el-main>
         <el-footer>
             <div class="toolbar">
-                <el-button-group v-if="global">
+                <el-button-group v-if="global && dt.summary">
                     <el-button
                         type="default"
                         v-for="(btn,key) in global.register.event.severity"
-                        :key="btn[1]"
+                        :key="key"
                         :style="btn[2] | severityBtnStyle(dt.summary[key],dtOptions)">
                         {{ btn[1] }} <span style="font-variant: all-small-caps;">{{btn[0]}}</span> {{ dt.summary[key]?dt.summary[key].length:0 }}
                     </el-button>
@@ -230,25 +230,28 @@
             v-show="dt.contextmenu.show">
             <li>
                 <el-link @click.prevent="onContextmenuClick(data,null)" :underline="false"> 
-                    <span> {{data.id}}</span>
+                    <span v-if="data"> {{data.id}}</span>
                     <span style="position: absolute;top: 4px;left: 10px;">
                         <el-button
                             type="default"
-                            :style="'padding: 3px;border-radius: 15px;color:#ffffff;background:'+ global.register.event.severity[data.severity][2]">
+                            :style="'padding: 3px;border-radius: 15px;color:#ffffff;background:'+ global.register.event.severity[data.severity][2]"
+                            v-if="global && data">
                         </el-button>
                     </span>
                 </el-link>
             </li>
             <el-divider></el-divider>
-            <li :key="index" v-for="(menu,index) in dt.contextmenu.list">
-                <div v-if="menu.name && menu.type==='tag'" style="height:40px;line-height:40px;">
-                    <TagView domain='event' :model.sync="data.tags" :id="data.id" :limit="4"></TagView>
-                </div>
-                <el-link @click.prevent="onContextmenuClick(data,menu)" :underline="false" v-else-if="menu.name" :disabled="data.status==menu.value">
-                    {{ menu.name }}
-                </el-link>
-                <el-divider v-else></el-divider>
-            </li>
+            <template v-for="(menu,index) in dt.contextmenu.list">
+                <li :key="index" v-if="data">
+                    <div v-if="menu.name && menu.type==='tag'" style="height:40px;line-height:40px;">
+                        <TagView domain='event' :model.sync="data.tags" :id="data.id" :limit="4"></TagView>
+                    </div>
+                    <el-link @click.prevent="onContextmenuClick(data,menu)" :underline="false" v-else-if="menu.name" :disabled="data.status==menu.value">
+                        {{ menu.name }}
+                    </el-link>
+                    <el-divider v-else></el-divider>
+                </li>
+            </template>
         </vue-context>
     </el-container>
 </template>
@@ -443,11 +446,10 @@ export default {
         };
     },
     mounted(){  
-        this.initData();
-
+        
         window.global = this.global;
 
-        this.$refs.table.bodyWrapper.addEventListener('scroll', (res) => {
+        /* this.$refs.table.bodyWrapper.addEventListener('scroll', (res) => {
 
             let height = res.target;
             let clientHeight = height.clientHeight;
@@ -459,7 +461,7 @@ export default {
                 console.log(scrollHeight);
             }
 
-        },true);
+        },true); */
 
     },
     methods: {
@@ -516,27 +518,31 @@ export default {
         },
         initData(){
             
-            _.extend(this.dt, {columns: _.map(this.model.template || this.model.columns, function(v){
-                
-                if(_.isUndefined(v.visible)){
-                    _.extend(v, { visible: true });
-                }
+            try{
+                _.extend(this.dt, {columns: _.map(this.model.template || this.model.columns, function(v){
+                    
+                    if(_.isUndefined(v.visible)){
+                        _.extend(v, { visible: true });
+                    }
 
-                if(!v.render){
-                    return v;
-                } else {
-                    return _.extend(v, { render: eval(v.render) });
-                }
+                    if(!v.render){
+                        return v;
+                    } else {
+                        return _.extend(v, { render: eval(v.render) });
+                    }
+                    
+                })});
                 
-            })});
-            
-            _.extend(this.dt, { rows: [] });
-            /* 
-             *   1、默认排序
-             *   2、配合多选
-             */
-            let rows = _.map(_.orderBy(this.model.rows,this.dt.orderBy[0], this.dt.orderBy[1]),(v,index)=>{  v.index = index; return v; });
-            _.extend(this.dt, { rows: rows });
+                _.extend(this.dt, { rows: [] });
+                /* 
+                *   1、默认排序
+                *   2、配合多选
+                */
+                let rows = _.map(_.orderBy(this.model.rows,this.dt.orderBy[0], this.dt.orderBy[1]),(v,index)=>{  v.index = index; return v; });
+                _.extend(this.dt, { rows: rows });
+            } catch(err){
+                console.log(err)
+            }
             
         },
         rowClassName({rowIndex}){
@@ -593,27 +599,33 @@ export default {
         },
         /* shift 多选 */
         onCurrentChange(row,oldRow){
-            const data = this.dt.rows;
-            let origin = oldRow.index;
-            let endIdx = row.index;
-            if (this.dt.pin) { // 判断按住
-                const sum = Math.abs(origin - endIdx) + 1;// 终点
-                const min = Math.min(origin, endIdx);// 起点
-                let i = 0;
-                while (i < sum) {
-                    const index = min + i;
-                    console.log(sum,min,index)
-                    this.$refs.table.toggleRowSelection(data[index], true);
-                    this.dt.selected.push(data[index]);
-                    $(`.el-table .row-${index}`).addClass("current-row");
-                    i++;
+            try{
+                if(!oldRow) return false;
+
+                const data = this.dt.rows;
+                let origin = oldRow.index;
+                let endIdx = row.index;
+                if (this.dt.pin) { // 判断按住
+                    const sum = Math.abs(origin - endIdx) + 1;// 终点
+                    const min = Math.min(origin, endIdx);// 起点
+                    let i = 0;
+                    while (i < sum) {
+                        const index = min + i;
+                        
+                        this.$refs.table.toggleRowSelection(data[index], true);
+                        this.dt.selected.push(data[index]);
+                        $(`.el-table .row-${index}`).addClass("current-row");
+                        i++;
+                    }
+                    setTimeout(()=>{
+                        $(`.el-table .row-${min}`).addClass("current-row");
+                    },50)
+                } else {
+                    // this.dt.origin = row.index; // 没按住记录起点
+                    this.dt.selected = [];
                 }
-                _.delay(()=>{
-                    $(`.el-table .row-${min}`).addClass("current-row");
-                },50)
-            } else {
-                // this.dt.origin = row.index; // 没按住记录起点
-                this.dt.selected = [];
+            } catch(err){
+                console.log(err);
             }
         },
         /* shift多选后，单点恢复样式 */

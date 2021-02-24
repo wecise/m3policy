@@ -22,7 +22,7 @@
       <el-main ref="mainView" style="padding:0px 20px;">
           <!-- <el-image style="width: 80px; height: 80px;position: absolute;top:5px;left:5px; z-index: 100;" :src="model | pickIcon" fit="scale-down" @error="onErrorPickIcon" v-if="model"></el-image> -->
           <el-form :model="model" ref="form" label-width="140px" :label-position="labelPosition">
-              <el-form-item :label="item.label" v-for="item in model.components">
+              <el-form-item :label="item.label" :key="index" v-for="(item,index) in model.components">
                   <span v-if="item.visible">
                     <el-select v-model="item.data" :placeholder="item.placeholder" v-if="item.type==='select'">
                         <el-option v-for="data in item.data" :key="data">{{data}}</el-option>
@@ -31,7 +31,7 @@
                     <el-input-number v-model="item.data" :placeholder="item.placeholder" v-else-if="item.type==='input-number'"></el-input-number>
                     <el-input type="textarea" autosize v-model="item.data" :placeholder="item.placeholder" v-else-if="item.type==='input-textarea'"></el-input>
                     <TagView domain='event' :model.sync="item.data" :id="model.dataId" limit="4" v-else-if="item.type==='tag'">{{item.data}}</TagView>
-                    <el-input v-model="item.data" :placeholder="item.placeholder" v-else="item.type==='input'"></el-input>
+                    <el-input v-model="item.data" :placeholder="item.placeholder" v-else></el-input>
                   </span>
               </el-form-item>
           </el-form>
@@ -65,7 +65,7 @@ export default {
       }
   },
   filters: {
-      pickStyle(h){
+      pickStyle(){
           //return `height:calc(100vh - ${h}px);background: #ffffff;`;
       },
       pickIcon(evt){
@@ -81,7 +81,7 @@ export default {
       this.loadForm();
   },
   methods: {
-      onErrorPickIcon(e){
+      onErrorPickIcon(){
           _.extend(this.model,{path:"/matrix"});
       },
       loadForm(){

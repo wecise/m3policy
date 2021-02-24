@@ -1,9 +1,9 @@
 <template>
   <el-container class="m3">
     <el-header>
-        <el-row type="flex" :gutter="0">
+        <el-row type="flex" :gutter="0" v-if="auth">
             <el-col :span="19">
-                <el-link href="/" :underline="false" v-if="auth">
+                <el-link href="/" :underline="false">
                   <el-image :src="auth.Company.logo" fit="contain"></el-image>
                 </el-link>
                 <span style="position: absolute;left: 40px;">{{auth.Company.title}}</span>
@@ -86,7 +86,7 @@ export default {
       this.global = this.m3.global;
       this.auth = this.m3.auth.signedUser;
       this.m3.setTitle(this.auth);
-    },500)
+    },600)
   },
   methods: {
     onSelect(key) {
@@ -243,7 +243,7 @@ export default {
 
 .el-dialog{
       width: 90vw!important;
-      height:80vh;
+      height:85vh;
   }
 
   /* Event Console Table */
@@ -279,4 +279,5 @@ export default {
       border-bottom: unset!important;
       border-top: 1px solid #dddddd;
     }
+
 </style>

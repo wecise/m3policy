@@ -1,4 +1,5 @@
 # m3Event
+A small app for M3 platform.
 
 ## Project setup
 ```

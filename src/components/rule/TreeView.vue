@@ -155,7 +155,7 @@ export default {
             }
         }
     },
-    created(){
+    mounted(){
         this.initData();
     },
     methods: {

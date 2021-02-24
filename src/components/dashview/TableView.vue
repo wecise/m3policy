@@ -4,7 +4,7 @@
       :data="dt.rows"
       border
       stripe
-      style="width: 100%;height:30vh!important;">
+      style="width: 100%;height:20vh!important;">
       <template v-for="(item,index) in dt.columns">
         <el-table-column
             :key="index"
