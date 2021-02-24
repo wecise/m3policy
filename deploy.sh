@@ -1,4 +1,5 @@
-#! /bin/sh
+#! /bin/bash
+set -euo
 
 host="47.92.151.165:8080"
 company="wecise"
@@ -7,14 +8,14 @@ target="app.zip"
 
 echo
 echo '应用发布开始**********************************************************************'
-echo 
+echo
 echo '发布地址：'@${host}
-echo 
+echo
 echo '发布租户：'${company}
-echo 
+echo
 
 curl --location -u "${auth}" -X POST "http://$host/fs/import?issys=true" --form "uploadfile=@${target}"
 
-echo 
+echo
 rm -rf ${target}
 echo '应用发布结束**********************************************************************';
