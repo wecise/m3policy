@@ -1,5 +1,14 @@
 # m3Event
-A small app for M3 platform.
+A small app for M³ platform.
+
+# Features
+### Event Console
+### Smart Group For Event
+### Event Rule
+### Job
+### View
+### Tools
+### Graph of entity from event
 
 ## Project setup
 ```
