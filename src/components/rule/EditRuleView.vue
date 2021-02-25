@@ -3,7 +3,7 @@
         <el-main>
             <Split direction="vertical" :gutterSize="5">
                 <SplitArea :size="debug.show?55:100" :minSize="0" style="overflow:hidden;">
-                    <editor
+                    <Editor
                         v-model="model.value"
                         @init="onEditorInit"
                         :lang="editor.lang.value"
@@ -12,7 +12,7 @@
                         height="100%"
                         style="border:1px solid #f2f2f2;"
                         ref="editorRef"
-                    ></editor>
+                    ></Editor>
                 </SplitArea>
                 <SplitArea :size="debug.show?45:0" :minSize="0" style="overflow:hidden;">
                     <el-tabs v-model="debug.tabs.activeIndex" type="border-card" closable>
@@ -44,7 +44,7 @@ export default {
         model: Object
     },
     components:{
-        editor:require("vue2-ace-editor"),
+        Editor:require("vue2-ace-editor"),
         LogView,
         TestView
     },

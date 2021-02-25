@@ -1,6 +1,7 @@
 #! /bin/sh
 
 host="47.92.151.165:8080"
+#host="18.188.85.82:8080"
 company="wecise"
 auth="${company}.admin:admin"
 target="app.zip"

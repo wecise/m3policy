@@ -3,12 +3,12 @@ A small app for M³ platform.
 
 # Features
 ### Event Console
-### Smart Group For Event
-### Event Rule
+### Group
+### Rule
 ### Job
 ### View
 ### Tools
-### Graph of entity from event
+### Entity Graph
 
 ## Project setup
 ```

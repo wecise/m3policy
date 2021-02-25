@@ -258,7 +258,5 @@ export default {
     .el-container{
         margin: -15px!important;
     }
-    .el-checkbox__label {
-        font-size: 12px!important;
-    }
+    
 </style>

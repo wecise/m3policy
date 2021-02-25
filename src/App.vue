@@ -1,5 +1,5 @@
 <template>
-  <el-container class="m3">
+  <el-container class="m3 event-console">
     <el-header>
         <el-row type="flex" :gutter="0" v-if="auth">
             <el-col :span="19">

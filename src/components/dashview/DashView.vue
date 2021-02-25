@@ -29,7 +29,15 @@
           </div>
       </el-card>
     </el-main>
-    <EditView :show.sync="edit.show" :model="dt.selected" ref="editView" v-if="edit.show" @dialog:close="onClose"></EditView>
+    <el-dialog :title="'视图编辑 ' + dt.selected.name" 
+        :visible.sync="edit.show" 
+        :show-close="false"
+        :close-on-press-escape="false"
+        :close-on-click-modal="false"
+        :destroy-on-close="true"
+        v-if="dt.selected">
+      <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose"></EditView>
+    </el-dialog>
   </el-container>
 </template>
 

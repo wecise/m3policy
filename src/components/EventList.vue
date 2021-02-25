@@ -262,11 +262,11 @@ import _ from 'lodash';
 import $ from 'jquery';
 import VueContext from 'vue-context';
 import 'vue-context/dist/css/vue-context.css';
-import jsPanel from 'jspanel4/dist/jspanel.min.js';
-import 'jspanel4/dist/jspanel.min.css';
+// import jsPanel from 'jspanel4/dist/jspanel.min.js';
+// import 'jspanel4/dist/jspanel.min.css';
 import TagView from './tags/TagView';
 
-const TableExport = require("tableexport");
+const TableExport = "";//require("tableexport");
 
 window.moment = require("moment");
 
@@ -284,6 +284,7 @@ export default {
     data(){
    
         return {
+            
             dt:{
                 options: {
                     header:true,
@@ -673,8 +674,8 @@ export default {
             }
             
         },
-        openPanel(row){
-            jsPanel.create({
+        openPanel(){
+            /* jsPanel.create({
                 headerTitle: row.host || row.id,
                 headerControls: 'xs',
                 headerLogo: "<span class='el-icon-warning'></span>",
@@ -706,7 +707,7 @@ export default {
                     });
 
                 }
-            });
+            }); */
         },
         /* 倒计时刷新 */
         onCountdownTimeRefresh(val){

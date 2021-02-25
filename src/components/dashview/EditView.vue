@@ -1,18 +1,14 @@
 <template>
   
-    <el-dialog :title="'视图编辑 ' + model.name" 
-        :visible="true" :show-close="false"
-        :close-on-press-escape="false"
-        :close-on-click-modal="false"
-        :destroy-on-close="true">
-        <el-tabs value="info" v-if="view.data">
-            <el-tab-pane label="基本信息" name="info" v-if="view.data.info">
-                <el-form ref="form" :model="view.data.info" label-width="80px">
+    
+        <el-tabs value="info" v-if="view.model">
+            <el-tab-pane label="基本信息" name="info" v-if="view.model.info">
+                <el-form ref="form" :model="view.model.info" label-width="80px">
                     <el-form-item label="名称">
-                        <el-input v-model="view.data.info.name"></el-input>
+                        <el-input v-model="view.model.info.name"></el-input>
                     </el-form-item>
                     <el-form-item label="描述">
-                        <el-input type="textarea" :rows="6" v-model="view.data.info.attr.remark"></el-input>
+                        <el-input type="textarea" :rows="6" v-model="view.model.info.attr.remark"></el-input>
                     </el-form-item>
                     <el-form-item>
                         <el-button type="success" @click="onApplyInfo" :loading="view.loading">应用</el-button>
@@ -20,14 +16,14 @@
                     </el-form-item>
                 </el-form>
             </el-tab-pane>
-            <el-tab-pane label="数据源" name="datasource" v-if="view.data.datasource">
+            <el-tab-pane label="数据源" name="datasource" v-if="view.model.datasource">
                 <el-container style="height: calc(100vh - 275px);background: #f2f2f2;">
                     <el-main style="overflow:hidden;">
                         <el-tabs value="source" type="border-card" tab-position="top" style="height:100%;">
                             <el-tab-pane label="数据源" name="source">
-                                <el-form ref="form" :model="view.data.datasource" label-width="80px">
+                                <el-form ref="form" :model="view.model.datasource" label-width="80px">
                                     <el-form-item label="数据源">
-                                        <el-input v-model="view.data.datasource.class" disabled>
+                                        <el-input v-model="view.model.datasource.class" disabled>
                                             <el-dropdown slot="prepend">
                                                 <span class="el-dropdown-link">
                                                     <i class="el-icon-coin el-icon--right" style="cursor:pointer;"></i>
@@ -42,7 +38,7 @@
                                     </el-form-item>
                                     <el-form-item label="过滤条件">
                                         <Editor
-                                            v-model="view.data.datasource.filter"
+                                            v-model="view.model.datasource.filter"
                                             @init="onEditorInit"
                                             :lang="editor.lang.value"
                                             :theme="editor.theme.value"
@@ -57,9 +53,9 @@
                                 </el-form>
                             </el-tab-pane>
                             <el-tab-pane label="显示定义" name="columns">
-                                <el-transfer v-model="view.data.datasource.fields" 
+                                <el-transfer 
+                                    v-model="view.model.datasource.fields" 
                                     :data="datasource.fields"
-                                    filterable
                                     :titles="['可选字段','已选字段']"></el-transfer>
                             </el-tab-pane>
                         </el-tabs>
@@ -71,8 +67,8 @@
                     </el-footer>
                 </el-container>
             </el-tab-pane>
-            <el-tab-pane label="主题设置" name="theme" v-if="view.data.theme">
-                <el-form ref="form" :model="view.data.theme" label-width="80px">
+            <el-tab-pane label="主题设置" name="theme" v-if="view.model.theme">
+                <el-form ref="form" :model="view.model.theme" label-width="80px">
                     <el-form-item>
                         <el-button type="success">应用</el-button>
                         <el-button @click="onClose">取消</el-button>
@@ -80,7 +76,7 @@
                 </el-form>
             </el-tab-pane>
         </el-tabs>
-    </el-dialog>
+    
 
 </template>
 
@@ -92,8 +88,7 @@ import ActionView from './ActionView';
 export default {
   name: "EditView",
   props: {
-    model: Object,
-    show: Boolean
+    model: Object
   },
   components:{
     TableView,
@@ -102,10 +97,11 @@ export default {
   },
   data() {
     return {
+        
         view: {
             loading: false,
             activeName: "",
-            data: null
+            model: null
         },
         editor: {
             term: "",
@@ -178,8 +174,13 @@ export default {
   filters:{
     
   },
-  created(){
-     this.initData();
+  watch:{
+     model:{
+         handler(){
+             this.initData();
+         },
+         immediate: true
+     }
   },
   mounted(){
     
@@ -189,34 +190,35 @@ export default {
         try{
             
             // 初始化attr
-            if(_.isEmpty(this.view.data.info.attr)){
-                _.extend(this.view.data.info, {attr:  {remark: "", icon: ""} });   
+            if(_.isEmpty(this.view.model.info.attr)){
+                _.extend(this.view.model.info, {attr:  {remark: "", icon: ""} });   
             } else {
-                _.extend(this.view.data.info, {attr: JSON.parse(this.view.data.info.attr)});   
+                _.extend(this.view.model.info, {attr: JSON.parse(this.view.model.info.attr)});   
             }
 
         } catch(err){
             console.log(err)
+             _.extend(this.view.model.info, {attr:  {remark: "", icon: ""} });   
         }
     },
     initData(){
         let param = encodeURIComponent(JSON.stringify({  action: "read", data: this.model }));
         this.m3.callFS("/matrix/eventConsole/view/action.js", param).then((rtn)=>{
-            this.view.data = JSON.parse(rtn.message);
+            this.view.model = JSON.parse(rtn.message);
             
-            this.view.data.info = _.cloneDeep(this.model);
-            this.view.data.info.name = this.view.data.info.name.split(".")[0];
+            this.view.model.info = _.cloneDeep(this.model);
+            this.view.model.info.name = this.view.model.info.name.split(".")[0];
 
             this.initFileInfo();
 
         }).catch((err)=>{
             console.log(err);
-            this.view.data = null;
+            this.view.model = null;
         })
     },
     initDataSourceFields(treeData){
         
-        if(!this.view.data) return false;
+        if(!this.view.model) return false;
 
         try{
             
@@ -224,7 +226,7 @@ export default {
                 
                 _.forEach(nodes,(v)=>{
                     
-                    if(this.view.data.datasource.class == v.class){
+                    if(this.view.model.datasource.class == v.class){
                         if(v.fields){
                             this.datasource.fields = _.compact(_.map(v.fields,(val)=>{
                                 if(_.includes(val,'_')) return;  
@@ -248,7 +250,6 @@ export default {
     },
     onApplyInfo(){
         this.onApplyName();
-        this.onApplyAttr();
     },
     onApplyName(){
 
@@ -257,38 +258,42 @@ export default {
         // update name
         let param = {
                 srcpath: this.model.fullname, 
-                dstpath: [this.view.data.info.parent,[this.view.data.info.name, this.view.data.info.ftype].join(".")].join("/")
+                dstpath: [this.view.model.info.parent,[this.view.model.info.name, this.view.model.info.ftype].join(".")].join("/")
             };
         
         if(param.srcpath == param.dstpath){
             this.view.loading = false;
+            this.onApplyAttr();
             return false;
         }
 
         this.m3.dfsRename(param).then(()=>{
-            this.model = this.view.data.info;
+            //this.model = this.view.model.info;
             this.view.loading = false;
+            this.onApplyAttr();
         }).catch((err)=>{
             this.$message({
                 type: 'error',
                 message: err.message
             })
             this.view.loading = false;
+            this.onApplyAttr();
         })
     },
     onApplyAttr(){
         this.loading = true;
-        // update attr
-        let attr = {
-            parent: this.model.parent, 
-            name: this.model.name,
-            attr: JSON.stringify(this.view.data.info.attr)
-        };
-
-        if(this.view.data.info.attr === this.model.attr){
+        
+        if(this.view.model.info.attr === this.model.attr){
             this.loading = false;
             return false;
         }
+
+        // update attr
+        let attr = {
+            parent: this.view.model.info.parent, 
+            name: [this.view.model.info.name, this.view.model.info.ftype].join("."),
+            attr: JSON.stringify(this.view.model.info.attr)
+        };
 
         this.m3.dfsUpdateAttr(attr).then(()=>{
             
@@ -296,7 +301,7 @@ export default {
                 type: 'success',
                 message: '更新成功'
             })
-            this.model = this.view.data.info;
+            //this.model = this.view.model.info;
             
         }).catch((err)=>{
             this.$message({
@@ -318,7 +323,7 @@ export default {
     onTestDataSource(){
         this.editor.loading = true;
 
-        let param = encodeURIComponent(JSON.stringify({  view:"", term: this.view.data.datasource.datasource }));
+        let param = encodeURIComponent(JSON.stringify({  view:"", term: this.view.model.datasource.datasource }));
         
         this.m3.callFS("/matrix/eventConsole/event_list.js", param).then((rt)=>{
             
@@ -332,18 +337,19 @@ export default {
         })
     },
     onDataSourceSelect(data){
-        this.view.data.datasource.name = `${data.class}/${_.now()}`
-        this.view.data.datasource.class = data.class;
-        this.datasource.fields = _.compact(_.map(data.fields,(v)=>{
+        
+        this.view.model.datasource.name = `${data.class}/${_.now()}`
+        this.view.model.datasource.class = data.class;
+        this.datasource.fields = _.compact(_.map(data.fields,(v,k)=>{
             if(_.includes(v,'_')) return;  
-            return {key:v, label:v};
+            return {key:k, label:v};
         }));
     },
     onApplyDataSource(){
         
         this.datasource.loading = true;
 
-        let content = JSON.stringify(this.view.data,null,2);
+        let content = JSON.stringify(this.view.model,null,2);
     
         let param = {
                       parent: this.model.parent, name: this.model.name, 

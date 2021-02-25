@@ -11,23 +11,25 @@ import moment from 'moment'
 import animate from 'animate.css'
 import VueSplit from 'vue-split-panel'
 Vue.use(VueSplit)
-
 Vue.use(animate);
 Vue.use(VueI18n);
-
-Vue.config.productionTip = false;
 
 Vue.prototype.moment = moment;
 Vue.prototype.moment.locale(window.M3_LANG);
 Vue.prototype.eventHub = new Vue();
 
-window.M3_LANG = 'zh-CN';
+Vue.config.productionTip = false;
+
+// ElementUI Setup
+ElementUI.Tooltip.props.openDelay.default = 1000;
 
 /* 
  * 测试环境
 */
 const m3 = require("@cnwangzd/m3js");
 Vue.prototype.m3 = m3;
+window.m3 = m3;
+window.M3_LANG = 'zh-CN';
 
 let init = async function(){
 
@@ -40,8 +42,6 @@ let init = async function(){
       messages: rtn
     });
 
-    // ElementUI Setup
-    ElementUI.Tooltip.props.openDelay.default = 1000;
 
     Vue.prototype.$ELEMENT = { 
       size: 'mini',
@@ -61,32 +61,26 @@ if(process.env.NODE_ENV === "development"){
   /* env1 */
   let env1 = function(){
     m3.connect("http","47.92.151.165",8080,"wecise","admin","admin").then(()=>{
-      setTimeout(()=>{
-        init();
-      },500)
-      
+      init();
     }).catch((err)=>{
       console.log(err);
     });
   };
   
   /* env2 */
-  let env2 = function(){
-    m3.connect("https","18.188.85.82",8443,"wecise","admin","admin").then( ()=>{
+  /* let env2 = function(){
+    m3.connect("http","18.188.85.82",8080,"wecise","admin","admin").then( ()=>{
       setTimeout(()=>{
         init();
       },5000)
     }).catch((err)=>{
       console.log(err);
     });
-  };
+  }; */
 
   env1();
-  console.log(env1,env2)
   
 } else {
   m3.init();
-  setTimeout(()=>{
-    init();
-  },500)
+  init();
 }
