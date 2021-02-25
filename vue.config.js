@@ -11,23 +11,23 @@ module.exports = {
         https: false,
         hotOnly: false,
     },
-    
+
     outputDir: 'app/matrix/m3event',
     productionSourceMap: false,
 
     configureWebpack: {
         plugins: [
             new webpack.ProvidePlugin({
-                
+
             }),
             new WebpackZipPlugin({
                 initialFile: 'app',
                 endPath: './',
                 zipName: 'app.zip',
                 exclude: ['.DS_Store'],
-                frontShell: 'sed -i \'\' \'s/src="/src="\\/static\\/app\\/matrix\\/m3event/g\; s/href="/href="\\/static\\/app\\/matrix\\/m3event/g\' ./app/matrix/m3event/index.html',
+                frontShell: 'sed -i \'s/src="/src="\\/static\\/app\\/matrix\\/m3event/g\; s/href="/href="\\/static\\/app\\/matrix\\/m3event/g\' ./app/matrix/m3event/index.html',
                 behindShell: './deploy.sh'
             })
         ]
-    }    
+    }
 }
