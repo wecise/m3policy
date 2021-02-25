@@ -268,7 +268,6 @@ export default {
         }
 
         this.m3.dfsRename(param).then(()=>{
-            //this.model = this.view.model.info;
             this.view.loading = false;
             this.onApplyAttr();
         }).catch((err)=>{
@@ -301,7 +300,6 @@ export default {
                 type: 'success',
                 message: '更新成功'
             })
-            //this.model = this.view.model.info;
             
         }).catch((err)=>{
             this.$message({
