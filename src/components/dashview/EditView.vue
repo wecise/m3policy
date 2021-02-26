@@ -53,10 +53,15 @@
                                 </el-form>
                             </el-tab-pane>
                             <el-tab-pane label="显示定义" name="columns">
-                                <el-transfer 
-                                    v-model="view.model.datasource.fields" 
-                                    :data="datasource.fields"
-                                    :titles="['可选字段','已选字段']"></el-transfer>
+                                <treeTransfer :title="title" 
+                                    :from_data='datasource.fields' 
+                                    :to_data='view.model.datasource.fields' 
+                                    :defaultProps="{label:'label'}" 
+                                    mode='transfer' 
+                                    width="96%"
+                                    height='calc(100vh - 440px)' 
+                                    filter 
+                                    openAll></treeTransfer>
                             </el-tab-pane>
                         </el-tabs>
                     </el-main>
@@ -84,6 +89,7 @@
 import _ from 'lodash';
 import TableView from './TableView';
 import ActionView from './ActionView';
+import treeTransfer from 'el-tree-transfer';
 
 export default {
   name: "EditView",
@@ -93,7 +99,8 @@ export default {
   components:{
     TableView,
     ActionView,
-    Editor:require("vue2-ace-editor")
+    Editor:require("vue2-ace-editor"),
+    treeTransfer
   },
   data() {
     return {

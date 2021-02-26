@@ -617,6 +617,7 @@ export default {
                         this.dt.selected.push(data[index]);
                         $(`.el-table .row-${index}`).addClass("current-row");
                         i++;
+
                     }
                     setTimeout(()=>{
                         $(`.el-table .row-${min}`).addClass("current-row");

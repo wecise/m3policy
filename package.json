@@ -1,6 +1,6 @@
 {
   "name": "m3event",
-  "version": "0.1.0",
+  "version": "0.5.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -8,22 +8,18 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "@bitowl/vue-split-panel": "^1.1.1",
     "@cnwangzd/m3js": "^1.0.9",
     "animate.css": "^4.1.1",
+    "el-tree-transfer": "^2.4.7",
     "element-ui": "^2.15.1",
-    "exports-loader": "^2.0.0",
     "file-saver": "^2.0.5",
     "howler": "^2.2.1",
     "jquery": "^3.5.1",
-    "jspanel4": "^4.11.2",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
     "mxgraph": "^4.2.2",
-    "script-loader": "^0.7.2",
     "vue": "^2.6.11",
     "vue-context": "^6.0.0",
-    "vue-formjs": "^4.0.5",
     "vue-i18n": "^8.22.3",
     "vue-runtime-helpers": "^1.1.2",
     "vue-split-panel": "^1.0.4",
@@ -33,7 +29,6 @@
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
-    "axios": "^0.18.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
@@ -41,7 +36,6 @@
     "sass-loader": "^10.1.1",
     "vue-cli-plugin-axios": "^0.0.4",
     "vue-cli-plugin-element": "^1.0.1",
-    "vue-contextmenu-easy": "^1.0.2",
     "vue-template-compiler": "^2.6.11",
     "webpack-zip-plugin": "^0.1.6"
   },
