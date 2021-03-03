@@ -74,6 +74,8 @@
           <RuleView :model="item.data" :global="global" v-else-if="item.callback==='RuleView'"></RuleView>
           <!-- 任务管理 -->
           <JobView :model="item.data" :global="global" v-else-if="item.callback==='JobView'"></JobView>
+          <!-- 接口管理 -->
+          <FsView :model="item.data" :global="global" v-else-if="item.callback==='FsView'"></FsView>
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -93,6 +95,7 @@ import DashView from './dashview/DashView';
 import NotifyView from './notify/NotifyView';
 import RuleView from './rule/RuleView';
 import JobView from './job/JobView';
+import FsView from './editor/FsView';
 
 export default {
   name: "MainView",
@@ -109,7 +112,8 @@ export default {
     DashView,
     NotifyView,
     RuleView,
-    JobView
+    JobView,
+    FsView
   },
   data() {
     return {

@@ -68,7 +68,6 @@
 <script>
 import MainView from './components/MainView.vue'
 import _ from 'lodash';
-
 export default {
   name: 'app',
   components: {
@@ -112,7 +111,6 @@ export default {
     margin: 0px;
     padding: 0px;
   }
-
   .m3 > .el-header{
     height: 50px!important;
     line-height: 50px;
@@ -121,7 +119,6 @@ export default {
     color: #ffffff;
     padding: 0px 0px 0px 10px;
   }
-
   .m3 > .el-header .el-image > .el-image__inner{
     max-width: 120px;
     min-width: 32px;
@@ -129,23 +126,18 @@ export default {
     height: 32px;
     padding: 7px 0px;
   }
-
   .m3 > .el-main{
     padding: 0px;
   }
-
   .el-link.el-link--default {
     color: #ffffff;
   }
-
   .topbar-el-menu .el-submenu__icon-arrow.el-icon-arrow-down{
 		color: #ffffff;
 	}
-
 	.el-menu-item:hover{
 		background-color: #409dfe!important;
 	}
-
   .topbar-el-menu.el-menu.el-menu--horizontal {
 		border-bottom: unset;
 		background: #242c46;
@@ -163,13 +155,11 @@ export default {
 		border-bottom: unset;
 		color: #ffffff;
 	}
-
   .el-menu--horizontal>.el-menu-item:not(.is-disabled):focus, 
   .el-menu--horizontal>.el-menu-item:not(.is-disabled):hover, 
   .el-menu--horizontal>.el-submenu .el-submenu__title:hover {
       background-color: #409dfe!important;
   }
-
   /* el-table hover actived style */
   .el-table--enable-row-hover .el-table__body tr:hover>td {
         background-color: #3c99f7!important;
@@ -177,7 +167,6 @@ export default {
   .el-table__body tr.current-row>td {
         background-color:#3c99f7!important;;
   }
-
   /* mxgraph contextmenu style */
   td.mxPopupMenuIcon div {
     width:16px;
@@ -233,51 +222,42 @@ export default {
   table.mxPopupMenu tr {
     font-size:4pt;
   }
-
 .el-table{
     -webkit-user-select:none;/*谷歌 /Chrome*/
     -moz-user-select:none; /*火狐/Firefox*/
     -ms-user-select:none;    /*IE 10+*/
     user-select:none;
 }
-
 .el-dialog{
       width: 90vw!important;
       height:85vh;
   }
-
   /* Event Console Table */
   .el-table {
         height:100%!important;
         overflow: hidden!important;
     }
-
     .el-table--small td, 
     .el-table--small th {
         padding: 4px 0;
     }
-
     .el-table .cell {
         white-space: nowrap!important;
         line-height: 18px!important;
     }
-
     .el-table .el-table__body-wrapper {
         overflow: auto;
         position: relative;
         height: calc(100% - 50px)!important;
     }
-
     /* el-checkbox */
     .el-checkbox__label {
         font-size: 12px!important;
     }
-
     /* el-tabs */
     .el-tabs--border-card>.el-tabs__header {
       background-color: #f2f2f2!important;
       border-bottom: unset!important;
       border-top: 1px solid #dddddd;
     }
-
 </style>

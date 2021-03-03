@@ -119,6 +119,14 @@
                                 </el-button>
                             </p>
                         </div>
+                        <div class="tool">
+                            <div>接口管理</div>
+                            <p>
+                                <el-button type="text" @click="onToolsKeep({id:'fsView',name:'接口管理',callback:'FsView'})">
+                                    <span class="el-icon-edit-outline" style="cursor:pointer;font-size:16px;"></span>
+                                </el-button>
+                            </p>
+                        </div>
                         <!--div class="tool">
                             <div>实体抽取</div>
                             <p>

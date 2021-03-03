@@ -57,7 +57,7 @@
                                             </el-dropdown-menu>
                                         </el-dropdown>
                                     </span>
-                                    <EditRuleView :model="item.model" :ref="'EditRuleView-'+item.name" @editor:change="(v)=>{control.save.show=v;saveStatus();}"></EditRuleView>
+                                    <EditRuleView :model="item.model" :ref="'EditRuleView-'+item.name" @editor:value="onEditorChange"  @editor:change="(v)=>{control.save.show=v;saveStatus();}"></EditRuleView>
                                 </el-tab-pane>
                             </el-tabs>
                             
@@ -205,6 +205,10 @@ export default {
 
             localStorage.setItem("CONFIG-TREE-IFSHOW",this.control.configTree.show);
         },
+        onEditorChange(data){
+            let node = _.find(this.configTabs.tabs,{name: this.configTabs.activeIndex });
+            node.model.value = data;
+        },
         tabClose(key,tab){
             const self = this;
 
@@ -284,7 +288,7 @@ export default {
                 this.configTabs.tabs.push({dir: treeNode.dir, title: treeNode.key, name: id, type: 'config', model: treeNode});                                
 
             } catch(error){
-                console.log(22,error)
+                console.log(error)
                 this.configTabs.tabs = [];
             }
         },
@@ -401,14 +405,7 @@ export default {
         },
         configUpdate(){
             
-            let item = {};
-            item.key = _.find(this.configTabs.tabs,{name:this.configTabs.activeIndex}).model.key;
-            
-            //let id = this.configTabs.activeIndex;
-            // let editor = ace.edit(this.$refs[`configManageRef${id}`][0].$refs.editorContainer);
-            // item.value = editor.getValue();
-            
-            item.ttl = _.find(this.configTabs.tabs,{name:this.configTabs.activeIndex}).model.ttl;
+            let item = _.find(this.configTabs.tabs,{name:this.configTabs.activeIndex}).model;
 
 
             const h = this.$createElement;
@@ -425,26 +422,26 @@ export default {
                     type: 'warning'
             }).then(() => {
 
-                this.m3.ruleAdd(item).then( (rtn)=>{
-                    if(rtn == 1){
-                        this.$message({
-                            type: "success",
-                            message: "更新成功！"
-                        });
+                this.m3.ruleAdd(item).then( ()=>{
+                    
+                    this.$message({
+                        type: "success",
+                        message: "更新成功！"
+                    });
 
-                        this.control.save.show = false;
+                    this.control.save.show = false;
 
-                        // 重置是否编辑状态
-                        this.control.save.list = _.xor(this.control.save.list, [item.key]);
+                    // 重置是否编辑状态
+                    this.control.save.list = _.xor(this.control.save.list, [item.key]);
 
-                        this.eventHub.$emit("CONFIG-TREE-REFRESH-EVENT", item.key);
-                    } else {
-                        this.$message({
-                            type: "error",
-                            message: "更新失败：" + rtn
-                        })
-                    }
-                } );
+                    this.eventHub.$emit("CONFIG-TREE-REFRESH-EVENT", item.key);
+                    
+                }).catch((err)=>{
+                    this.$message({
+                        type: "error",
+                        message: "更新失败：" + err
+                    })
+                });
 
             }).catch(() => {
                     

@@ -1,8 +1,6 @@
 #! /bin/bash
 set -euo
 
-export M3_HOST="47.92.151.165:8080"
-
 host=${M3_HOST}
 company="wecise"
 auth="${company}.admin:admin"

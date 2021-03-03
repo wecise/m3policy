@@ -10,6 +10,7 @@ import './assets/theme/element-#252D47/index.css'
 import moment from 'moment'
 import animate from 'animate.css'
 import VueSplit from 'vue-split-panel'
+import store from './store'
 Vue.use(VueSplit)
 Vue.use(animate);
 Vue.use(VueI18n);
@@ -50,6 +51,7 @@ let init = async function(){
 
     new Vue({
       render: h => h(App),
+      store,
       i18n
     }).$mount('#app')
   })

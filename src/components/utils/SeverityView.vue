@@ -2,7 +2,7 @@
   <el-container>
     <el-header>
       <el-tooltip content="新建级别">
-        <el-button type="text" icon="el-icon-plus"></el-button>
+        <el-button type="success" icon="el-icon-plus">新建级别</el-button>
       </el-tooltip>
     </el-header>
     <el-main>

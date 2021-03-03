@@ -4,7 +4,7 @@
             <Split direction="vertical" :gutterSize="5">
                 <SplitArea :size="debug.show?55:100" :minSize="0" style="overflow:hidden;">
                     <Editor
-                        v-model="model.value"
+                        v-model="editor.value"
                         @init="onEditorInit"
                         :lang="editor.lang.value"
                         :theme="editor.theme.value"
@@ -51,7 +51,7 @@ export default {
     data() {
         return {
             editor: {
-                term: "",
+                value: "",
                 data: null,
                 loading: false,
                 lang: {
@@ -131,6 +131,8 @@ export default {
     },
     created(){
         
+        this.editor.value = this.model.value;
+
         if(_.startsWith(this.model.key,"/matrix/rules")){
             this.editor.lang.value = "lua";
         }
@@ -193,6 +195,7 @@ export default {
                 if (!this.ignore) {
                     this.changed = true;
                     this.$emit('editor:change',this.changed);
+                    this.$emit('editor:value', this.editor.value)
                 }
             });
 
