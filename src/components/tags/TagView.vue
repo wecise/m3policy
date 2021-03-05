@@ -94,7 +94,6 @@
 
 <script>
     import _ from 'lodash';
-    const m3 = require("@cnwangzd/m3js");
 
     export default {
         name: "TagView",  
@@ -121,7 +120,7 @@
                 let cache = localStorage.getItem(key);
 
                 if(_.isEmpty(cache)){
-                    m3.callFS("/matrix/tags/getAllTags.js").then((rtn)=>{
+                    this.m3.callFS("/matrix/tags/getAllTags.js").then((rtn)=>{
                         this.allTags = _.filter(rtn.message, {domain: this.domain});
                         localStorage.setItem(key, JSON.stringify(this.allTags));
                     });
@@ -137,7 +136,7 @@
                 if(!_.isEmpty(this.id)) {
                     try{
                         let term = {domain: this.domain, action: "-", tags: [tag], ids: [this.id]};
-                        m3.callFS("/matrix/tags/tag_service.js", encodeURIComponent(JSON.stringify(term))).then(()=>{
+                        this.m3.callFS("/matrix/tags/tag_service.js", encodeURIComponent(JSON.stringify(term))).then(()=>{
                             //eventHub.$emit("TAG-TREE-REFRESH");
                         });
 
@@ -169,7 +168,7 @@
                     if(!_.isEmpty(this.id)) {
                         try{
                             let term = {domain:this.domain, action: "+", tags: [inputValue], ids: [this.id]};
-                            m3.callFS("/matrix/tags/tag_service.js", encodeURIComponent(JSON.stringify(term))).then(()=>{
+                            this.m3.callFS("/matrix/tags/tag_service.js", encodeURIComponent(JSON.stringify(term))).then(()=>{
                                 //eventHub.$emit("TAG-TREE-REFRESH");
                             });
 

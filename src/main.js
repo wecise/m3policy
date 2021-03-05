@@ -27,7 +27,7 @@ ElementUI.Tooltip.props.openDelay.default = 1000;
 /* 
  * 测试环境
 */
-const m3 = require("@cnwangzd/m3js");
+const m3 = require("@wecise/m3js");
 Vue.prototype.m3 = m3;
 window.m3 = m3;
 window.M3_LANG = 'zh-CN';
