@@ -15,6 +15,7 @@ Vue.use(VueSplit)
 Vue.use(animate);
 Vue.use(VueI18n);
 
+
 Vue.prototype.moment = moment;
 Vue.prototype.moment.locale(window.M3_LANG);
 Vue.prototype.eventHub = new Vue();

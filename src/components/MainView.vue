@@ -14,19 +14,17 @@
                 @keyup.enter.native="onSearch"
               >
                 <el-select
-                  v-model="search.type"
+                  v-model="views.value"
                   slot="prepend"
                   placeholder="选择视图"
                 >
                   <el-option
-                    label="syslog"
-                    value="#/matrix/devops/syslog"
-                  ></el-option>
-                  <el-option
-                    label="event"
-                    value="#/matrix/devops/alert"
-                  ></el-option>
-                  <el-option label="新建视图" value="new"></el-option>
+                    :value="item.name"
+                    :key="index"
+                    v-for="(item,index) in views.list"
+                  >
+                    {{item.name.replace(/.json/,"")}}
+                  </el-option>
                 </el-select>
                 <el-button
                   slot="append"
@@ -48,7 +46,6 @@
                   <el-button
                       type="default"
                       :style="'position:absolute;top:15px;left:10px;padding: 3px;border-radius: 15px;color:#ffffff;background:' + global.register.event.severity[item.data.severity][2]">
-                      <!-- {{ global.register.event.severity[item.data.severity][1] }} <span style="font-variant: all-small-caps;">{{global.register.event.severity[item.data.severity][0]}}</span> -->
                   </el-button>
                   {{item.title}} {{ item.data.id }}
               </span>
@@ -83,6 +80,7 @@
 </template>
 
 <script>
+
 import _ from 'lodash';
 import $ from 'jquery';
 import EventList from './EventList.vue';
@@ -118,6 +116,10 @@ export default {
   data() {
     return {
       loading: false,
+      views: {
+        value: "运维告警",
+        list: []
+      },
       search: {
         type: "#/matrix/devops/alert",
         model: {
@@ -150,6 +152,8 @@ export default {
     },
   },
   created(){
+
+    this.initViews();
     this.onSearch();
 
     this.eventHub.$on("event-diagnosis",(data)=>{
@@ -167,6 +171,12 @@ export default {
       } else {
           setTimeout(this.hideTabEventViewConsoleUl, 50);
       } 
+    },
+    initViews(){
+        let term = encodeURIComponent(JSON.stringify({  action: "list"  }));
+        this.m3.callFS("/matrix/eventConsole/view/action.js", term).then((rtn)=>{
+            this.views.list = _.orderBy(rtn.message,['name'],['asc']);
+        })
     },
     onSearch() {
       

@@ -148,29 +148,6 @@ export default {
         if(_.has(this.model,'key')){
             this.initEditer();
         }
-
-        /* let initCss = ()=>{
-            let e1 = document.getElementsByClassName("el-tabs__content");
-            _.forEach(e1,(v)=>{
-                v.style.padding = "0px";
-            })
-
-            let e2 = document.getElementsByClassName("el-tabs--border-card");
-            _.forEach(e2,(v)=>{
-                v.style.border = "unset";
-                v.style.boxShadow = "unset";
-            })
-
-            let e3 = document.getElementsByClassName("el-tabs__header");
-            _.forEach(e3,(v)=>{
-                v.style.backgroundColor = "#f2f2f2";
-                v.style.borderTop = "1px solid #E4E7ED";
-                v.style.borderBottom =  "unset";
-            })
-
-        };
-        initCss(); */
-        
     },
     methods: {
         initEditer(){
