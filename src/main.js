@@ -10,7 +10,7 @@ import './assets/theme/element-#252D47/index.css'
 import moment from 'moment'
 import animate from 'animate.css'
 import VueSplit from 'vue-split-panel'
-import store from './store'
+
 Vue.use(VueSplit)
 Vue.use(animate);
 Vue.use(VueI18n);
@@ -35,13 +35,13 @@ window.M3_LANG = 'zh-CN';
 
 let init = async function(){
 
-  await m3.lang().then( (rtn)=>{
+  await m3.lang().then( res=>{
     
     window.global = m3.global;
 
     const i18n = new VueI18n({
       locale: window.M3_LANG,
-      messages: rtn
+      messages: res
     });
 
 
@@ -52,7 +52,6 @@ let init = async function(){
 
     new Vue({
       render: h => h(App),
-      store,
       i18n
     }).$mount('#app')
   })
@@ -63,7 +62,7 @@ if(process.env.NODE_ENV === "development"){
 
   /* env1 */
   let env1 = function(){
-    m3.connect("http","47.92.151.165",8080,"wecise","admin","admin").then(()=>{
+    m3.connect({proxy:"http",ip:"47.92.151.165",port:8080,company:"wecise",username:"admin",password:"admin1234)(*&"}).then(()=>{
       init();
     }).catch((err)=>{
       console.log(err);

@@ -7,7 +7,7 @@
           <InfoView :model="model" v-if="item.type==='info'"></InfoView>
           <JournalView :model="model" v-else-if="item.type==='journal'"></JournalView>
           <AttributeRelView :model="model" :global="global" v-else-if="item.type==='attribute'"></AttributeRelView>
-          <HistoryView :model="model" v-else-if="item.type==='history'"></HistoryView>
+          <HistoryView :model="model" :global="global" v-else-if="item.type==='history'"></HistoryView>
           <GraphView :model="[model.entity]" v-else-if="item.type==='graph'"></GraphView>
         </el-tab-pane>
       </el-tabs>
@@ -48,8 +48,8 @@ export default {
             {name:'info',title:'告警信息',type:'info',data: this.model},
             {name:'journal',title:'告警轨迹',type:'journal', data: this.model, desc:'当前告警的生命周期。'},
             {name:'attribute',title:'维度关联性告警',type:'attribute', data: this.model, desc:'选则当前告警属性，可多选、可单选，通过选择不同的属性组合进行关联告警的查找、分析，从而通过相关告警快速定位问题所在。'},
-            {name:'history',title:'历史相似告警',type:'history', data: this.model},
-            {name:'graph',title:'资源分析',type:'graph', data: this.model}
+            {name:'history',title:'历史相似告警',type:'history', data: this.model, desc:'选则当前告警的实体属性，根据该实体查找最近发生过的历史告警。'},
+            {name:'graph',title:'资源分析',type:'graph', data: this.model, desc:`选则当前告警的实体属性，根据该实体查找上下关联的实体，结果以图形式展示。示例：match() <-[*1] - (entity) - [*1] -> ()`}
           ];
   },
   methods: {

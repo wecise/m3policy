@@ -108,60 +108,12 @@ export default {
             data: null,
             loading: false,
             lang: {
-                value: "javascript",
+                value: "txt",
                 list: []
             },
             theme: {
                 value: "chrome",
-                list: [
-                    {
-                    name: "亮色",
-                    items: [
-                        { name: "chrome" },
-                        { name: "clouds" },
-                        { name: "crimson_editor" },
-                        { name: "dawn" },
-                        { name: "dreamweaver" },
-                        { name: "eclipse" },
-                        { name: "github" },
-                        { name: "iplastic" },
-                        { name: "solarized_light" },
-                        { name: "textmate" },
-                        { name: "tomorrow" },
-                        { name: "xcode" },
-                        { name: "kuroir" },
-                        { name: "katzenmilch" },
-                        { name: "sqlserver" },
-                    ],
-                    },
-                    {
-                    name: "暗色",
-                    items: [
-                        { name: "ambiance" },
-                        { name: "chaos" },
-                        { name: "clouds_midnight" },
-                        { name: "dracula" },
-                        { name: "cobalt" },
-                        { name: "gruvbox" },
-                        { name: "gob" },
-                        { name: "idle_fingers" },
-                        { name: "kr_theme" },
-                        { name: "merbivore" },
-                        { name: "merbivore_soft" },
-                        { name: "mono_industrial" },
-                        { name: "monokai" },
-                        { name: "pastel_on_dark" },
-                        { name: "solarized_dark" },
-                        { name: "terminal" },
-                        { name: "tomorrow_night" },
-                        { name: "tomorrow_night_blue" },
-                        { name: "tomorrow_night_bright" },
-                        { name: "tomorrow_night_eighties" },
-                        { name: "twilight" },
-                        { name: "vibrant_ink" },
-                    ],
-                    },
-                ]
+                list: this.m3.EDITOR_THEME
             }
         },
         datasource:{
@@ -269,6 +221,10 @@ export default {
 
         this.m3.dfsRename(param).then(()=>{
             this.view.loading = false;
+            this.$message({
+                type: 'success',
+                message: '更新名称成功'
+            })
             this.onApplyAttr();
         }).catch((err)=>{
             this.$message({
@@ -276,13 +232,12 @@ export default {
                 message: err.message
             })
             this.view.loading = false;
-            this.onApplyAttr();
         })
     },
     onApplyAttr(){
         this.loading = true;
         
-        if(this.view.model.info.attr === this.model.attr){
+        if(JSON.stringify(this.view.model.info.attr) === this.model.attr){
             this.loading = false;
             return false;
         }
@@ -298,7 +253,7 @@ export default {
             
             this.$message({
                 type: 'success',
-                message: '更新成功'
+                message: '更新备注成功'
             })
             
         }).catch((err)=>{
@@ -321,7 +276,8 @@ export default {
     onTestDataSource(){
         this.editor.loading = true;
 
-        let param = encodeURIComponent(JSON.stringify({  view:"", term: this.view.model.datasource.datasource }));
+        let view = this.model.name.replace(/.json/,'');
+        let param = encodeURIComponent(JSON.stringify({  view: view, term: this.view.model.datasource.filter }));
         
         this.m3.callFS("/matrix/eventConsole/event_list.js", param).then((rt)=>{
             
@@ -351,9 +307,9 @@ export default {
     
         let param = {
                       parent: this.model.parent, name: this.model.name, 
-                      data: { data: content, type: this.model.ftype, attr: this.model.attr, index: true }    
+                      data: { content: content, type: this.model.ftype, attr: this.model.attr, index: true }    
                     };
-
+        
         this.m3.dfsNew(param).then(()=>{
             this.$message({
               type: "success",

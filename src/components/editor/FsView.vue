@@ -49,47 +49,27 @@
                 </span>
             </div>
         </el-header>
-        <el-main style="padding:0px;">
+        <el-main style="padding:0px;overflow:hidden;">
             <Split direction="horizontal">
                 <SplitArea :size="25" :minSize="0" style="overflow:hidden;padding:20px;">
                     <FileTree @node-click="(data)=>{ onTabOpen(data); }"></FileTree>
                 </SplitArea>
                 <SplitArea :size="75" :minSize="0" style="overflow:hidden;background:#ffffff;">
+                    <el-tabs v-model="tabs.activeIndex" type="border-card" 
+                        closable 
+                        @tab-remove="onTabClose"
+                        v-if="currentTab" >
+                            <el-tab-pane :name="item.data.id" :key="index" v-for="(item,index) in tabs.list">
+                                <span slot="label">{{item.data.name}}</span>
+                                <FsEditorView 
+                                    :model="item" 
+                                    :ref="'FsEditView-'+item.data.id" 
+                                    @editor:value="onEditorChange"  
+                                    @editor:change="(v)=>{}"></FsEditorView>
+                            </el-tab-pane>
+                        
+                    </el-tabs>
                     
-                    <Split direction="vertical" v-if="currentTab">
-                        <SplitArea :size="100" :minSize="0" style="overflow:hidden;">
-                            <el-tabs v-model="tabs.activeIndex" type="border-card" 
-                                closable 
-                                @tab-remove="onTabClose">
-                                
-                                    <el-tab-pane :name="item.data.id" :key="index" v-for="(item,index) in tabs.list">
-                                        <span slot="label">{{item.data.name}}</span>
-                                        <editor
-                                            v-model="item.content"
-                                            @init="onEditorInit(index)"
-                                            :lang="editor.lang.value"
-                                            :theme="editor.theme.value"
-                                            width="inherit"
-                                            height="calc(100vh - 225px)"
-                                            style="border:1px solid #f2f2f2;margin:-15px;"
-                                            ref="editor"
-                                        ></editor>
-                                    </el-tab-pane>
-                                
-                            </el-tabs>
-                        </SplitArea>
-                        <SplitArea :size="0" :minSize="0" style="overflow:hidden;">
-                            <el-tabs v-model="debug.tabs.activeIndex" type="border-card" closable>
-                                <el-tab-pane name="log">
-                                    <span slot="label">日志 <i class="el-icon-date"></i></span>
-                                    <LogView :fullname="currentTab.data.fullname" logType="serverjs"></LogView> 
-                                </el-tab-pane>
-                                <el-tab-pane label="结果" name="result">
-                                    
-                                </el-tab-pane>
-                            </el-tabs>
-                        </SplitArea>
-                    </Split>
                     <div v-else>
                         <Welcome></Welcome>
                     </div>
@@ -104,7 +84,7 @@
             <el-divider direction="vertical"></el-divider>  
             打开：{{tabs.list.length}}
             <span style="float:right;" v-if="currentTab">
-                <el-button type="text" icon="el-icon-tickets" @click="onDegug(currentTab)"></el-button>
+                <el-button type="text" icon="el-icon-tickets" @click="onToggleDegug(currentTab.data.id)"></el-button>
             </span>
         </el-footer>
   </el-container>
@@ -114,7 +94,7 @@
 import _ from 'lodash';
 import FileTree from './FileTree';
 import Welcome from './Welcome';
-import LogView from '../consolelog/LogView';
+import FsEditorView from './FsEditorView';
 
 export default {
     name: "FsView",
@@ -122,75 +102,15 @@ export default {
         model: Object
     },
     components:{
-        editor:require("vue2-ace-editor"),
         FileTree,
         Welcome,
-        LogView
+        FsEditorView
     },
     data(){
         return {
             tabs: {
                 list: [],
                 activeIndex: null
-            },
-            editor: {
-                loading: false,
-                lang: {
-                    value: "javascript",
-                    list: []
-                },
-                theme: {
-                    value: "merbivore",
-                    list: [
-                        {
-                        name: "亮色",
-                        items: [
-                            { name: "chrome" },
-                            { name: "clouds" },
-                            { name: "crimson_editor" },
-                            { name: "dawn" },
-                            { name: "dreamweaver" },
-                            { name: "eclipse" },
-                            { name: "github" },
-                            { name: "iplastic" },
-                            { name: "solarized_light" },
-                            { name: "textmate" },
-                            { name: "tomorrow" },
-                            { name: "xcode" },
-                            { name: "kuroir" },
-                            { name: "katzenmilch" },
-                            { name: "sqlserver" },
-                        ],
-                        },
-                        {
-                        name: "暗色",
-                        items: [
-                            { name: "ambiance" },
-                            { name: "chaos" },
-                            { name: "clouds_midnight" },
-                            { name: "dracula" },
-                            { name: "cobalt" },
-                            { name: "gruvbox" },
-                            { name: "gob" },
-                            { name: "idle_fingers" },
-                            { name: "kr_theme" },
-                            { name: "merbivore" },
-                            { name: "merbivore_soft" },
-                            { name: "mono_industrial" },
-                            { name: "monokai" },
-                            { name: "pastel_on_dark" },
-                            { name: "solarized_dark" },
-                            { name: "terminal" },
-                            { name: "tomorrow_night" },
-                            { name: "tomorrow_night_blue" },
-                            { name: "tomorrow_night_bright" },
-                            { name: "tomorrow_night_eighties" },
-                            { name: "twilight" },
-                            { name: "vibrant_ink" },
-                        ],
-                        },
-                    ]
-                }
             },
             tree: {
                 data: [],
@@ -200,18 +120,13 @@ export default {
                 }
             },
             control: {
-
+                save: {
+                    show: false
+                }
             },
             tip: {
                 loading: false,
                 message: ""
-            },
-            debug:{
-                tabs: {
-                    list: [],
-                    activeIndex: 'log'
-                },
-                show: false
             }
         }
     },
@@ -231,38 +146,7 @@ export default {
             }
         }
     },
-    created(){
-        //console.log(1111,this.model)
-    },
     methods:{
-        initEditor(index){
-
-            let editor = this.$refs['editor'][index].editor;
-            console.log(111,index,this.$refs['editor'],editor)
-            /* editor.on("input", ()=> {
-                                    
-                if(this.changed) {
-                    
-                    if(!_.includes(parent.control.save.lis, this.model.key)){
-                        parent.control.save.list.push(this.model.key);
-                    }
-                }
-
-            });
-            */
-            editor.on('change', ()=> {
-                /* if (!this.ignore) {
-                    this.changed = true;
-                    this.$emit('editor:change',this.changed);
-                    this.$emit('editor:value', this.editor.value)
-                } */
-            });
-
-            editor.on('mousemove', ()=> {
-                editor.resize();
-            });
-            
-        },
         onReload(){
 
         },
@@ -312,18 +196,16 @@ export default {
         onInitTreeData(){
 
         },
-        onEditorInit(index){
-            require("brace/ext/language_tools"); //language extension prerequsite...
-            require(`brace/mode/${this.editor.lang.value}`); //language
-            require(`brace/snippets/${this.editor.lang.value}`); //snippet
-            require(`brace/theme/${this.editor.theme.value}`); //language
-            this.initEditor(index);
-        },
         onToggleRunningView(){
 
         },
         onToggleFullScreen(){
             this.m3.fullScreen(true);
+        },
+        onEditorChange(content){
+            console.log(_.now(), content)
+            let fs = this.currentTab;
+            fs.content = content;
         },
         onSave(){
             this.tip.loading = true;
@@ -341,18 +223,18 @@ export default {
 
             let param = {
                 parent: fs.data.parent, name: fs.data.name, 
-                data: { data: fs.content, type: fs.data.ftype, attr: fs.data.attr, index: true }    
+                data: { content: fs.content, ftype: fs.data.ftype, attr: fs.data.attr, index: true }    
             };
 
             // save
             this.m3.dfsWrite(param).then( ()=>{
 
-                this.$refs.editor.session.getUndoManager().markClean();
+                // this.$refs.editor.session.getUndoManager().markClean();
 
                 this.tip.loading = false;
                 this.tip.message = "";
             } ).catch((err)=>{
-                this.$message("请确认脚本 " + err);
+                this.$message.error("请确认脚本 " + err);
                 this.tip.loading = false;
                 this.tip.message = "";
                 return false;
@@ -379,6 +261,9 @@ export default {
             }
 
             fs.content = formatted;
+        },
+        onToggleDegug(id){
+            this.$refs[`FsEditView-${id}`][0].debug.show = !this.$refs[`FsEditView-${id}`][0].debug.show
         }
     }
 };

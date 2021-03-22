@@ -118,8 +118,8 @@ export default {
             this.onReload();
             return false;
         } else {
-            let term = encodeURIComponent( `match() <- [*2] - ('${this.model.join("','")}') - [*2] ->()` );
-            this.m3.callFS("/matrix/graph/graph_service.js", term).then( (rtn)=>{
+            let param = encodeURIComponent( `match() <- [*1] - ('${this.model.join("','")}') - [*1] ->()` );
+            this.m3.callFS("/matrix/graph/graph_service.js", param).then( (rtn)=>{
                 this.graph.data = rtn.message[0].graph;
                 this.onReload();
             } )

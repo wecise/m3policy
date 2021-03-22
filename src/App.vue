@@ -85,7 +85,7 @@ export default {
       this.global = this.m3.global;
       this.auth = this.m3.auth.signedUser;
       this.m3.setTitle(this.auth);
-    },600)
+    },500)
   },
   methods: {
     onSelect(key) {

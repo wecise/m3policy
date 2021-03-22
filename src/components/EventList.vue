@@ -71,75 +71,75 @@
                                 </el-switch>
                             </p>
                         </div-->
-                        <div class="tool">
+                        <div class="tool" @click="onToolsKeep({id:'dashView',name:'视图定制',callback:'DashView'})">
                             <div>视图定制</div>
                             <p>
-                                <el-button type="text" @click="onToolsKeep({id:'dashView',name:'视图定制',callback:'DashView'})">
+                                <el-button type="text">
                                     <span class="el-icon-s-platform" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
                         </div>
-                        <div class="tool">
+                        <div class="tool" @click="onToolsKeep({id:'notifyView',name:'通知管理',callback:'NotifyView'})">
                             <div>通知管理</div>
                             <p>
-                                <el-button type="text" @click="onToolsKeep({id:'notifyView',name:'通知管理',callback:'NotifyView'})">
+                                <el-button type="text">
                                     <span class="el-icon-phone" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
                         </div>
-                        <!--div class="tool">
+                        <!--div class="tool" @click="onToolsKeep({id:'shieldView',name:'告警屏蔽',callback:'ShieldView'})">
                             <div>告警屏蔽</div>
                             <p>
-                                <el-button type="text" @click="onToolsKeep({id:'shieldView',name:'告警屏蔽',callback:'ShieldView'})">
+                                <el-button type="text">
                                     <span class="el-icon-error" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
                         </div-->
-                        <div class="tool">
+                        <div class="tool" @click="onToolsKeep({id:'contextMenu',name:'右键工具',callback:'CtmenuKeepView'})">
                             <div>右键工具</div>
                             <p>
-                                <el-button type="text" @click="onToolsKeep({id:'contextMenu',name:'右键工具',callback:'CtmenuKeepView'})">
+                                <el-button type="text">
                                     <span class="el-icon-menu" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
                         </div>
-                        <div class="tool">
+                        <div class="tool" @click="onToolsKeep({id:'ruleView',name:'规则管理',callback:'RuleView'})">
                             <div>规则管理</div>
                             <p>
-                                <el-button type="text" @click="onToolsKeep({id:'ruleView',name:'规则管理',callback:'RuleView'})">
+                                <el-button type="text">
                                     <span class="el-icon-notebook-2" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
                         </div>
-                        <div class="tool">
+                        <div class="tool" @click="onToolsKeep({id:'jobView',name:'任务管理',callback:'JobView'})">
                             <div>任务管理</div>
                             <p>
-                                <el-button type="text" @click="onToolsKeep({id:'jobView',name:'任务管理',callback:'JobView'})">
+                                <el-button type="text">
                                     <span class="el-icon-date" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
                         </div>
-                        <div class="tool">
+                        <div class="tool" @click="onToolsKeep({id:'fsView',name:'接口管理',callback:'FsView'})">
                             <div>接口管理</div>
                             <p>
-                                <el-button type="text" @click="onToolsKeep({id:'fsView',name:'接口管理',callback:'FsView'})">
+                                <el-button type="text">
                                     <span class="el-icon-edit-outline" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
                         </div>
-                        <!--div class="tool">
+                        <!--div class="tool" @click="onToolsKeep({id:'entityEtl',name:'实体抽取',callback:'EntityView'})">
                             <div>实体抽取</div>
                             <p>
-                                <el-button type="text" @click="onToolsKeep({id:'entityEtl',name:'实体抽取',callback:'EntityView'})">
+                                <el-button type="text">
                                     <span class="el-icon-coin" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
                         </div-->
                         <!-- 一般工具 -->
-                        <div class="tool">
+                        <div class="tool" @click="onToolsKeep({id:'severityKeep',name:'级别定义',callback:'SeverityView'})">
                             <div>级别定义</div>
                             <p>
-                                <el-button type="text" @click="onToolsKeep({id:'severityKeep',name:'级别定义',callback:'SeverityView'})">
+                                <el-button type="text">
                                     <span class="el-icon-warning" style="cursor:pointer;font-size:16px;"></span>
                                 </el-button>
                             </p>
@@ -203,15 +203,19 @@
                         :key="index"
                         :width="item.width"
                         :formatter="item.render">
+                        <template slot-scope="scope">
+                            <div style="height:30px;line-height:30px;" v-if="item.field=='tags'">
+                                <TagView domain='event' :model.sync="scope.row.tags" :id="scope.row.id" :limit="1"></TagView>
+                            </div>
+                            <div v-html='item.render(scope.row, scope.column, scope.row[item.field], scope.$index)' 
+                                v-else-if="typeof item.render === 'function'">
+                            </div>
+                            <div v-else>
+                                {{scope.row[item.field]}}
+                            </div>
+                        </template>
                     </el-table-column>
                 </template>
-                <el-table-column label="标签" prop="tags" width="200">
-                    <template slot-scope="scope">
-                        <div style="height:30px;line-height:30px;">
-                            <TagView domain='event' :model.sync="scope.row.tags" :id="scope.row.id" :limit="1"></TagView>
-                        </div>
-                    </template>
-                </el-table-column>
             </el-table>
         </el-main>
         <el-footer>
@@ -475,7 +479,7 @@ export default {
     },
     methods: {
         initContextMenu(){
-            this.m3.callFS("/matrix/eventConsole/getContextMenu.js").then( (rtn)=>{
+            this.m3.callFS("/matrix/eventConsole/contextmenu/getContextMenu.js").then( (rtn)=>{
                 this.dt.contextmenu.list = rtn.message;
             } );
             document.addEventListener('click',(event)=>{

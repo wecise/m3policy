@@ -18,7 +18,8 @@ import EventList from '../EventList';
 export default {
     name: "HistoryView",
     props: {
-        model: Object
+        model: Object,
+        global: Object
     },
         data(){
             return {
@@ -42,10 +43,10 @@ export default {
     },
     methods:{
         initData(){
-            let term = encodeURIComponent(JSON.stringify(this.model));
-            this.m3.callFS("/matrix/eventConsole/diagnosis/smartGroup.js", term).then((rtn)=>{
+            let param = encodeURIComponent(JSON.stringify(this.model).replace(/%/g,'%25'));
+            this.m3.callFS("/matrix/eventConsole/diagnosis/history.js", param).then((rtn)=>{
                 let rt = rtn.message;
-                _.extend(this.dt, {columns: _.map(rt.template, (v)=>{
+                _.extend(this.dt, {columns: _.map(rt.columns, (v)=>{
                     
                     if(_.isUndefined(v.visible)){
                         _.extend(v, { visible: true });

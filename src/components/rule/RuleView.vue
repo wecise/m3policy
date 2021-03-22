@@ -61,42 +61,8 @@
                                 </el-tab-pane>
                             </el-tabs>
                             
-                            <div style="background:#ffffff;padding:20px;height:100%;display:block;text-align:center;" v-else>
-                                <h2 style="margin: 0px 0px 40px 0px;">欢迎使用配置管理</h2>
-                                <p>
-                                    
-                                    <el-button style="width:100px;height:90px;" @click="onToggleKey('etc')">
-                                        <i class="el-icon-money" style="font-size:48px;"></i> <p>全局配置</p>
-                                    </el-button>
-
-                                    <el-button style="width:100px;height:90px;" @click="onToggleKey('hosts')">
-                                        <i class="el-icon-office-building" style="font-size:48px;"></i> <p>服务器组管理</p>
-                                    </el-button>
-                                    
-                                    <el-button style="width:100px;height:90px;" @click="onToggleKey('jobs')">
-                                        <i class="el-icon-postcard" style="font-size:48px;"></i> <p>作业定义</p>
-                                    </el-button>
-                                
-                                    <el-button style="width:100px;height:90px;" @click="onToggleKey('rules')">
-                                        <i class="el-icon-s-data" style="font-size:48px;"></i> <p>规则管理</p>
-                                    </el-button>
-
-                                    <el-button style="width:100px;height:90px;" @click="onToggleKey('locks')">
-                                        <i class="el-icon-lock" style="font-size:48px;"></i> <p>全局锁</p>
-                                    </el-button>
-
-                                    <el-button style="width:100px;height:90px;" @click="onToggleKey('notify')">
-                                        <i class="el-icon-warning-outline" style="font-size:48px;"></i> <p>通知设置</p>
-                                    </el-button>
-                                
-                                </p>
-                                <!-- <object src="../../assets/svg/configWorld.svg" 
-                                    type="image/svg+xml" style="width:40vw;height:40vh;background: #ffffff;">
-                                </object> -->
-                                <p>
-                                    如有任何意见或建议，请及时反馈给我们。
-                                    <el-link href="mailto:m3@wecise.com">Email：m3@wecise.com</el-link>
-                                </p>
+                            <div v-else>
+                                <Welcome></Welcome>
                             </div>
 
                         </el-main>
@@ -121,6 +87,7 @@
 import _ from 'lodash';
 import TreeView from './TreeView';
 import EditRuleView from './EditRuleView';
+import Welcome from './Welcome';
 
 
 export default {
@@ -130,7 +97,8 @@ export default {
     },
     components:{
         TreeView,
-        EditRuleView
+        EditRuleView,
+        Welcome
     },
     data() {
         return {
@@ -436,7 +404,7 @@ export default {
 
                     this.eventHub.$emit("CONFIG-TREE-REFRESH-EVENT", item.key);
                     
-                }).catch((err)=>{
+                }).catch(err=>{
                     this.$message({
                         type: "error",
                         message: "更新失败：" + err
@@ -451,7 +419,6 @@ export default {
         configDelete(){
             
             let item = this.configTreeSelectedNode;
-
             const h = this.$createElement;
             this.$msgbox({
                     title: `确认要删除以下配置`, 

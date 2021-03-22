@@ -19,11 +19,14 @@
                   placeholder="选择视图"
                 >
                   <el-option
-                    :value="item.name"
+                    :value="item.label"
                     :key="index"
                     v-for="(item,index) in views.list"
                   >
-                    {{item.name.replace(/.json/,"")}}
+                    {{item.label}}
+                    <span style="float:right;">
+                      <el-button type="text" icon="el-icon-star-on" style="color: #ff9800;font-size: 14px;font-weight: 600;" v-if="item.defaultView"></el-button>
+                    </span>
                   </el-option>
                 </el-select>
                 <el-button
@@ -117,11 +120,11 @@ export default {
     return {
       loading: false,
       views: {
-        value: "运维告警",
+        value: "",
         list: []
       },
       search: {
-        type: "#/matrix/devops/alert",
+        type: "",
         model: {
           term: "",
           view: "all",
@@ -150,11 +153,16 @@ export default {
         },
         deep:true
     },
+    'views.value':{
+      handler(val){
+        this.$notify.success(`已切换至 ${val} 视图`)
+        this.onSearch();
+      }
+    }
   },
   created(){
 
     this.initViews();
-    this.onSearch();
 
     this.eventHub.$on("event-diagnosis",(data)=>{
       this.addTab(data.row,data.menu)
@@ -175,7 +183,14 @@ export default {
     initViews(){
         let term = encodeURIComponent(JSON.stringify({  action: "list"  }));
         this.m3.callFS("/matrix/eventConsole/view/action.js", term).then((rtn)=>{
-            this.views.list = _.orderBy(rtn.message,['name'],['asc']);
+            this.views.list = _.map(_.orderBy(rtn.message,['name'],['asc']),v=>{
+                                
+                                let label = v.name.replace(/\.json/,'');
+                                if(v.defaultView){
+                                  this.views.value = label;
+                                }
+                                return _.extend(v, {label: label});
+                              });
         })
     },
     onSearch() {
@@ -183,7 +198,7 @@ export default {
       this.loading = true;
 
       let param = {
-        view: this.search.model.view,
+        view: this.search.model.view=this.views.value,
         term: this.search.model.term
           ? `${this.search.type} | ${this.search.model.term}`
           : this.search.type,
@@ -195,8 +210,10 @@ export default {
       ).then( (rtn)=>{
           this.search.result.list = rtn.message; 
           this.loading = false;
-      }).catch( ()=>{
+      }).catch( err=>{
+        this.search.result.list = null;
         this.loading = false;
+        console.error(err);
       } );
 
     },
