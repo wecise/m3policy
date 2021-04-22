@@ -118,7 +118,7 @@ export default {
             this.onReload();
             return false;
         } else {
-            let param = encodeURIComponent( `match() <- [*1] - ('${this.model.join("','")}') - [*1] ->()` );
+            let param = encodeURIComponent( `match() <- [*3] - ('${this.model.join("','")}') - [*3] ->()` );
             this.m3.callFS("/matrix/graph/graph_service.js", param).then( (rtn)=>{
                 this.graph.data = rtn.message[0].graph;
                 this.onReload();

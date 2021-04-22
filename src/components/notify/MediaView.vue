@@ -14,15 +14,30 @@
     <el-main>
       <el-table
         :data="dt.rows"
+        stripe
         style="width: 100%">
-        <el-table-column type="index"></el-table-column>
         <template v-for="(item,index) in dt.columns">
-          <el-table-column 
-            :key="index"
-            :label="item.title" 
-            :prop="item.field" 
-            v-if="item.visible">
-          </el-table-column>
+            <el-table-column 
+                :prop="item.field"
+                :label="item.title" 
+                sortable 
+                show-overflow-tooltip
+                :key="index"
+                :width="item.width"
+                :formatter="item.render"
+                v-if="item.visible">
+                <template slot-scope="scope">
+                    <div style="height:30px;line-height:30px;" v-if="item.field=='tags'">
+                        <TagView domain='notifyRule' :model.sync="scope.row.tags" :id="scope.row.id" :limit="1"></TagView>
+                    </div>
+                    <div v-html='item.render(scope.row, scope.column, scope.row[item.field], scope.$index)' 
+                        v-else-if="typeof item.render === 'function'">
+                    </div>
+                    <div v-else>
+                        {{scope.row[item.field]}}
+                    </div>
+                </template>
+            </el-table-column>
         </template>
         <el-table-column label="操作">
           <template slot-scope="scope">
@@ -97,7 +112,7 @@ export default {
   },
   methods: {
     initData(){
-      this.m3.callFS("/matrix/notify/getVoiceList.js",null).then((rt)=>{
+      this.m3.callFS("/matrix/eventConsole/notify/getVoiceList.js",null).then((rt)=>{
         let rtn = rt.message;
         this.$set(this.dt,'rows', rtn.rows);
         this.$set(this.dt,'columns', _.map(rtn.columns, (v)=>{

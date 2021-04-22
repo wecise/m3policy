@@ -9,7 +9,8 @@
       
         <el-card :body-style="{ padding: '10px' }" 
             style="text-align: center;padding:0px;cursor:pointer;" :key="index" v-for="(item,index) in dt.rows"
-            @dblclick.native="onEdit(item)">
+            @dblclick.native="onEdit(item)"
+            shadow="hover">
             <el-dropdown style="position: absolute;right: 5px;top: 5px;cursor:pointer;">
               <span class="el-dropdown-link">
                 <i class="el-icon-arrow-down el-icon--right"></i>
@@ -19,18 +20,16 @@
                 <el-dropdown-item @click.native="onDelete(item)" divided>删除</el-dropdown-item>
               </el-dropdown-menu>
             </el-dropdown>
-            <span class="el-icon-bank-card" style="font-size:65px;padding:0px 65px;color:rgba(0,0,0,.5)"></span>
-            <div style="text-align: left;">
-                <p>
-                  视图名称：{{item.name | formatName}}
-                </p>
-                <p>
-                  创建时间:{{  item.ctime | formatTime}}
-                </p>
+            <svg-icon icon-class="eventList" style="font-size:6em;"/>
+            <div style="padding: 14px;">
+                <span>{{item.name | formatName}}</span>
+                <div class="bottom clearfix">
+                  <time class="time">创建时间:{{  item.ctime | formatTime}}</time>
+                </div>
             </div>
             <div style="text-align:right;color: #999;">
                 默认视图
-                <el-button type="text" icon="el-icon-star-on" style="color: #ff9800;font-size: 14px;font-weight: 600;" v-if="item.defaultView"></el-button>
+                <el-button type="text" icon="el-icon-star-on" style="color: #ff9800;font-size: 15px;font-weight: 600;" v-if="item.defaultView"></el-button>
                 <el-button type="text" icon="el-icon-star-off" style="color: #ff9800;font-size: 14px;font-weight: 600;" @click="onSetDefaultView(item)" v-else></el-button>
             </div>
         </el-card>
@@ -39,9 +38,11 @@
     <el-dialog :title="'视图编辑 ' + dt.selected.name" 
         :visible.sync="edit.show" 
         :show-close="false"
-        :close-on-press-escape="false"
+        :close-on-press-escape="true"
         :close-on-click-modal="false"
         :destroy-on-close="true"
+        dialogDrag
+        dialogChange
         v-if="dt.selected">
       <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose"></EditView>
     </el-dialog>
@@ -105,10 +106,11 @@ export default {
       })
     },
     onSetDefaultView(item){
-      let param = encodeURIComponent(JSON.stringify({  action: "setDefaultView", data: { key: 'defaultView', value: item.id } }));
+      let param = encodeURIComponent(JSON.stringify({  action: "setDefaultView", data: { key: 'defaultView', value: item.fullname } }));
       this.m3.callFS("/matrix/eventConsole/view/action.js", param).then(()=>{
           this.onRefresh();
-          this.$notify.success(`已设置 ${item.name.replace(/.json/,'')} 为默认视图`)
+          this.$notify.success(`已设置 ${item.name.replace(/.json/,'')} 为默认视图`);
+          this.$emit("toggle-view");
       })
     },
     onEdit(item){
@@ -116,7 +118,7 @@ export default {
       this.edit.show = true;
     },
     onDelete(item){
-      this.$confirm('确定要删除该视图, 是否继续?', '提示', {
+      this.$confirm(`确定要删除该视图 ${item.name}, 是否继续?`, '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
@@ -164,12 +166,38 @@ export default {
     padding: 0;
     align-content: flex-start;
   }
-  .el-card {
+  .el-card{
     position: relative;
-    width: 20em;
-    height: 15em;
-    margin: 10px;
+    margin:10px;
+  }
+  .time {
+    font-size: 12px;
+    color: #999;
+  }
+  
+  .bottom {
+    margin-top: 13px;
+    line-height: 12px;
   }
 
+  .button {
+    padding: 0;
+    float: right;
+  }
+
+  .image {
+    width: 100%;
+    display: block;
+  }
+
+  .clearfix:before,
+  .clearfix:after {
+      display: table;
+      content: "";
+  }
+  
+  .clearfix:after {
+      clear: both
+  }
   
 </style>

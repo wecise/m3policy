@@ -62,7 +62,7 @@
             </div>
         </el-header>
         <el-main style="padding:0px;overflow:hidden;">
-            <EventList :model="result.dt" :global="global" :options="result.dt.options" @onDiagnosis="onDiagnosis" v-if="result.dt.rows"></EventList>
+            <EventList :model="result.dt" :global="global" :options="result.dt.options" @DiagnosisView="onDiagnosis" v-if="result.dt.rows"></EventList>
         </el-main>
     </el-container>
 
@@ -83,9 +83,6 @@ export default {
   },
   data() {
     return {
-      dt: {
-          rows: []
-      },
       attr:{
           dt: {
               // 属性列表
@@ -138,11 +135,7 @@ export default {
   },
   methods: {
     initData(){
-        let term = encodeURIComponent(JSON.stringify(this.model).replace(/%/gi,'%25'));
-        this.m3.callFS("/matrix/eventConsole/diagnosis/journal.js", term).then((rtn)=>{
-            this.dt.rows = rtn.message;
-        })
-
+        
         this.attr.dt.rows = _.compact(_.map(this.model, (v,k)=>{
                                 if(!v) return;
                                 return {name:k, value:v};
@@ -162,7 +155,7 @@ export default {
     },
     onAttrSelect(val){
         let selected = _.map(this.attr.dt.selected, (v)=>{
-            return `${v.name}=${v.value}`;
+            return `${v.name}='${v.value}'`;
         }).join(` ${val} `);
         
         if( _.indexOf(this.attr.tag.list,selected) !== -1 ) {

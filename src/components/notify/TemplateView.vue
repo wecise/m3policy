@@ -18,50 +18,88 @@
       <el-table
         :data="dt.rows"
         :row-class-name="rowClassName"
-        @current-change="onSelectionChange"
         style="width: 100%">
-        <el-table-column type="index"></el-table-column>
         <template v-for="(item,index) in dt.columns">
-          <el-table-column 
-            node-key="id"
-            :key="index"
-            :label="item.title" 
-            :prop="item.field" 
-            :formatter="item.render" 
-            v-if="item.visible">
-          </el-table-column>
+            <el-table-column 
+                :prop="item.field"
+                :label="item.title" 
+                sortable 
+                show-overflow-tooltip
+                :key="index"
+                :width="item.width"
+                :formatter="item.render"
+                v-if="item.visible">
+                <template slot-scope="scope">
+                    <div style="height:30px;line-height:30px;" v-if="item.field=='tags'">
+                        <TagView domain='notifyTemplate' :model.sync="scope.row.tags" :id="scope.row.id" :limit="1"></TagView>
+                    </div>
+                    <div v-html='item.render(scope.row, scope.column, scope.row[item.field], scope.$index)' 
+                        v-else-if="typeof item.render === 'function'">
+                    </div>
+                    <div v-else>
+                        {{scope.row[item.field]}}
+                    </div>
+                </template>
+            </el-table-column>
         </template>
-        <el-table-column type="expand" label="模板定义" width="300">
-          <template slot-scope="scope">
-            <el-container>
-              <el-header style="height:30px;line-height:30px;">
-                <el-tooltip content="点击更新模板内容" open-delay="500">
-                  <el-button type="text" icon="el-icon-refresh" @click="onUpdate(scope.row)"></el-button>
-                </el-tooltip>
-              </el-header>
-              <el-main style="padding:0px;">
-                <notify-manage-editor :render="scope.row.template" :index="scope.$index" @update:render="scope.row.template = $event"></notify-manage-editor>
-              </el-main>
-            </el-container>
-          </template>
-        </el-table-column>
         <el-table-column label="操作">
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-delete"  @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
+            <el-button type="text" @click="onEdit(scope.$index, scope.row)"> 编辑</el-button>
+            <el-button type="text" @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
           </template>
         </el-table-column>
       </el-table>
+      <el-dialog
+        title="模版管理"
+        :visible.sync="dialog.template.show"
+        :append-to-body="true">
+        <el-form :model="dialog.template.data"  :rules="dialog.template.rules" ref="templateForm" label-width="100px">
+          <el-form-item label="名称" prop="name">
+           <el-input v-model="dialog.template.data.name" :disabled="dialog.template.action==='update'?true:false"></el-input>
+          </el-form-item>
+          <el-form-item label="模版定义" prop="content">
+            <editor
+                v-model="dialog.template.data.content"
+                @init="onEditorInit"
+                :lang="editor.lang.value"
+                :theme="editor.theme.value"
+                width="inherit"
+                height="calc(100vh - 425px)"
+                style="border:1px solid #f2f2f2;"
+                ref="editorRef"
+            ></editor>
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-switch
+              v-model="dialog.template.data.attr.status"
+              active-color="#13ce66"
+              inactive-color="#dddddd"
+              :active-value="1"
+              :inactive-value="0">>
+            </el-switch>
+          </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialog.template.show = false">取 消</el-button>
+          <el-button type="primary" @click="onSave">确 定</el-button>
+        </span>
+      </el-dialog>
     </el-main>
   </el-container>
 </template>
 
 <script>
 import _ from 'lodash';
+import TagView from '../tags/TagView';
 
 export default {
   name: "TemplateView",
   props: {
     model: Object
+  },
+  components:{
+    TagView,
+    editor:require("vue2-ace-editor")
   },
   data() {
     return {
@@ -70,6 +108,36 @@ export default {
         columns: [],
         selected: [],
         radio:''
+      },
+      dialog:{
+        template:{
+          show: false,
+          data: {
+            name: "",
+            ftype: "json",
+            attr: {remark: "",status:0},
+            parent: `/home/${window.auth.signedUser.username}/Documents/notify`,
+            content: ""
+          },
+          rules: {
+              name:[
+                { required: true, message: '请输入名称', trigger: 'blur' }
+              ]
+          },
+          action: ""
+        }
+      },
+      editor: {
+          value: "",
+          loading: false,
+          lang: {
+              value: "javascript",
+              list: []
+          },
+          theme: {
+              value: "merbivore",
+              list: this.m3.EDITOR_THEME
+          }
       }
     };
   },
@@ -77,11 +145,25 @@ export default {
      this.initData();
   },
   methods: {
+    initEditor(){
+        let editor = this.$refs.editorRef.editor;
+        
+        editor.on('mousemove', ()=> {
+            editor.resize();
+        });
+    },
+    onEditorInit(){
+        require("brace/ext/language_tools"); //language extension prerequsite...
+        require(`brace/mode/${this.editor.lang.value}`); //language
+        require(`brace/snippets/${this.editor.lang.value}`); //snippet
+        require(`brace/theme/${this.editor.theme.value}`); //language
+        this.initEditor();
+    },
     rowClassName({rowIndex}){
         return `row-${rowIndex}`;
     },
     initData(){
-      this.m3.callFS("/matrix/notify/getTemplateList.js",null).then((rt)=>{
+      this.m3.callFS("/matrix/eventConsole/notify/getTemplateList.js",null).then((rt)=>{
         let rtn = rt.message;
 
         this.$set(this.dt,'rows', rtn.rows);
@@ -100,92 +182,43 @@ export default {
         }));
       });
     },
-    onSelectionChange(val) {
-      this.dt.selected = val;
-      
-      // 单选设置
-      _.forEach(this.dt.rows,(v)=>{
-        this.$set(v,'enableFlag','0');
-      })
-      this.$set(_.find(this.dt.rows,{name: val.name}),'enableFlag','1');
-      this.dt.radio = '1';
-    },
     onRefresh(){
       this.initData();
     },
-    onNew(){
-      
-      this.$prompt('请输入模板名称', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        }).then(({ value }) => {
-
-        if(_.isEmpty(value)){
-          this.$message({
-            type: "info",
-            message: "请输入名称"
-          })
-          return false;
-        }
-
-        let ftype = "json";
-        let attr = {remark: ""};
-        let parent = `/home/${window.SignedUser_UserName}/Documents/notify`;
-        let content = JSON.stringify({template: ""},null,2);
-
-        let param = {
-                      parent: parent, name: [value,ftype].join("."), 
-                      data: {data: content, type: ftype, attr: attr, index: false}    
-                    };
-        this.m3.dfsNew(param).then(()=>{
-            this.$message({
-              type: "success",
-              message: "新建模板成功！"
-            })  
-            this.initData();
-        }).catch((err)=>{
-            this.$message({
-              type: "error",
-              message: "新建模板失败 " + err.message
-            })
-        })
-      
-        
-      })
-      
+    onReset(){
+      if(this.$refs['templateForm']){
+        this.$refs['templateForm'].resetFields();
+      }
     },
-    onUpdate(item){
-      
-      if(_.isEmpty(item)){
-        this.$message({
-          type: "info",
-          message: "请选择模板"
-        });
+    onNew(){
+      this.onReset();
+      this.dialog.template.show = true;
+      this.dialog.template.action = "add";
+    },
+    onSave(){
+
+      if(_.isEmpty(this.dialog.template.data.name)){
+        this.$message.warning("请输入名称");
         return false;
       }
       
-      let ftype = item.ftype;
-      let parent = item.parent;
-      let name = item.name;
-      let content = JSON.stringify({template:item.template},null,2);
-      let attr = item.attr;
-      
       let param = {
-                    parent: parent, name: name, 
-                    data: {data: content, type: ftype, attr: attr, index: false}    
+                    parent: this.dialog.template.data.parent, name: [this.dialog.template.data.name,this.dialog.template.data.ftype].join(".").replace(/.json.json/,'.json'), 
+                    data: {content: this.dialog.template.data.content, type: this.dialog.template.data.ftype, attr: this.dialog.template.data.attr, index: true}    
                   };
       this.m3.dfsNew(param).then(()=>{
           this.$message({
             type: "success",
-            message: "更新模板成功！"
+            message: "新建模板成功！"
           })  
           this.initData();
+          this.dialog.template.show = false;
       }).catch((err)=>{
           this.$message({
             type: "error",
-            message: "更新模板失败 " + err.message
+            message: "新建模板失败 " + err.message
           })
-      })
+      })  
     },
     onDelete(index,item){
       console.log(index)
@@ -212,6 +245,12 @@ export default {
           
           
       })
+    },
+    onEdit(index,item){
+      console.log(index,item)
+      this.dialog.template.show = true;
+      this.dialog.template.data = item;
+      this.dialog.template.action = "update";
     }
   },
 };

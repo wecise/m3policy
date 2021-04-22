@@ -49,7 +49,7 @@ export default {
   methods: {
     initData(){
       
-      _.extend(this.dt, {columns: _.map(this.model.template, function(v){
+      _.extend(this.dt, {columns: _.map(this.model.columns, function(v){
                 
                 if(_.isUndefined(v.visible)){
                     _.extend(v, { visible: true });

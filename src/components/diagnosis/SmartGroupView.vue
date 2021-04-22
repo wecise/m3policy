@@ -46,7 +46,7 @@
                                     :model="dt" 
                                     :global="global" 
                                     :options="dt.options" 
-                                    @onDiagnosis="onDiagnosis">
+                                    @DiagnosisView="onDiagnosis">
                                 </EventList> 
                             </el-tab-pane>
                             <el-tab-pane name="graphByGroup">

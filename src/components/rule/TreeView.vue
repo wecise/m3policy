@@ -7,18 +7,28 @@
 
                 <el-dropdown placement="top-start" trigger="click">
                     <el-tooltip content="导出、导入" >
-                        <el-button type="text" icon="el-icon-menu" style="color:#333333;"></el-button>
+                        <el-button type="text" icon="el-icon-menu" style="color:#333333;padding-left: 10px;"></el-button>
                     </el-tooltip>
                     <el-dropdown-menu slot="dropdown">
-                        <el-dropdown-item>
-                            <label for="auto-file-upload" class="custom-file-upload" style="display: inline-block;padding: 6px 12px;cursor: pointer;">
-                                <i class="el-icon-download"></i> 导入
-                            </label>
-                            <input id="auto-file-upload" type="file" @change="configImport" required="required" style="display:none;" />
-                        </el-dropdown-item>
-                        <el-dropdown-item>
-                            <el-button type="text" @click="configExport"><i class="el-icon-upload2"></i> 导出</el-button>
-                        </el-dropdown-item>
+                        <div class="tool-box">
+                            <div class="tool">
+                                <div>导入</div>
+                                <p>
+                                    <label for="auto-file-upload">
+                                        <span class="el-icon-download" style="cursor:pointer;font-size:16px;padding:10px;"></span>
+                                    </label>
+                                    <input id="auto-file-upload" type="file" @change="onImport" required="required" style="display:none;" />
+                                </p>
+                            </div>
+                            <div class="tool" @click="onExport(null)">
+                                <div>导出</div>
+                                <p>
+                                    <el-button type="text">
+                                        <span class="el-icon-download" style="cursor:pointer;font-size:16px;"></span>
+                                    </el-button>
+                                </p>
+                            </div>
+                        </div>
                     </el-dropdown-menu>
                 </el-dropdown>
         </el-header>
@@ -61,7 +71,7 @@
                     </span>
                     <span v-else>
                         <i class="el-icon-c-scale-to-original" style="color:#0088cc;"></i>
-                        <span> {{ pickLabel(node.label) }}</span>
+                        <span draggable="true"  @dragstart="onDragStart(data,$event)" @dragend="onDragEnd($event)"> {{ pickLabel(node.label) }}</span>
                         <el-dropdown v-show="data.show" style="float:right;width:14px;margin:0 5px;">
                             <span class="el-dropdown-link">
                                 <i class="el-icon-more el-icon--right"></i>
@@ -84,12 +94,9 @@
                 v-if="dialog.configNew.show">
                 <el-container>
                     <el-main style="padding:0px 20px;height:100%;overflow:auto;">
-                        <el-form label-width="80">
+                        <el-form :model="dialog.configNew.formItem" :rules="dialog.configNew.rules" label-width="100" label-position="top">
                             <el-form-item label="位置" prop="parent">
-                                <el-input v-model="dialog.configNew.parent" placeholder="位置" :disabled="true"></el-input>
-                            </el-form-item>
-                            <el-form-item label="名称" prop="name">
-                                <el-input v-model="dialog.configNew.name" :placeholder="dialog.configNew.formItem.ifDir?'目录名称':'配置名称'" autofocus="true"></el-input>
+                                <el-input v-model="dialog.configNew.formItem.parent" placeholder="位置" :disabled="true"></el-input>
                             </el-form-item>
                             <el-form-item :label="dialog.configNew.formItem.ifDir?'目录':'配置'">
                                 <el-switch v-model="dialog.configNew.formItem.ifDir"
@@ -97,8 +104,11 @@
                                     :active-value="true"
                                     :inactive-value="false"></el-switch>
                             </el-form-item>
+                            <el-form-item label="名称" prop="name">
+                                <el-input v-model="dialog.configNew.formItem.name" :placeholder="dialog.configNew.formItem.ifDir?'目录名称':'配置名称'" autofocus="true"></el-input>
+                            </el-form-item>
                             <el-form-item label="TTL" prop="ttl">
-                                <el-input v-model="dialog.configNew.formItem.ttl" placeholder="TTL"></el-input>
+                                <el-input-number v-model="dialog.configNew.formItem.ttl" placeholder="TTL"></el-input-number>
                             </el-form-item>
                             <el-form-item label="值" prop="value">
                                 <el-input v-model="dialog.configNew.formItem.value" type="textarea" placeholder="配置内容"></el-input>
@@ -132,13 +142,18 @@ export default {
             dialog:{
                 configNew: {
                     show: false,
-                    parent: '',
-                    name: '',
                     formItem: {
+                        parent: '',
+                        name: '',
                         key: '',
                         value: '',
                         ttl: null,
                         ifDir: true,
+                    },
+                    rules: {
+                        name:[
+                            { required: true, message: '请输入名称', trigger: 'blur' }
+                        ]
                     },
                     data: null,
                     loading: false
@@ -166,10 +181,10 @@ export default {
             return _.last(label.split("/"));
         },
         initData(){
-            let root = ["",this.auth.signedUser.Company.ospace,'rules'].join("/");
+            let root = ["",this.auth.signedUser.Company.ospace].join("/");
             this.m3.ruleGet(root).then( (rtn)=>{
                 this.treeData = [rtn.message];
-            } );
+            });
         },
         onMouseEnter(item){
             this.$set(item, 'show', true)
@@ -219,18 +234,26 @@ export default {
                     type: 'warning'
             }).then(() => {
 
-                this.m3.ruleDelete(item).then( (rtn)=>{
-                    if(rtn == 1){
-                        // 刷新
+                this.m3.ruleDelete(item).then( ()=>{
+                    this.$message.success("删除成功");
+
+                    // 刷新
+                    let root = ["",this.auth.signedUser.Company.ospace].join("/");
+                    if(item.key == root){
+                        this.initData();
+                    } else {
                         this.onRefresh(parent);
-                        
-                        // 关闭Tab
-                        this.$root.configClose(item.key);
                     }
-                } );
+                    
+                    // 关闭Tab
+                    this.$emit("node-close",item.key);
+
+                }).catch(err=>{
+                    this.$message.error("删除失败 " + JSON.stringify(err.message));
+                });
 
             }).catch(() => {
-                    
+                this.$message.info("取消删除操作");
             }); 
 
         },
@@ -238,7 +261,7 @@ export default {
 
             this.dialog.configNew.formItem.ifDir = false;
             this.dialog.configNew.data = data;
-            this.dialog.configNew.parent = data.key || '/';
+            this.dialog.configNew.formItem.parent = data.key || '/';
             
             this.dialog.configNew.show = true;
             
@@ -247,7 +270,7 @@ export default {
             
             this.dialog.configNew.formItem.ifDir = true;
             this.dialog.configNew.data = data;
-            this.dialog.configNew.parent = data.key || '/';
+            this.dialog.configNew.formItem.parent = data.key || '/';
 
             this.dialog.configNew.show = true;
         },
@@ -259,8 +282,8 @@ export default {
         },
         onResetConfig(){
             
-            this.dialog.configNew.parent = '';
-            this.dialog.configNew.name = '';
+            this.dialog.configNew.formItem.parent = '';
+            this.dialog.configNew.formItem.name = '';
             this.dialog.configNew.data = null;
             this.dialog.configNew.formItem.key = '';
             this.dialog.configNew.formItem.value = '';
@@ -268,24 +291,10 @@ export default {
             this.dialog.configNew.formItem.ifDir = true;
 
         },
-        onExport(data){
-            
-            this.$confirm(`确认要导出 ${data.key} 下的配置?`, '提示', {
-                confirmButtonText: '确定',
-                cancelButtonText: '取消',
-                type: 'warning'
-            }).then(() => {
-                
-                this.m3.ruleExport(data.key,this);
-                
-            }).catch(() => {
-                
-            });
-        },  
         onConfigSave(){
             
 
-            if(_.isEmpty(this.dialog.configNew.name)){
+            if(_.isEmpty(this.dialog.configNew.formItem.name)){
                 this.$message({
                     type: "warning",
                     message: "配置名称不能为空！"
@@ -295,57 +304,120 @@ export default {
 
             this.dialog.configNew.loading = true;
             
-            this.dialog.configNew.formItem.key = [this.dialog.configNew.parent, this.dialog.configNew.name].join("/").replace(/\/\//g,'/');
+            this.dialog.configNew.formItem.key = [this.dialog.configNew.formItem.parent, this.dialog.configNew.formItem.name].join("/").replace(/\/\//g,'/');
             
+            this.m3.ruleAdd(this.dialog.configNew.formItem).then( ()=>{
+                this.$message({
+                    type: "success",
+                    message: "保存成功！"
+                })
+                
+                // 刷新
+                this.onRefresh(this.dialog.configNew.data);
+
+                this.onResetConfig();
+                
+                this.dialog.configNew.show = false;
+                
+                this.dialog.configNew.loading = false;
+            }).catch(err=>{
+                this.$message({
+                    type: "error",
+                    message: "保存失败：" + err.message
+                })
+            });
+
+        },
+        onExport(data){
+            
+            let key = "";
+    
+            if(_.isNull(data)){
+                key = ["",this.auth.signedUser.Company.ospace].join("/");
+            }else {
+                key = data.key;
+            }
+
+            this.$confirm(`确认要导出 ${key} 下的配置?`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                
+                this.m3.ruleExport(key).then(res=>{
+                    this.$message.success("配置导出成功 " + res);
+                }).catch(err=>{
+                    this.$message.error("配置导出失败 " + err);
+                });
+                
+            }).catch(() => {
+                this.$message({
+                    type: "info",
+                    message: "已取消导出操作"
+                })
+            });
+        }, 
+        onImport(event){
+            
+            let file = event.target.files[0];
             const h = this.$createElement;
+
             this.$msgbox({
-                    title: `确认要添加以下配置`, 
+                    title: `确认要导入配置`, 
                     message: h('span', null, [
-                        h('p', null, `位置：${this.dialog.configNew.formItem.key}`),
-                        h('p', null, `值：${_.truncate(this.dialog.configNew.formItem.value)}`),
-                        h('p', null, `TTL：${ this.dialog.configNew.formItem.ttl ? this.dialog.configNew.formItem.ttl : ''}`)
+                        h('p', null, `文件名称：${file.name}`),
+                        h('p', null, `修改时间：${file.lastModifiedDate}`),
+                        h('p', null, `文件大小：${this.m3.bytesToSize(file.size)}`)
                     ]),
                     showCancelButton: true,
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
+                    customClass:'rule-messagebox',
                     type: 'warning'
             }).then(() => {
 
-                this.m3.ruleAdd(this.dialog.configNew.formItem).then( (rtn)=>{
-                    if(rtn == 1){
-                        this.$message({
-                            type: "success",
-                            message: "保存成功！"
-                        })
-                        
-                        // 刷新
-                        this.onRefresh(this.dialog.configNew.data);
+                this.m3.ruleImport(file).then(()=>{
+                    this.$message({
+                        type: "success",
+                        message: "导入成功"
+                    })
+                    
+                    this.initData();
 
-                        this.onResetConfig();
-                        
-                        this.dialog.configNew.show = false;
+                    event.target.value = '';
 
+                }).catch(err=>{
+                    this.$message({
+                        type: "error",
+                        message: "导入失败 " + err
+                    })
 
-                    } else {
-                        this.$message({
-                            type: "error",
-                            message: "保存失败：" + rtn
-                        })
-                    }
-
-                    this.dialog.configNew.loading = false;
-                } );
+                    event.target.value = '';
+                });
 
             }).catch(() => {
-                this.dialog.configNew.loading = false;
+                this.$message({
+                    type: "info",
+                    message: "已取消导入操作"
+                })
+
+                event.target.value = '';
             }); 
-
+            
         },
-        configImport(){
-
+        onDragStart(data, event) {
+            
+            let node = _.extend(data, {
+                type: 'rule',
+                title: data.key
+            })
+            event.dataTransfer.setData("Text",JSON.stringify(node));
         },
-        configExport(){
-
+        onDragEnd(event){
+            console.log(event)
+        },
+        onAllowDrag(draggingNode) {
+            return draggingNode.childNodes.length === 0;
         }
     }    
 }
@@ -361,5 +433,35 @@ export default {
     }
     .el-main{
         overflow:auto;
+    }
+
+    .tool-box{
+        display:flex;
+        flex-wrap: wrap;
+        align-items:flex-start;
+        padding:20px;
+        width: 235px;
+    }
+    .tool-box .tool{
+        text-align:center;
+        padding:20px;
+        margin:5px;
+        border:1px solid #efefef;
+        height: 60px;
+        width: 65px;
+        border-radius: 5px;
+    }
+    .tool-box .tool:hover{
+        cursor: pointer;
+        background: rgba(125, 202, 253,.2);
+    }
+</style>
+
+<style>
+    .rule-messagebox.el-message-box{
+        width:40vw!important;
+    }
+    .rule-messagebox .el-message-box__message p {
+        line-height: 43px;
     }
 </style>

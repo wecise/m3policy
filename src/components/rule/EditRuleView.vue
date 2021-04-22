@@ -1,7 +1,7 @@
 <template>
     <el-container>
         <el-main>
-            <Split direction="vertical" :gutterSize="5">
+            <Split direction="vertical" :gutterSize="5" @onDragEnd="onDragEnd">
                 <SplitArea :size="debug.show?55:100" :minSize="0" style="overflow:hidden;">
                     <Editor
                         v-model="editor.value"
@@ -9,7 +9,7 @@
                         :lang="editor.lang.value"
                         :theme="editor.theme.value"
                         width="100%"
-                        height="100%"
+                        :height="editor.height"
                         style="border:1px solid #f2f2f2;"
                         ref="editorRef"
                     ></Editor>
@@ -61,7 +61,8 @@ export default {
                 theme: {
                     value: "chrome",
                     list: this.m3.EDITOR_THEME
-                }
+                },
+                height:'calc(100vh - 225px)'
             },
             ignore: false,
             changed: false,
@@ -81,14 +82,21 @@ export default {
             classModel: {}
         }
     },
+     watch:{
+        'editor.theme.value'(val){
+            require(`brace/theme/${val}`);
+            this.editor.theme.value = val;
+        },
+        'debug.show'(val){
+            if(!val){
+                this.editor.height = 'calc(100vh - 225px)';
+            }
+        }
+    },
     created(){
         
         this.editor.value = this.model.value;
 
-        if(_.startsWith(this.model.key,"/matrix/rules")){
-            this.editor.lang.value = "lua";
-        }
-        
         try{
             let name = _.trim(_.split(_.first(this.model.value.match(/^--class.*/mgi)),"=",2)[1]);
             _.extend(this.classModel, {name:name});
@@ -139,6 +147,10 @@ export default {
             require(`brace/snippets/${this.editor.lang.value}`); //snippet
             require(`brace/theme/${this.editor.theme.value}`); //language
         },
+        onDragEnd(size){
+            let elHeight = parseInt(this.$el.offsetHeight * size[1]/100) + 140;
+            this.editor.height = `calc(100vh - ${elHeight}px)`;
+        }
     }
 }
 </script>
@@ -153,5 +165,9 @@ export default {
     .el-tabs--border-card {
         border: unset;
         box-shadow: unset;
+    }
+
+    .split{
+        overflow-y: hidden!important;
     }
 </style>

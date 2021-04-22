@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import FormView from '../utils/FormView.vue';
+import FormView from '../utils/FormView';
 
 export default {
   name: "InfoView",

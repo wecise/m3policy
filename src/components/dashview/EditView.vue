@@ -1,6 +1,4 @@
-<template>
-  
-    
+<template>  
         <el-tabs value="info" v-if="view.model">
             <el-tab-pane label="基本信息" name="info" v-if="view.model.info">
                 <el-form ref="form" :model="view.model.info" label-width="80px">
@@ -17,7 +15,7 @@
                 </el-form>
             </el-tab-pane>
             <el-tab-pane label="数据源" name="datasource" v-if="view.model.datasource">
-                <el-container style="height: calc(100vh - 275px);background: #f2f2f2;">
+                <el-container style="height: calc(100vh - 310px);background: #f2f2f2;">
                     <el-main style="overflow:hidden;">
                         <el-tabs value="source" type="border-card" tab-position="top" style="height:100%;">
                             <el-tab-pane label="数据源" name="source">
@@ -53,9 +51,53 @@
                                 </el-form>
                             </el-tab-pane>
                             <el-tab-pane label="显示定义" name="columns">
+                                
                                 <el-transfer
-                                    v-model="view.model.datasource.fields"
-                                    :data="datasource.fields">
+                                    v-model="view.model.datasource.fields.value"
+                                    :data="datasource.fields"
+                                    :props="{
+                                        key: 'field',
+                                        label: 'title'
+                                    }"
+                                    :titles="['选择属性', '已选属性']"
+                                    filterable
+                                    :filter-method="onPropsFilter"
+                                    filter-placeholder="关键字"
+                                    @change="onRightChange">
+                                    <div slot-scope="{ option }">
+                                        <el-form :model="option" :inline="true">
+                                            <el-form-item style="width:80px;">
+                                                <span style="color:#606266;font-size: 12px;">{{option.field}}</span>
+                                            </el-form-item>
+                                            <el-form-item label="标题">
+                                                <el-input v-model="option.title" size="mini"></el-input>
+                                            </el-form-item>
+                                            <el-form-item label="宽度">
+                                                <el-input-number v-model="option.width" size="mini"></el-input-number>
+                                            </el-form-item>
+                                            <el-form-item label="可见">
+                                                <el-switch v-model="option.visible" size="mini"></el-switch>
+                                            </el-form-item>
+                                            <el-form-item>
+                                                <el-popover
+                                                    placement="right"
+                                                    width="400"
+                                                    trigger="click">
+                                                    <Editor
+                                                        v-model="option.render"
+                                                        @init="onEditorInit"
+                                                        :lang="editor.lang.value"
+                                                        :theme="editor.theme.value"
+                                                        width="99.8%"
+                                                        height="15vh"
+                                                        style="border:1px solid #f2f2f2;"
+                                                    ></Editor>
+                                                    <el-button slot="reference" size="mini">属性渲染</el-button>
+                                                </el-popover>
+                                            </el-form-item>
+                                        </el-form>
+                                            
+                                    </div>
                                 </el-transfer>
                             </el-tab-pane>
                         </el-tabs>
@@ -108,7 +150,7 @@ export default {
             data: null,
             loading: false,
             lang: {
-                value: "txt",
+                value: "html",
                 list: []
             },
             theme: {
@@ -124,7 +166,9 @@ export default {
     };
   },
   filters:{
-    
+      formatCase(val){
+          return _.trim(_.upperFirst(val));
+      }
   },
   watch:{
      model:{
@@ -133,9 +177,6 @@ export default {
          },
          immediate: true
      }
-  },
-  mounted(){
-    
   },
   methods: {
     initFileInfo(){
@@ -163,13 +204,19 @@ export default {
 
             this.initFileInfo();
 
+
+            // 如果已选择
+            setTimeout(() => {
+                
+            }, 2000);
+
         }).catch((err)=>{
             console.log(err);
             this.view.model = null;
         })
     },
     initDataSourceFields(treeData){
-        
+
         if(!this.view.model) return false;
 
         try{
@@ -182,7 +229,9 @@ export default {
                         if(v.fields){
                             this.datasource.fields = _.compact(_.map(v.fields,(val)=>{
                                 if(_.includes(val,'_')) return;  
-                                return {key:val, label:val};
+
+                                return {field: val, title: val, ftype: 'varchar', width:120, visible:true};//{key:val, label:val};
+                                
                             }));
                         }
                     }
@@ -198,6 +247,13 @@ export default {
 
         } catch(err){
             console.log(err)
+        } finally{
+            if(this.view.model.datasource.fields.value){
+                _.forEach(this.view.model.datasource.fields.data,v=>{
+                    let index = _.findIndex(this.datasource.fields,{field: v.field});
+                    this.datasource.fields.splice(index, 1, v);
+                })
+            }
         }
     },
     onApplyInfo(){
@@ -294,14 +350,26 @@ export default {
         
         this.view.model.datasource.name = `${data.class}/${_.now()}`
         this.view.model.datasource.class = data.class;
-        this.datasource.fields = _.compact(_.map(data.fields,(v,k)=>{
-            if(_.includes(v,'_')) return;  
-            return {key:k, label:v};
-        }));
+        
+        this.m3.getClassFieldsById(data.id).then(res=>{
+            this.datasource.fields = _.compact(_.map(res.message,(v)=>{
+                if(_.includes(v,'_')) return;  
+                return {field: v.name, title: v.title, ftype: v.ftype, width:120, visible:true};
+            }))
+            if(this.view.model.datasource.fields.data){
+                _.extend(this.datasource.fields,this.view.model.datasource.fields.data);    
+            }
+        })
     },
     onApplyDataSource(){
         
         this.datasource.loading = true;
+
+        let fieldsValue = _.compact(_.map(this.view.model.datasource.fields.value,v=>{
+            return _.find(this.datasource.fields, {field:v});
+        }));
+
+        this.$set(this.view.model.datasource.fields,'data', fieldsValue);
 
         let content = JSON.stringify(this.view.model,null,2);
     
@@ -310,7 +378,7 @@ export default {
                       data: { content: content, type: this.model.ftype, attr: this.model.attr, index: true }    
                     };
         
-        this.m3.dfsNew(param).then(()=>{
+        this.m3.dfsWrite(param).then(()=>{
             this.$message({
               type: "success",
               message: "更新数据源成功"
@@ -325,12 +393,31 @@ export default {
             })
             this.datasource.loading = false;
         })
+    },
+    onPropsFilter(query, item) {
+        return item.field.indexOf(query) > -1 || item.title.indexOf(query) > -1;
+    },
+    onRightChange(value, direction, movedKeys){
+       console.log(value, direction, movedKeys);
     }
-  },
+  }
 };
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-  
+<style>
+    #pane-columns .el-transfer-panel:first-child {
+        width: 333px;
+    }
+    #pane-columns .el-transfer-panel:last-child {
+        width: calc(85% - 333px);
+    }
+    #pane-columns .el-form-item__label {
+        color: #a1a4a9;
+    }
+    #pane-columns .el-transfer-panel__item.el-checkbox {
+        margin-bottom: 10px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 10px;
+    }
 </style>

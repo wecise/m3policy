@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-main style="padding:0px 10px;">
-      <el-tabs v-model="tabs.activeTab" closable @tab-remove="removeTab">
+      <el-tabs v-model="tabs.activeTab" closable @tab-remove="removeTab" >
         <el-tab-pane label="事件列表" name="event-list">
           <el-container>
             <el-header>
@@ -37,7 +37,12 @@
               </el-input>
             </el-header>
             <el-main :loading="loading">
-              <EventList ref="eventList" :model="search.result.list" :global="global" :options="search.result.options" @onSearch="onSearch" @onDiagnosis="((data)=>{ addTab(data.row,data.menu) })"></EventList>
+              <EventList ref="eventList" :model="search.result.list" :global="global" :options="search.result.options" 
+                @onSearch="onSearch" 
+                @DiagnosisView="((data)=>{ addTab(data.row,data.menu) })"
+                @severity:change="onSearchBySeverity"
+                @addTab="((data)=>{ addTab(data.row, data.data); })"
+                @removeTab="((data)=>{ removeTab(data); })"></EventList>
             </el-main>
             
           </el-container>
@@ -67,7 +72,7 @@
           <!-- 级别定义 -->
           <SeverityView :model="item.data" :global="global" v-else-if="item.callback==='SeverityView'"></SeverityView>
           <!-- 视图定制 -->
-          <DashView :model="item.data" :global="global" v-else-if="item.callback==='DashView'"></DashView>
+          <DashView :model="item.data" :global="global" v-else-if="item.callback==='DashView'" @toggle-view="initViews"></DashView>
           <!-- 通知管理 -->
           <NotifyView :model="item.data" :global="global" v-else-if="item.callback==='NotifyView'"></NotifyView>
           <!-- 规则管理 -->
@@ -76,6 +81,12 @@
           <JobView :model="item.data" :global="global" v-else-if="item.callback==='JobView'"></JobView>
           <!-- 接口管理 -->
           <FsView :model="item.data" :global="global" v-else-if="item.callback==='FsView'"></FsView>
+          <!-- 策略管理 -->
+          <PolicyView :model="item.data" :global="global" v-else-if="item.callback==='PolicyView'"></PolicyView>
+          <!-- 策略管理 -->
+          <TriggerView :model="item.data" :global="global" v-else-if="item.callback==='TriggerView'"></TriggerView>
+          <!-- 规则设计 -->
+          <PipeView :model="item.data" :global="global" v-else-if="item.callback==='PipeView'"></PipeView>
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -96,7 +107,10 @@ import DashView from './dashview/DashView';
 import NotifyView from './notify/NotifyView';
 import RuleView from './rule/RuleView';
 import JobView from './job/JobView';
-import FsView from './editor/FsView';
+import FsView from './api/FsView';
+import PolicyView from './policy/PolicyView';
+import TriggerView from './trigger/TriggerView';
+import PipeView from './pipe/PipeView';
 
 export default {
   name: "MainView",
@@ -114,7 +128,10 @@ export default {
     NotifyView,
     RuleView,
     JobView,
-    FsView
+    FsView,
+    PolicyView,
+    TriggerView,
+    PipeView
   },
   data() {
     return {
@@ -155,8 +172,15 @@ export default {
     },
     'views.value':{
       handler(val){
-        this.$notify.success(`已切换至 ${val} 视图`)
+        this.onToggleDefaultView(val);
         this.onSearch();
+      }
+    },
+    'search.model.term':{
+      handler(val){
+        if(_.isEmpty(val)){
+          this.$refs.eventList.dt.selectedSeverity = [];
+        }
       }
     }
   },
@@ -180,6 +204,14 @@ export default {
           setTimeout(this.hideTabEventViewConsoleUl, 50);
       } 
     },
+    onToggleDefaultView(val){
+      let view = _.find(this.views.list,{label:val});
+      let param = encodeURIComponent(JSON.stringify({  action: "setDefaultView", data: { key: 'defaultView', value: view.fullname } }));
+      this.m3.callFS("/matrix/eventConsole/view/action.js", param).then(()=>{
+          this.$notify.success(`已设置 ${view.name.replace(/.json/,'')} 为默认视图`);
+          this.initViews();
+      })
+    },
     initViews(){
         let term = encodeURIComponent(JSON.stringify({  action: "list"  }));
         this.m3.callFS("/matrix/eventConsole/view/action.js", term).then((rtn)=>{
@@ -193,6 +225,12 @@ export default {
                               });
         })
     },
+    onSearchBySeverity(data){
+      this.search.model.term = _.map(data,v=>{
+        return `severity=${ _.lowerCase(v[0]) }`;
+      }).join(";")
+      this.onSearch();
+    },
     onSearch() {
       
       this.loading = true;
@@ -200,7 +238,7 @@ export default {
       let param = {
         view: this.search.model.view=this.views.value,
         term: this.search.model.term
-          ? `${this.search.type} | ${this.search.model.term}`
+          ? _.compact([this.search.type,this.search.model.term]).join(" | ")
           : this.search.type,
       };
 
@@ -231,7 +269,7 @@ export default {
         } else if(  _.includes(['entityEtl'],row.id) ){
             data = _.compact(_.map(this.$refs.eventList.dt.rows,'entity'));
         } 
-        let tabObj = {name: row.id, title: menu.name, type: menu.type, callback: menu.callback, data: data};
+        let tabObj = {name: row.id, title: menu.name, type: menu.type, callback: menu[menu.type].name, data: data};
         this.tabs.list.push(tabObj);
         this.tabs.activeTab = row.id;
       }

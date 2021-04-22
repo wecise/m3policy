@@ -9,6 +9,7 @@
           <AttributeRelView :model="model" :global="global" v-else-if="item.type==='attribute'"></AttributeRelView>
           <HistoryView :model="model" :global="global" v-else-if="item.type==='history'"></HistoryView>
           <GraphView :model="[model.entity]" v-else-if="item.type==='graph'"></GraphView>
+          <AttachmentView :model="model" v-else-if="item.type==='attachmment'"></AttachmentView>
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -21,6 +22,7 @@ import JournalView from './JournalView.vue';
 import AttributeRelView from './AttributeRelView.vue';
 import HistoryView from './HistoryView.vue';
 import GraphView from './GraphView.vue'
+import AttachmentView from './AttachmentView.vue'
 
 export default {
   name: "DiagnosisView",
@@ -33,7 +35,8 @@ export default {
     JournalView,
     AttributeRelView,
     HistoryView,
-    GraphView
+    GraphView,
+    AttachmentView
   },
   data() {
     return {
@@ -49,7 +52,8 @@ export default {
             {name:'journal',title:'告警轨迹',type:'journal', data: this.model, desc:'当前告警的生命周期。'},
             {name:'attribute',title:'维度关联性告警',type:'attribute', data: this.model, desc:'选则当前告警属性，可多选、可单选，通过选择不同的属性组合进行关联告警的查找、分析，从而通过相关告警快速定位问题所在。'},
             {name:'history',title:'历史相似告警',type:'history', data: this.model, desc:'选则当前告警的实体属性，根据该实体查找最近发生过的历史告警。'},
-            {name:'graph',title:'资源分析',type:'graph', data: this.model, desc:`选则当前告警的实体属性，根据该实体查找上下关联的实体，结果以图形式展示。示例：match() <-[*1] - (entity) - [*1] -> ()`}
+            {name:'graph',title:'资源分析',type:'graph', data: this.model, desc:`选则当前告警的实体属性，根据该实体查找上下关联的实体，结果以图形式展示。示例：match() <-[*1] - (entity) - [*1] -> ()`},
+            {name:'attachmment',title:'实体附件',type:'attachmment', data: this.model, desc:`显示当前告警实体相关的附件文档信息`}
           ];
   },
   methods: {

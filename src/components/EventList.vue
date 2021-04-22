@@ -26,6 +26,7 @@
                     </el-switch>
                 </span>
             </el-tooltip>
+
             <el-dropdown style="padding-left:10px;">
                 <span class="el-dropdown-link">
                     <i class="el-icon-s-grid el-icon--right" style="cursor:pointer;padding-top:7px;font-size:16px;"></i>
@@ -59,103 +60,19 @@
                                 </el-switch>
                             </p>
                         </div>
-                        <!--div class="tool">
-                            <div>{{control.ifSmart?'智能分析':'智能分析'}}</div>
-                            <p>
-                                <el-switch
-                                    v-model="control.ifSmart"
-                                    active-color="#13ce66"
-                                    inactive-color="#dddddd"
-                                    :active-value="true"
-                                    :inactive-value="false">
-                                </el-switch>
-                            </p>
-                        </div-->
-                        <div class="tool" @click="onToolsKeep({id:'dashView',name:'视图定制',callback:'DashView'})">
-                            <div>视图定制</div>
-                            <p>
-                                <el-button type="text">
-                                    <span class="el-icon-s-platform" style="cursor:pointer;font-size:16px;"></span>
-                                </el-button>
-                            </p>
-                        </div>
-                        <div class="tool" @click="onToolsKeep({id:'notifyView',name:'通知管理',callback:'NotifyView'})">
-                            <div>通知管理</div>
-                            <p>
-                                <el-button type="text">
-                                    <span class="el-icon-phone" style="cursor:pointer;font-size:16px;"></span>
-                                </el-button>
-                            </p>
-                        </div>
-                        <!--div class="tool" @click="onToolsKeep({id:'shieldView',name:'告警屏蔽',callback:'ShieldView'})">
-                            <div>告警屏蔽</div>
-                            <p>
-                                <el-button type="text">
-                                    <span class="el-icon-error" style="cursor:pointer;font-size:16px;"></span>
-                                </el-button>
-                            </p>
-                        </div-->
-                        <div class="tool" @click="onToolsKeep({id:'contextMenu',name:'右键工具',callback:'CtmenuKeepView'})">
-                            <div>右键工具</div>
-                            <p>
-                                <el-button type="text">
-                                    <span class="el-icon-menu" style="cursor:pointer;font-size:16px;"></span>
-                                </el-button>
-                            </p>
-                        </div>
-                        <div class="tool" @click="onToolsKeep({id:'ruleView',name:'规则管理',callback:'RuleView'})">
-                            <div>规则管理</div>
-                            <p>
-                                <el-button type="text">
-                                    <span class="el-icon-notebook-2" style="cursor:pointer;font-size:16px;"></span>
-                                </el-button>
-                            </p>
-                        </div>
-                        <div class="tool" @click="onToolsKeep({id:'jobView',name:'任务管理',callback:'JobView'})">
-                            <div>任务管理</div>
-                            <p>
-                                <el-button type="text">
-                                    <span class="el-icon-date" style="cursor:pointer;font-size:16px;"></span>
-                                </el-button>
-                            </p>
-                        </div>
-                        <div class="tool" @click="onToolsKeep({id:'fsView',name:'接口管理',callback:'FsView'})">
-                            <div>接口管理</div>
-                            <p>
-                                <el-button type="text">
-                                    <span class="el-icon-edit-outline" style="cursor:pointer;font-size:16px;"></span>
-                                </el-button>
-                            </p>
-                        </div>
-                        <!--div class="tool" @click="onToolsKeep({id:'entityEtl',name:'实体抽取',callback:'EntityView'})">
-                            <div>实体抽取</div>
-                            <p>
-                                <el-button type="text">
-                                    <span class="el-icon-coin" style="cursor:pointer;font-size:16px;"></span>
-                                </el-button>
-                            </p>
-                        </div-->
-                        <!-- 一般工具 -->
-                        <div class="tool" @click="onToolsKeep({id:'severityKeep',name:'级别定义',callback:'SeverityView'})">
-                            <div>级别定义</div>
-                            <p>
-                                <el-button type="text">
-                                    <span class="el-icon-warning" style="cursor:pointer;font-size:16px;"></span>
-                                </el-button>
-                            </p>
-                        </div>
-                        <div class="tool">
+
+                        <ToolsView @tool-click="((data)=>{onToolsKeep(data)})"></ToolsView>
+
+                        
+                        <div class="tool" :loading="dt.downloadLoading">
                             <div>选择导出</div>
                             <p>
                                 <el-dropdown style="cursor:pointer;font-size:16px;" @command="onExport">
                                     <span class="el-icon-download"></span>
                                     <el-dropdown-menu slot="dropdown">
                                         <el-dropdown-item command="csv">CSV</el-dropdown-item>
-                                        <el-dropdown-item command="json">JSON</el-dropdown-item>
-                                        <!--el-dropdown-item command="pdf">PDF</el-dropdown-item-->
-                                        <el-dropdown-item command="png">PNG</el-dropdown-item>
-                                        <!--el-dropdown-item command="sql">SQL</el-dropdown-item-->
-                                        <el-dropdown-item command="xls">XLS (Excel 2000 HTML format)</el-dropdown-item>
+                                        <el-dropdown-item command="txt">TXT</el-dropdown-item>
+                                        <el-dropdown-item command="xlsx">Excel</el-dropdown-item>
                                     </el-dropdown-menu>
                                 </el-dropdown>
                             </p>
@@ -166,6 +83,37 @@
         </el-header>   
         
         <el-main @mouseup.native="onMainClick" :style="dtMainStyle">
+            <el-dialog
+                :title="'上传附件'"
+                :visible.sync="dialog.attachment.show"
+                :append-to-body="true"
+                :modal-append-to-body="false"
+                custom-class="attachment-dialog">
+                <el-container style="border:unset!important;background:#f2f2f2;">
+                    <el-header v-if="dialog.attachment.data">
+                        实体: {{dialog.attachment.data.entity}} 事件: {{dialog.attachment.data.id}}
+                    </el-header>
+                    <el-main>
+                        <el-upload
+                            drag
+                            action="string"
+                            :http-request="onAttachmentUpload"
+                            :on-success="onAttchSuccess"
+                            :on-error="onAttchError"
+                            :append-to-body="true"
+                            style="width:100%;"
+                            multiple>
+                            <i class="el-icon-upload"></i>
+                            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                            <div class="el-upload__tip" slot="tip">单个不超过500MB</div>
+                        </el-upload>
+                    </el-main>
+                </el-container>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="dialog.attachment.show = false">取 消</el-button>
+                    <el-button type="primary" @click="dialog.attachment.show = false">确 定</el-button>
+                </span>
+            </el-dialog>
             <el-table
                 :data="dt.rows"
                 :highlight-current-row="true"
@@ -173,6 +121,7 @@
                 @row-contextmenu="onRowContextmenu"
                 @row-dblclick="onRowContextmenu"
                 @current-change="onCurrentChange"
+                 @selection-change="(data)=>{ dt.selected = data; }"
                 @cell-click="onCellClick"
                 ref="table"
                 class="event-list"
@@ -202,7 +151,8 @@
                         show-overflow-tooltip
                         :key="index"
                         :width="item.width"
-                        :formatter="item.render">
+                        :formatter="item.render"
+                        v-if="item.visible">
                         <template slot-scope="scope">
                             <div style="height:30px;line-height:30px;" v-if="item.field=='tags'">
                                 <TagView domain='event' :model.sync="scope.row.tags" :id="scope.row.id" :limit="1"></TagView>
@@ -225,7 +175,9 @@
                         type="default"
                         v-for="(btn,key) in global.register.event.severity"
                         :key="key"
-                        :style="btn[2] | severityBtnStyle(dt.summary[key],dtOptions)">
+                        :style="btn[2] | severityBtnStyle(dt.summary[key],dtOptions)"
+                        @click="onToggleSeverity(btn,key)"
+                        :class="checkSeverity(key)">
                         {{ btn[1] }} <span style="font-variant: all-small-caps;">{{btn[0]}}</span> {{ dt.summary[key]?dt.summary[key].length:0 }}
                     </el-button>
                 </el-button-group>
@@ -240,8 +192,10 @@
             :close-on-scroll="dt.contextmenu.closeOnScroll"
             ref="contextmenu" v-slot="{data}"
             v-show="dt.contextmenu.show">
+
             <li>
-                <el-link @click.prevent="onContextmenuClick(data,null)" :underline="false"> 
+
+                <el-link :underline="false"> 
                     <span v-if="data"> {{data.id}}</span>
                     <span style="position: absolute;top: 4px;left: 10px;">
                         <el-button
@@ -252,16 +206,33 @@
                     </span>
                 </el-link>
             </li>
-            <el-divider></el-divider>
+
             <template v-for="(menu,index) in dt.contextmenu.list">
+
                 <li :key="index" v-if="data">
-                    <div v-if="menu.name && menu.type==='tag'" style="height:40px;line-height:40px;">
-                        <TagView domain='event' :model.sync="data.tags" :id="data.id" :limit="4"></TagView>
-                    </div>
-                    <el-link @click.prevent="onContextmenuClick(data,menu)" :underline="false" v-else-if="menu.name" :disabled="data.status==menu.value">
+
+                    <el-link @click.prevent="onContextmenuClick(data,menu)" :underline="false" v-if="menu.type==='component'"> 
                         {{ menu.name }}
                     </el-link>
-                    <el-divider v-else></el-divider>
+                    
+                    <el-link @click.prevent="onContextmenuClick(data,menu)" :underline="false" v-else-if="menu.type==='action'" :disabled="data.status==menu.value">
+                        {{ menu.name }}
+                    </el-link>
+                    
+                    <el-link @click.prevent="onContextmenuClick(data,menu)" :underline="false" v-else-if="menu.type==='attachment'" :disabled="!data.entity">
+                        {{ menu.name }}
+                    </el-link>
+
+                    <el-link @click.prevent="onContextmenuClick(data,menu)" :underline="false" v-else-if="menu.type==='url'">
+                        {{ menu.name }}
+                    </el-link>
+
+                    <div style="height:40px;line-height:40px;" v-else-if="menu.name && menu.type==='tag'" >
+                        <TagView domain='event' :model.sync="data.tags" :id="data.id" :limit="4"></TagView>
+                    </div>
+
+                    <el-divider v-else-if="menu.type==='divider'"></el-divider>
+
                 </li>
             </template>
         </vue-context>
@@ -272,13 +243,13 @@
 
 import _ from 'lodash';
 import $ from 'jquery';
+import Cookies from 'js-cookie';
 import VueContext from 'vue-context';
 import 'vue-context/dist/css/vue-context.css';
 // import jsPanel from 'jspanel4/dist/jspanel.min.js';
 // import 'jspanel4/dist/jspanel.min.css';
 import TagView from './tags/TagView';
-
-const TableExport = "";//require("tableexport");
+import ToolsView from './tools/ToolsView';
 
 window.moment = require("moment");
 
@@ -291,7 +262,8 @@ export default {
     },
     components: {
         VueContext,
-        TagView
+        TagView,
+        ToolsView
     },
     data(){
    
@@ -331,8 +303,10 @@ export default {
                 },
                 summary: null,
                 orderBy: [['severity','vtime'],['desc','desc']],
+                selectedSeverity:[],
                 origin: -1, // 这里给一个变量作为起点
                 pin: false, 
+                downloadLoading: false
             },
             info: [],
             control:{
@@ -346,6 +320,19 @@ export default {
                         {name:'r',title:'运维模式',value:true},
                         {name:'f',title:'全屏模式',value:false}
                     ]
+                }
+            },
+            dialog:{
+                attachment:{
+                    show: false,
+                    data: null,
+                    upload: {
+                        Authorization:Cookies.get("matrixSession"),
+                        baseUrl: "/script/matrix/eventConsole/attachment",
+                        ifIndex: {
+                            index:true
+                        }
+                    }
                 }
             }
         }
@@ -387,6 +374,11 @@ export default {
                 this.onToogleRunMode(val);
             },
             deep: true
+        },
+        'dt.selectedSeverity':{
+            handler(val){
+                this.$emit("severity:change",val);
+            }
         }
     },
     computed:{
@@ -478,12 +470,17 @@ export default {
 
     },
     methods: {
+        checkSeverity(key){
+            return _.includes(this.dt.selectedSeverity,key)?'severity-active':'';
+        },
+        onToggleSeverity(btn,key){
+            this.dt.selectedSeverity = _.xor(this.dt.selectedSeverity,[key]);
+        },
         initContextMenu(){
             this.m3.callFS("/matrix/eventConsole/contextmenu/getContextMenu.js").then( (rtn)=>{
                 this.dt.contextmenu.list = rtn.message;
             } );
-            document.addEventListener('click',(event)=>{
-                event.preventDefault();
+            document.addEventListener('click',()=>{
                 this.dt.contextmenu.show = false;
             })
         },
@@ -532,7 +529,7 @@ export default {
         initData(){
             
             try{
-                _.extend(this.dt, {columns: _.map(this.model.template || this.model.columns, function(v){
+                _.extend(this.dt, {columns: _.map(this.model.columns, function(v){
                     
                     if(_.isUndefined(v.visible)){
                         _.extend(v, { visible: true });
@@ -578,10 +575,13 @@ export default {
         onContextmenuClick(row,menu){
             
             if(menu){
+                // URL
                 if(menu.type === 'url'){
-                    window.open(menu.url,menu.target?menu.target:'_blank');
-                } else if(menu.type === 'action'){
-                     if (menu.callback != "") {
+                    window.open(`${menu[menu.type].value}${menu[menu.type].param?'&'+encodeURIComponent( menu[menu.type].param ):''}`,menu[menu.type].target?menu[menu.type].target:'_blank');
+                } 
+                // Action
+                else if(menu.type === 'action'){
+                     if (menu[menu.type]) {
                         
                         let ids = [row.id];
                         let rows = [row];
@@ -592,23 +592,68 @@ export default {
                             rows = this.dt.selected;
                         }
 
-                        let term =  JSON.stringify({id: ids, value: menu.value}) ;
+                        let term =  JSON.stringify({id: ids, value: menu[menu.type].value}) ;
                         
-                        let fn = new Function('term',menu.callback);
+                        let fn = new Function('term',menu.action.name);
                         fn(term);
 
                         _.forEach(rows,(v)=>{
-                            v.status = menu.value;
+                            v.status = menu[menu.type].value;
                         })
                         
                      }
-                } else if(menu.type === 'component'){
-                     this.$emit("onDiagnosis",{row:row,menu:menu});
-                } else {
-                    this.openPanel(row);
+                } 
+                // Component
+                else if(menu.type === 'component'){
+                    this.$emit(menu[menu.type].name,{row:row,menu:menu});
+                } 
+                // Attachment
+                else if(menu.type === 'attachment'){
+                     this.onAttach(row);
+                } 
+                // Other
+                else {
+                    this.openPanel();
                 } 
             }
             this.dt.contextmenu.show = !this.dt.contextmenu.show;
+        },
+        /* Attachment */
+        onAttach(data){
+            this.dialog.attachment.show = true;
+            this.dialog.attachment.data = data;
+        },
+        onAttachmentUpload(raw){
+            let param = {parent: [this.dialog.attachment.upload.baseUrl,this.dialog.attachment.data.entity].join("/"),name: this.dialog.attachment.data.id};
+            /* this.m3.dfsCheck([param.parent,param.name].join("/")).then(res=>{
+                console.log(res)
+            }).catch(err=>{
+                console.log(err)
+            }) */
+
+            let url = encodeURIComponent( 'fs'+[param.parent,param.name].join("/") );
+            this.m3.dfsNewDir(param).then(()=>{
+                
+                this.m3.dfsUpload(url,raw.file).then(res=>{
+                    console.log(url,res);
+                }).catch(err=>{
+                    console.log(err);
+                })
+            }).catch(()=>{
+                
+                this.m3.dfsUpload(url,raw.file).then(res=>{
+                    console.log(url,res);
+                }).catch(err=>{
+                    console.log(err);
+                })
+            });
+            
+        },
+        onAttchSuccess(){
+            
+        },
+        onAttchError(){
+            
         },
         /* shift 多选 */
         onCurrentChange(row,oldRow){
@@ -654,37 +699,30 @@ export default {
             this.$root.toggleModel(_.without(['view-normal','view-tags'],window.EVENT_VIEW).join(""));
         },
         onExport(type){
-            try{
-                let options = {
-                    csvEnclosure: '',
-                    csvSeparator: ', ',
-                    csvUseBOM: true,
-                    ignoreCols: [0,1],
+            this.dt.downloadLoading = true;
+            let formatJson = (filterVal, jsonData)=>{
+                return jsonData.map(v => filterVal.map(j => {
+                    if (_.includes(['day','ctime','vtime'],j)) {
+                        return new Date(v[j]).toLocaleString();
+                    } else if (typeof v[j] == 'object') {
+                        return JSON.stringify(v[j],null,2);
+                    } else {
+                        return v[j];
+                    }
+                }));
+            };
+            import('@/vendor/Export2Excel').then(excel => {
+                const tHeader = _.keys(_.head(this.dt.rows));
+                const data = formatJson(tHeader, this.dt.rows);
+                excel.export_json_to_excel({
+                    header: tHeader,
+                    data,
                     filename: `Export_${this.moment().format("YYYY-MM-DD HH:mm:ss")}`,
-                    type: type,
-                    exportButtons: false,
-                    bootstrap: true
-                };
-
-                if(type === 'png'){
-                    $(this.$refs.table.$el.querySelector("table.el-table__body")).tableExport(options);
-                } else if(type === 'pdf'){
-                    _.extend(options, {
-                        jspdf: {orientation: 'l',
-                                format: 'a3',
-                                margins: {left:10, right:10, top:20, bottom:20},
-                                autotable: {styles: {fillColor: 'inherit', 
-                                                        textColor: 'inherit'},
-                                            tableWidth: 'auto'}
-                        }
-                    });
-                    $(this.$refs.table.$el.querySelectorAll("table")).tableExport(options);
-                } else {
-                    new TableExport(this.$refs.table.$el,options);
-                }
-            } catch(err){
-                console.log(err)
-            }
+                    autoWidth: true,
+                    bookType: type
+                })
+                this.dt.downloadLoading = false;
+            })
             
         },
         openPanel(){
@@ -749,29 +787,22 @@ export default {
                     "name": "智能分组", 
                     "icon": "",
                     "type": "component",
-                    "callback": "SmartGroupView",
-                    "subMenu":[]
+                    "component": {
+                        name:"SmartGroupView"
+                    }
                     };
-                this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row, menu);
+                this.$emit("addTab",{row:row, data:menu});
             } else {
                 this.$message({
                     type: "info",
                     message: "智能分组关闭"
                 })
-                this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.removeTab("smartGroup");
+                this.$emit("removeTab","smartGroup");
             }
         },
-        onToolsKeep(data){
-            
-            let row = {id: data.id};
-            let menu = {
-                "name": data.name, 
-                "icon": "",
-                "type": "component",
-                "callback": data.callback,
-                "subMenu":[]
-                };
-            this.$parent.$parent.$parent.$parent.$parent.$parent.$parent.addTab(row, menu);
+        onToolsKeep(menu){
+            let row = {id: menu.id};
+            this.$emit("addTab",{row:row, data:menu});
         },
         /* 运行模式 */
         onToogleRunMode(val){
@@ -861,7 +892,7 @@ export default {
         flex-wrap: wrap;
         align-items:flex-start;
         padding:20px;
-        width: 355px;
+        width: 585px;
     }
     .tool-box .tool{
         text-align:center;
@@ -885,4 +916,54 @@ export default {
         user-select:none;
     }
 
+</style>
+
+<style>
+    .attachment-dialog.el-dialog{
+        width: 50%!important;
+        height: 58%!important;
+    }
+
+    .el-upload,
+    .el-upload-dragger{
+        width: 100%!important;
+    }
+
+    /* el-table hover actived style */
+    .el-table--enable-row-hover .el-table__body tr:hover>td {
+            background-color: #3c99f7!important;
+    }
+    .el-table__body tr.current-row>td {
+            background-color:#3c99f7!important;;
+    }
+
+    /* Event Console Table */
+    .el-table {
+        height:100%!important;
+        overflow: hidden!important;
+    }
+    .el-table--small td, 
+    .el-table--small th {
+        padding: 4px 0;
+    }
+    .el-table .cell {
+        white-space: nowrap!important;
+        line-height: 18px!important;
+    }
+    .el-table .el-table__body-wrapper {
+        overflow: auto;
+        position: relative;
+        height: calc(100% - 50px)!important;
+    }
+    .el-table{
+        -webkit-user-select:none;/*谷歌 /Chrome*/
+        -moz-user-select:none; /*火狐/Firefox*/
+        -ms-user-select:none;    /*IE 10+*/
+        user-select:none;
+    }
+
+    .severity-active{
+        /* filter: drop-shadow(black 2px 4px 6px); */
+        border-top: 2px solid #333333!important;
+    }
 </style>

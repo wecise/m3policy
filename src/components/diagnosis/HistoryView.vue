@@ -5,7 +5,7 @@
                 :model="dt" 
                 :global="global" 
                 :options="dt.options" 
-                @onDiagnosis="onDiagnosis">
+                @DiagnosisView="onDiagnosis">
             </EventList> 
         </el-main>
     </el-container>

@@ -5,14 +5,17 @@
             <el-tab-pane label="通知规则" name="rule">
                 <NotifyRuleView></NotifyRuleView>
             </el-tab-pane>
-            <el-tab-pane label="分类管理" name="classified">
+            <el-tab-pane label="分类管理" name="classified" lazy>
                 <ClassifiedView></ClassifiedView>
             </el-tab-pane>
-            <el-tab-pane label="模版管理" name="template">
+            <el-tab-pane label="模版管理" name="template" lazy>
                 <TemplateView></TemplateView>
             </el-tab-pane>
-            <el-tab-pane label="声音媒介" name="media">
+            <el-tab-pane label="声音媒介" name="media" lazy>
                 <MediaView></MediaView>
+            </el-tab-pane>
+            <el-tab-pane label="服务设置" name="setup" lazy>
+                <SetupView></SetupView>
             </el-tab-pane>
         </el-tabs>
     </el-main>
@@ -24,6 +27,7 @@ import NotifyRuleView from './NotifyRuleView';
 import TemplateView from './TemplateView';
 import MediaView from './MediaView';
 import ClassifiedView from './ClassifiedView';
+import SetupView from './SetupView';
 
 export default {
   name: "NotifyView",
@@ -34,7 +38,8 @@ export default {
     NotifyRuleView,
     TemplateView,
     MediaView,
-    ClassifiedView
+    ClassifiedView,
+    SetupView
   },
   data() {
     return {
@@ -59,5 +64,8 @@ export default {
   }
   .el-main{
     overflow: hidden;
+  }
+  .el-input--mini .el-input__inner {
+      border: none!important;
   }
 </style>

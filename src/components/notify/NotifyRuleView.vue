@@ -19,54 +19,233 @@
         :data="dt.rows"
         stripe
         :row-class-name="rowClassName"
-        style="width: 100%">
+        style="width: 100%"
+        v-if="dt.rows.length > 0">
         <template v-for="(item,index) in dt.columns">
-          <el-table-column 
-            node-key="id"
-            :label="item.title" 
-            :prop="item.field" 
-            :formatter="item.render"
-            :key="index"
-            v-if="item.visible">
-          </el-table-column>
+            <el-table-column 
+                :prop="item.field"
+                :label="item.title" 
+                sortable 
+                show-overflow-tooltip
+                :key="index"
+                :width="item.width"
+                :formatter="item.render"
+                v-if="item.visible">
+                <template slot-scope="scope">
+                  
+                    <div style="height:30px;line-height:30px;" v-if="item.field=='tags'">
+                        <TagView domain='notifyRule' :model.sync="scope.row.tags" :id="scope.row.id" :limit="1"></TagView>
+                    </div>
+                    
+                    <div style="height:30px;line-height:30px;" v-else-if="item.field === 'emails' || item.field === 'phones'">
+                        <el-select :value="scope.row[item.field]" v-if="scope.row[item.field]">
+                          <el-option
+                            v-for="subItem in scope.row[item.field].split(',')"
+                            :key="subItem"
+                            :label="subItem"
+                            :value="subItem">
+                          </el-option>
+                        </el-select>
+                    </div>
+                    <div style="height:30px;line-height:30px;" v-else-if="item.field === 'rtype'">
+                        <el-select :value="scope.row[item.field]" v-if="scope.row[item.field]">
+                          <el-option
+                            v-for="subItem in scope.row[item.field]"
+                            :key="subItem"
+                            :label="subItem"
+                            :value="subItem">
+                          </el-option>
+                        </el-select>
+                    </div>
+                    
+                    <div v-html='item.render(scope.row, scope.column, scope.row[item.field], scope.$index)' 
+                        v-else-if="(item.field === 'status' || item.field === 'template') && typeof item.render === 'function'">
+                    </div>
+                    
+                    <div v-else>
+                        {{scope.row[item.field]}}
+                    </div>
+                </template>
+            </el-table-column>
         </template>
-        <el-table-column label="操作">
+        <el-table-column label="操作" width="200">
+          <template slot="header">
+            <el-input
+              v-model="dt.term"
+              clearable=""
+              placeholder="关键字搜索"/>
+          </template>
           <template slot-scope="scope">
-            <el-button type="text" icon="el-icon-delete"  @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
+            <el-button type="text"  @click="onEdit(scope.$index, scope.row)"> 编辑</el-button>
+            <el-button type="text"  @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
           </template>
         </el-table-column>
       </el-table>
+      <el-dialog
+        title="规则管理"
+        :visible.sync="dialog.rule.show"
+        :append-to-body="true"
+        class="notifyRule-dialog">
+        <el-form :model="dialog.rule.data"  :rules="dialog.rule.rules" ref="notifyRuleForm" label-width="100px">
+          <el-form-item label="名称" prop="name">
+           <el-input v-model="dialog.rule.data.name" :disabled="dialog.rule.action==='update'?true:false"></el-input>
+          </el-form-item>
+          <el-form-item label="接收人员" prop="persons">
+            <el-cascader
+              v-model="dialog.rule.data.persons"
+              :options="persons.list"
+              :props="persons.props"
+              :show-all-levels="false"
+              collapse-tags
+              clearable></el-cascader>
+          </el-form-item>
+          <el-form-item label="类型" prop="rtype">
+            <el-select v-model="dialog.rule.data.rtype" multiple placeholder="请选择">
+              <el-option
+                v-for="item in rtype.list"
+                :key="item.name"
+                :label="item.title"
+                :value="item.name">
+                <span style="float: left">{{ item.title }}</span>
+                <span style="float: right; color: #8492a6; font-size: 8px">{{ item.address }}:{{item.port}}</span>
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="场景" prop="situation">
+            <el-select v-model="dialog.rule.data.situation" multiple placeholder="请选择">
+              <el-option
+                v-for="item in situation.list"
+                :key="item.name"
+                :label="item.name"
+                :value="item.name">
+                <span style="float: left">{{ item.name }}</span>
+                <span style="float: right; color: #8492a6; font-size: 8px">{{ item.status }}</span>
+              </el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="状态" prop="status">
+            <el-switch
+              v-model="dialog.rule.data.status"
+              active-color="#13ce66"
+              inactive-color="#dddddd"
+              :active-value="1"
+              :inactive-value="0">>
+            </el-switch>
+          </el-form-item>
+          <el-form-item label="模版" prop="template">
+            <el-select v-model="dialog.rule.data.template" placeholder="请选择">
+              <el-option
+                v-for="item in templates.list"
+                :key="item.name"
+                :label="item.name"
+                :value="item">
+                <span style="float: left">{{ item.name | formatName }}</span>
+                <!-- <span style="float: right; color: #8492a6; font-size: 8px">{{ item.ctime | formatTime }}</span> -->
+              </el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+        
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialog.rule.show = false">取 消</el-button>
+          <el-button type="primary" @click="onSave">确 定</el-button>
+        </span>
+      </el-dialog>
     </el-main>
   </el-container>
 </template>
 
 <script>
 import _ from 'lodash';
+import TagView from '../tags/TagView';
 
 export default {
   name: "NotifyRuleView",
-  props: {
-    model: Object
-  },
   data() {
     return {
       dt: {
         rows:[],
         columns: [],
-        selected: []
+        selected: [],
+        term: ""
+      },
+      rtype: {
+        list: [
+          {name:'sms',title:'短信',address:"47.92.151.165",port:8080},
+          {name:'email',title:'邮件',address:"47.92.151.165",port:8080},
+          {name:'wechat',title:'企业微信',address:"47.92.151.165",port:8080}
+        ]
+      },
+      persons: {
+        props: {
+          multiple:true,
+          value: 'id',
+          label: 'username',
+          children: 'nodes',
+        },
+        list: []
+      },
+      situation:{
+        list: []
+      },
+      templates: {
+        list: []
+      },
+      dialog:{
+        rule:{
+            show: false,
+            data: {
+              name: "",
+              persons:"",
+              rtype:"",
+              situation:"",
+              status:1,
+              template:""
+            },
+            rules: {
+                name:[
+                  { required: true, message: '请输入名称', trigger: 'blur' }
+                ]
+            },
+            action: "add"            
+        }
       }
     };
   },
+  filters:{
+    formatName(val){
+      return val.replace(/.json/,'');
+    },
+    formatTime(val){
+      return window.moment(val).format(window.global.register.format);
+    }
+  },
+  components:{
+    TagView
+  },
+  watch:{
+    'dt.term':{
+      handler(val){
+        if(_.isEmpty(val)){
+          this.initData();
+        }else {
+          this.dt.rows = this.dt.rows.filter(data => !val || data.name.toLowerCase().includes(val.toLowerCase()))
+        }
+      }
+    }
+  },
   created(){
      this.initData();
+     this.init();
   },
   methods: {
     initData(){
-      this.m3.callFS("/matrix/notify/getRuleList.js").then((rt)=>{
+      this.m3.callFS("/matrix/eventConsole/notify/getRuleList.js").then((rt)=>{
         let rtn = rt.message;
 
-        _.extend(rtn, {columns: _.map(rtn.columns, (v)=>{
-                            
+        this.$set(this.dt,'rows', rtn.rows);
+        this.$set(this.dt,'columns', _.map(rtn.columns, (v)=>{
+                              
           if(_.isUndefined(v.visible)){
             _.extend(v, { visible: true });
           }
@@ -77,8 +256,21 @@ export default {
             return _.extend(v, { render: eval(v.render) });
           }
           
-        })});
-        _.extend(this.dt, rtn);
+        }));
+      })
+    },
+    init(){
+      this.m3.userList().then(rtn=>{
+        this.persons.list = rtn.message;
+      })
+
+      this.m3.callFS("/matrix/eventConsole/notify/getTemplateList.js").then(rtn=>{
+        this.templates.list = rtn.message.rows;
+      })
+
+      let param = encodeURIComponent( JSON.stringify({action:'list'}) );
+      this.m3.callFS("/matrix/eventConsole/notify/situationAction.js",param).then(res=>{
+        this.situation.list = res.message.rows;
       })
     },
     rowClassName({rowIndex}){
@@ -87,41 +279,36 @@ export default {
     onRefresh(){
       this.initData();
     },
+    onReset(){
+      if(this.$refs['notifyRuleForm']){
+        this.$refs['notifyRuleForm'].resetFields();
+      }
+    },
     onNew(){
-      
-      this.$prompt('请输入规则名称', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        }).then(({ value }) => {
-
-        if(_.isEmpty(value)){
-          this.$message({
-            type: "info",
-            message: "请输入规则名称"
-          })
+      this.onReset();
+      this.dialog.rule.show = true;
+      this.dialog.rule.action = "add";
+    },
+    onSave(){
+        let param = encodeURIComponent(JSON.stringify({
+                    action: this.dialog.rule.action,
+                    model: this.dialog.rule.data
+                  }));
+        
+        if(_.isEmpty(this.dialog.rule.data.name)){
+          this.$message.warning("请输入名称");
           return false;
         }
 
-        let term = encodeURIComponent(JSON.stringify({
-                    action: "new",
-                    model: {
-                      name: value,
-                      persons:"",
-                      rtype:"",
-                      situation:"",
-                      status:1,
-                      template:""
-                    }
-                  }));
-
-        this.m3.callFS("/matrix/notify/ruleAction.js",term).then(()=>{
+        this.m3.callFS("/matrix/eventConsole/notify/ruleAction.js",param).then(()=>{
           this.$message({
             type: "success",
             message: "新建规则成功！"
           })
           this.initData();
+
+          this.dialog.rule.show = false;
         });
-      })
     },
     onDelete(index,item){
       console.log(index);
@@ -132,7 +319,7 @@ export default {
                     }).then(() => {
         
         let term = encodeURIComponent(JSON.stringify({action:"delete",model:item}));
-        this.m3.callFS("/matrix/notify/ruleAction.js",term).then(()=>{
+        this.m3.callFS("/matrix/eventConsole/notify/ruleAction.js",term).then(()=>{
           this.$message({
                 type: 'success',
                 message: '删除规则成功!'
@@ -147,7 +334,13 @@ export default {
         });
           
       })
-    } 
+    },
+    onEdit(index,item){
+      console.log(index);
+      this.dialog.rule.data = item;
+      this.dialog.rule.show = true;
+      this.dialog.rule.action = "update";
+    }
   }
 };
 </script>
@@ -164,5 +357,14 @@ export default {
   .el-main{
     padding:0px;
     overflow: hidden;
+  }
+
+  
+</style>
+
+<style>
+  .notifyRule-dialog .el-dialog{
+    width: 70vw!important;
+    height: 60vh;
   }
 </style>

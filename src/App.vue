@@ -6,12 +6,12 @@
                 <el-link href="/" :underline="false">
                   <el-image :src="auth.Company.logo" fit="contain"></el-image>
                 </el-link>
-                <span style="position: absolute;left: 40px;">{{auth.Company.title}}</span>
-            </el-col>
-            <el-col :span="1" style="text-align: right;">
-                <div id="ai-robot"></div>
+                <span style="font-size:16px;vertical-align: top;">{{auth.Company.title}}</span>
             </el-col>
             <el-col :span="3" style="text-align: right;">
+                <MessageView></MessageView>
+            </el-col>
+            <el-col :span="1" style="text-align: right;">
                 
             </el-col>
             <el-col :span="2">
@@ -22,35 +22,41 @@
                         @select="onSelect">
                     <el-submenu index="1">
                         <template slot="title">
-                            <i class="el-icon-user-solid" style="color:#ffffff;"></i> {{ auth.username }}
+                            <svg-icon icon-class="user"/> {{ auth.username }}
                         </template>
-                        <el-menu-item index="/matrix/user">
+                        <el-menu-item index="/matrix/user" style="height:80px;">
                             <template slot="title">
-                                <i class="el-icon-user"></i>
-                                <span slot="title">用户</span>
+                                <svg-icon icon-class="user2"/> 
+                                <span slot="title">用户
+                                  <div>
+                                    <el-button type="text" @click.stop="onToggleTheme('dark')" style="background:#252D47;padding: 5px;border-radius: 10px;"></el-button>
+                                    <el-button type="text" @click.stop="onToggleTheme('light')" style="background: #1890ff;padding: 5px;border-radius: 10px;"></el-button>
+                                  </div>
+                                  <el-divider style="margin:0px;"></el-divider>
+                                </span>
                             </template>
                         </el-menu-item>
                         <el-menu-item index="/matrix/system" divided v-if="auth.isAdmin">
                             <template slot="title">
-                                <i class="el-icon-setting"></i>
+                                <svg-icon icon-class="system"/>
                                 <span slot="title">系统管理</span>
                             </template>
                         </el-menu-item>
                         <el-menu-item index="/matrix/files">
                             <template slot="title">
-                                <i class="el-icon-folder-opened"></i>
+                                <svg-icon icon-class="folder"/>
                                 <span slot="title">我的文件</span>
                             </template>
                         </el-menu-item>
                         <el-menu-item index="home">
                             <template slot="title">
-                                <i class="el-icon-s-home"></i>
+                                <svg-icon icon-class="home"/>
                                 <span slot="title">默认首页</span>
                             </template>
                         </el-menu-item>
                         <el-menu-item index="signout" divided>
                             <template slot="title">
-                                <i class="el-icon-switch-button"></i>
+                                <svg-icon icon-class="logout"/> 
                                 <span slot="title">注销</span>
                             </template>
                         </el-menu-item>
@@ -66,19 +72,26 @@
 </template>
 
 <script>
+import Cookies from 'js-cookie'
 import MainView from './components/MainView.vue'
+import MessageView from './components/message/MessageView.vue'
 import _ from 'lodash';
+
 export default {
   name: 'app',
   components: {
-    MainView
+    MainView,
+    MessageView
   },
   data(){
     return {
       global:null,
       auth: null,
-      activeIndex: '1'
+      activeIndex: '1',
     }
+  },
+  created(){
+    this.initTheme();
   },
   mounted(){
     setTimeout(()=>{
@@ -98,6 +111,19 @@ export default {
                 window.open(`/user/logout/${this.auth.Company.name}`,'_parent');
             } 
         }
+    },
+    initTheme(){
+      let body = document.body;
+      let value = Cookies.get('m3-theme')?Cookies.get('m3-theme'):'dark';
+      body.classList.add(value);
+    },
+    onToggleTheme(val){
+
+      //let theme = {dark:'#252D47',light:'#409EFF'};
+      
+      Cookies.set('m3-theme',val);
+      
+      window.location.reload();
     }
   }
 }
@@ -111,7 +137,7 @@ export default {
     margin: 0px;
     padding: 0px;
   }
-  .m3 > .el-header{
+  .dark .m3 > .el-header{
     height: 50px!important;
     line-height: 50px;
     /* background: rgb(37, 45, 71); */
@@ -119,10 +145,18 @@ export default {
     color: #ffffff;
     padding: 0px 0px 0px 10px;
   }
+  .light .m3 > .el-header{
+    height: 50px!important;
+    line-height: 50px;
+    /* background: rgb(37, 45, 71); */
+    background: #1890ff;
+    color: #ffffff;
+    padding: 0px 0px 0px 10px;
+  }
   .m3 > .el-header .el-image > .el-image__inner{
     max-width: 120px;
     min-width: 32px;
-    width: 32px;
+    width: 64px;
     height: 32px;
     padding: 7px 0px;
   }
@@ -138,9 +172,13 @@ export default {
 	.el-menu-item:hover{
 		background-color: #409dfe!important;
 	}
-  .topbar-el-menu.el-menu.el-menu--horizontal {
+  .dark .m3 .topbar-el-menu.el-menu.el-menu--horizontal {
 		border-bottom: unset;
 		background: #242c46;
+	}
+  .light .m3 .topbar-el-menu.el-menu.el-menu--horizontal {
+		border-bottom: unset;
+		background: #1890ff;
 	}
 	.topbar-el-menu.el-menu.el-menu--horizontal >.el-menu-item {
 		height: 30px;
@@ -160,13 +198,7 @@ export default {
   .el-menu--horizontal>.el-submenu .el-submenu__title:hover {
       background-color: #409dfe!important;
   }
-  /* el-table hover actived style */
-  .el-table--enable-row-hover .el-table__body tr:hover>td {
-        background-color: #3c99f7!important;
-  }
-  .el-table__body tr.current-row>td {
-        background-color:#3c99f7!important;;
-  }
+  
   /* mxgraph contextmenu style */
   td.mxPopupMenuIcon div {
     width:16px;
@@ -222,34 +254,13 @@ export default {
   table.mxPopupMenu tr {
     font-size:4pt;
   }
-.el-table{
-    -webkit-user-select:none;/*谷歌 /Chrome*/
-    -moz-user-select:none; /*火狐/Firefox*/
-    -ms-user-select:none;    /*IE 10+*/
-    user-select:none;
-}
-.el-dialog{
+
+  .el-dialog{
       width: 90vw!important;
       height:85vh;
+      margin-top: 0!important;
   }
-  /* Event Console Table */
-  .el-table {
-        height:100%!important;
-        overflow: hidden!important;
-    }
-    .el-table--small td, 
-    .el-table--small th {
-        padding: 4px 0;
-    }
-    .el-table .cell {
-        white-space: nowrap!important;
-        line-height: 18px!important;
-    }
-    .el-table .el-table__body-wrapper {
-        overflow: auto;
-        position: relative;
-        height: calc(100% - 50px)!important;
-    }
+  
     /* el-checkbox */
     .el-checkbox__label {
         font-size: 12px!important;
@@ -260,4 +271,10 @@ export default {
       border-bottom: unset!important;
       border-top: 1px solid #dddddd;
     }
+  
+  .el-menu .svg-icon{
+    width: 1.2em!important;
+    height: 1.2em!important;
+    padding: 0px 5px 0 0;
+  }
 </style>

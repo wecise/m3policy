@@ -30,7 +30,7 @@
                     <el-date-picker type="date" v-model="item.data" :placeholder="item.placeholder" v-else-if="item.type==='date-picker'"></el-date-picker>
                     <el-input-number v-model="item.data" :placeholder="item.placeholder" v-else-if="item.type==='input-number'"></el-input-number>
                     <el-input type="textarea" autosize v-model="item.data" :placeholder="item.placeholder" v-else-if="item.type==='input-textarea'"></el-input>
-                    <TagView domain='event' :model.sync="item.data" :id="model.dataId" limit="4" v-else-if="item.type==='tag'">{{item.data}}</TagView>
+                    <TagView domain='event' :model.sync="item.data" :id="model.dataId" :limit="4" v-else-if="item.type==='tag'">{{item.data}}</TagView>
                     <el-input v-model="item.data" :placeholder="item.placeholder" v-else></el-input>
                   </span>
               </el-form-item>

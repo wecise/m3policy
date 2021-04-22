@@ -35,7 +35,7 @@
                     <el-tooltip content="选择主题">
                         <el-dropdown style="padding-left:10px;">
                             <span class="el-dropdown-link">
-                                <i class="el-icon-s-platform el-icon--right"></i>
+                                <svg-icon icon-class="theme"/>
                             </span>
                             <el-dropdown-menu slot="dropdown">
                                 <el-dropdown-item
@@ -70,7 +70,7 @@
                 :lang="editor.lang.value"
                 :theme="editor.theme.value"
                 width="100%"
-                height="calc(100vh - 270px)"
+                height="calc(100vh - 300px)"
                 style="border:1px solid #f2f2f2;"
             ></Editor>
         </el-main>
@@ -174,6 +174,7 @@ export default {
     },
     methods:{
         onEditorInit(){
+            console.log(33,this.editor)
             require("brace/ext/language_tools"); //language extension prerequsite...
             require(`brace/mode/${this.editor.lang.value}`); //language
             require(`brace/snippets/${this.editor.lang.value}`); //snippet

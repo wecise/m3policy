@@ -3,7 +3,7 @@
         <el-main style="padding:1px;border-bottom:1px solid #dddddd;">
             <Split direction="horizontal" :gutterSize="5">
                 <SplitArea :size="control.configTree.show?25:0" :minSize="0" style="overflow:hidden;">
-                    <TreeView ref="treeView" @node-click="onTreeNodeClick" @node-open="onTreeNodeOpen"></TreeView>
+                    <TreeView ref="treeView" @node-click="onTreeNodeClick" @node-open="onTreeNodeOpen" @node-close="(data)=>{ configClose(data) }"></TreeView>
                 </SplitArea>
                 <SplitArea :size="control.configTree.show?75:100" :minSize="0" style="overflow:hidden;">
                     <el-container>
@@ -17,10 +17,33 @@
 
                             <el-tooltip content="保存" >
                                 <el-button type="text" @click="configUpdate" v-if="saveStatus()">
-                                    <i class="el-icon-position" style="color:#009688;font-size:15px;"></i>
+                                    <svg-icon icon-class="save" style="width: 1.2em;height: 1.2em;"/>
                                 </el-button>
                             </el-tooltip>
                             
+                            <el-tooltip content="选择主题">
+                                <el-dropdown style="padding-left:10px;float:right;">
+                                    <span class="el-dropdown-link">
+                                        <svg-icon icon-class="theme"/>
+                                    </span>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <el-dropdown-item v-for="group in editor.theme.list" :key="group.name">
+                                            <el-dropdown @command="onToggleTheme">
+                                                <span class="el-dropdown-link">
+                                                {{ group.name }}
+                                                <i class="el-icon-arrow-down el-icon--right"></i>
+                                                </span>
+                                                <el-dropdown-menu slot="dropdown">
+                                                    <el-dropdown-item
+                                                        v-for="item in group.items"
+                                                        :key="item.name"
+                                                        :command="item.name">{{ item.name }}</el-dropdown-item>
+                                                    </el-dropdown-menu>
+                                            </el-dropdown>
+                                        </el-dropdown-item>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
+                            </el-tooltip>
                         </el-header>
                         <el-main style="padding:0px;position: relative;overflow:hidden;">                            
                             <el-tabs v-model="configTabs.activeIndex" type="border-card" closable @tab-remove="configClose" v-if="tabsStatus()">
@@ -34,7 +57,7 @@
                                             </span>
                                             <el-dropdown-menu slot="dropdown">
                                                 <el-dropdown-item @click.native="configCopy(item.name)" :class="'copy'+item.name">复制</el-dropdown-item>
-                                                <el-dropdown-item @click.native="configDegug(item.name)" divided>调试</el-dropdown-item>
+                                                <el-dropdown-item @click.native="onToggleDegug(item.name)" divided>调试</el-dropdown-item>
                                                 <el-dropdown-item @click.native="tabClose(0,item)" divided>关闭</el-dropdown-item>
                                                 <el-dropdown-item @click.native="tabClose(1,item)">关闭其它标签页</el-dropdown-item>
                                                 <el-dropdown-item @click.native="tabClose(2,item)">关闭右侧标签页</el-dropdown-item>
@@ -42,15 +65,16 @@
                                         </el-dropdown>
                                     </span>
                                     <span slot="label" v-else>
-                                        <i class="el-icon-document" style="color:#ff0000;" v-if="tabPaneStatus(item.name)"></i>
-                                        <i class="el-icon-document" style="color:#409eff;" v-else></i> {{item.title}}
+                                        <svg-icon icon-class="edit" style="color:#ff0000;" v-if="tabPaneStatus(item.name)"/>
+                                        <svg-icon icon-class="edit" style="color:#409eff;" v-else/>
+                                         {{item.title}}
                                         <el-dropdown trigger="click">
                                             <span class="el-dropdown-link">
                                                 <i class="el-icon-arrow-down"></i>
                                             </span>
                                             <el-dropdown-menu slot="dropdown">
                                                 <!--el-dropdown-item @click.native="configCopy(item.name)" :class="'copy'+objectHash.sha1(item.name)">复制</el-dropdown-item-->
-                                                <el-dropdown-item @click.native="configDegug(item.name)">调试</el-dropdown-item>
+                                                <el-dropdown-item @click.native="onToggleDegug(item.name)">调试</el-dropdown-item>
                                                 <el-dropdown-item @click.native="tabClose(0,item)" divided>关闭</el-dropdown-item>
                                                 <el-dropdown-item @click.native="tabClose(1,item)">关闭其它标签页</el-dropdown-item>
                                                 <el-dropdown-item @click.native="tabClose(2,item)">关闭右侧标签页</el-dropdown-item>
@@ -77,7 +101,7 @@
             <el-divider direction="vertical"></el-divider>  
             打开：{{configTabs.tabs.length}}
             <span style="float:right;" v-if="configTabs.activeIndex">
-                <el-button type="text" icon="el-icon-tickets" @click="configDegug(configTabs.activeIndex)"></el-button>
+                <el-button type="text" icon="el-icon-tickets" @click="onToggleDegug(configTabs.activeIndex)"></el-button>
             </span>
         </el-footer>
     </el-container>
@@ -114,6 +138,12 @@ export default {
                     show: false,
                     visible: false,
                     list: []
+                }
+            },
+            editor: {
+                theme: {
+                    value: "merbivore",
+                    list: this.m3.EDITOR_THEME
                 }
             },
             configTreeSelectedNode:{}
@@ -463,8 +493,12 @@ export default {
                 }
             }); */
         },
-        configDegug(name){
+        onToggleDegug(name){
             this.$refs[`EditRuleView-${name}`][0].debug.show = !this.$refs[`EditRuleView-${name}`][0].debug.show
+        },
+        onToggleTheme(val){
+            let name = this.configTabs.activeIndex;
+            this.$refs[`EditRuleView-${name}`][0].editor.theme.value = val;
         }
     }
 };

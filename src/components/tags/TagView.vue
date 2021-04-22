@@ -169,7 +169,7 @@
                         try{
                             let term = {domain:this.domain, action: "+", tags: [inputValue], ids: [this.id]};
                             this.m3.callFS("/matrix/tags/tag_service.js", encodeURIComponent(JSON.stringify(term))).then(()=>{
-                                //eventHub.$emit("TAG-TREE-REFRESH");
+                                
                             });
 
                         } catch(err){
