@@ -1,51 +1,66 @@
 <template>
-  <el-container>
-    <el-header>
-        <el-button type="default" icon="el-icon-refresh" @click="onRefresh">刷新</el-button>
-        <el-button type="success" icon="el-icon-plus" @click="onNew">新建</el-button>
-    </el-header>
-    <el-main>
-      
-      
-        <el-card :body-style="{ padding: '10px' }" 
-            style="text-align: center;padding:0px;cursor:pointer;" :key="index" v-for="(item,index) in dt.rows"
-            @dblclick.native="onEdit(item)"
-            shadow="hover">
-            <el-dropdown style="position: absolute;right: 5px;top: 5px;cursor:pointer;">
-              <span class="el-dropdown-link">
-                <i class="el-icon-arrow-down el-icon--right"></i>
-              </span>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item @click.native="onEdit(item)">编辑</el-dropdown-item>
-                <el-dropdown-item @click.native="onDelete(item)" divided>删除</el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-            <svg-icon icon-class="policy" style="font-size:6em;"/>
-            <div style="padding: 14px;">
-                <span>{{item.name | formatName}}</span>
-                <div class="bottom clearfix">
-                  <time class="time">创建时间:{{  item.ctime | formatTime}}</time>
-                </div>
-            </div>
-        </el-card>
-      
+  <el-container style="background:#f2f2f2;">
+    <el-main style="padding: 0px;">
+        <Split :gutterSize="5">
+            <SplitArea :size="20" :minSize="0" style="overflow:hidden;">
+                <TagTreeView :model="{domain:'policy'}" :fun="onRefreshByTag" ref="policyTagTree"></TagTreeView>
+            </SplitArea>
+            <SplitArea :size="80" :minSize="0" style="overflow:hidden;padding:20px;">
+                <el-container>
+                  <el-header>
+                      <el-button type="default" icon="el-icon-refresh" @click="onRefresh">刷新</el-button>
+                      <el-button type="success" icon="el-icon-plus" @click="onNew">新建</el-button>
+                  </el-header>
+                  <el-main>
+                    
+                    
+                      <el-card :body-style="{ padding: '10px' }" 
+                          style="text-align: center;padding:0px;cursor:pointer;" :key="index" v-for="(item,index) in dt.rows"
+                          @dblclick.native="onEdit(item)"
+                          shadow="hover">
+                          <el-dropdown style="position: absolute;right: 5px;top: 5px;cursor:pointer;">
+                            <span class="el-dropdown-link">
+                              <i class="el-icon-arrow-down el-icon--right"></i>
+                            </span>
+                            <el-dropdown-menu slot="dropdown">
+                              <el-dropdown-item @click.native="onEdit(item)">编辑</el-dropdown-item>
+                              <el-dropdown-item @click.native="onDelete(item)" divided>删除</el-dropdown-item>
+                            </el-dropdown-menu>
+                          </el-dropdown>
+                          <svg-icon icon-class="policy" style="font-size:6em;"/>
+                          <div style="padding: 14px;">
+                              <span>{{item.name | formatName}}</span>
+                              <p style="text-align:left;"><TagView domain='policy' :model.sync="item.tags" :id="item.id" :limit="1"></TagView></p>
+                              <div class="bottom clearfix">
+                                <time class="time">创建时间:{{  item.ctime | formatTime}}</time>
+                              </div>
+                          </div>
+                      </el-card>
+                    
+                  </el-main>
+                  <el-dialog :title="'策略编辑 ' + dt.selected.name" 
+                      :visible.sync="edit.show" 
+                      :show-close="false"
+                      :close-on-press-escape="true"
+                      :close-on-click-modal="false"
+                      :destroy-on-close="true"
+                      v-if="dt.selected">
+                    <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose"></EditView>
+                  </el-dialog>
+                </el-container>
+            </SplitArea>
+        </Split>
     </el-main>
-    <el-dialog :title="'策略编辑 ' + dt.selected.name" 
-        :visible.sync="edit.show" 
-        :show-close="false"
-        :close-on-press-escape="true"
-        :close-on-click-modal="false"
-        :destroy-on-close="true"
-        v-if="dt.selected">
-      <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose"></EditView>
-    </el-dialog>
   </el-container>
+  
 </template>
 
 <script>
 
 import _ from 'lodash';
 import EditView from './EditView';
+import TagView from '../tags/TagView';
+import TagTreeView from '../tags/TagTreeView';
 
 export default {
   name: "PolicyView",
@@ -54,7 +69,9 @@ export default {
     model: Object
   },
   components:{
-    EditView
+    EditView,
+    TagView,
+    TagTreeView
   },
   data() {
     return {
@@ -83,7 +100,6 @@ export default {
   },
   methods: {
     onUploadFileChange(file){
-      console.log(file)
       this.upload.param.uploadfile = file.raw;
     },
     initData(){
@@ -95,6 +111,17 @@ export default {
     },
     onRefresh(){
       this.initData();
+    },
+    onRefreshByTag(tag){
+        if(_.isEmpty(tag)){
+          this.initData();
+        } else {
+          let param = encodeURIComponent(JSON.stringify({  action: "search", param: tag  }));
+          this.m3.callFS("/matrix/eventConsole/policy/action.js", param).then((rtn)=>{
+              this.dt.rows = _.orderBy(rtn.message,['name'],['asc']);
+              this.edit.show = false;
+          })
+        }
     },
     onNew(){
       let param = encodeURIComponent(JSON.stringify({  action: "add", data:"" }));
@@ -150,17 +177,19 @@ export default {
   .el-header{
     height: 30px!important;
     line-height: 30px;
-    display: flex;
   }
   .el-main{
+    display: -webkit-flex;
     display: flex;
     flex-wrap: wrap;
-    padding: 0;
     align-content: flex-start;
+    padding: 10px;
   }
   .el-card{
     position: relative;
     margin:10px;
+    width: 20em;
+    height: 18em;
   }
   .time {
     font-size: 12px;

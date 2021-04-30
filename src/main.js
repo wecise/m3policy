@@ -12,7 +12,6 @@ import moment from 'moment'
 import animate from 'animate.css'
 import VueSplit from 'vue-split-panel'
 import './js/dialog'
-
 import './icons'
 
 Vue.use(VueSplit)

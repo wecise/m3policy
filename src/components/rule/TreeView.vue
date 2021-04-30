@@ -91,7 +91,8 @@
             </el-tree>
             <el-dialog :title="dialog.configNew.formItem.ifDir?'新增目录':'新增配置'" 
                 :visible.sync="dialog.configNew.show" 
-                v-if="dialog.configNew.show">
+                v-if="dialog.configNew.show"
+                append-to-body>
                 <el-container>
                     <el-main style="padding:0px 20px;height:100%;overflow:auto;">
                         <el-form :model="dialog.configNew.formItem" :rules="dialog.configNew.rules" label-width="100" label-position="top">
@@ -129,6 +130,9 @@ import _ from 'lodash';
 
 export default {
     name: 'TreeView',
+    props:{
+        root: String
+    },
     data(){
         return {
             auth: window.auth,
@@ -170,6 +174,12 @@ export default {
             }
         }
     },
+    computed:{
+        rootPath(){
+            console.log(232323,this.root,this.root?this.root:["",this.auth.signedUser.Company.ospace].join("/"))
+            return this.root?this.root:["",this.auth.signedUser.Company.ospace].join("/");
+        }
+    },
     mounted(){
         this.initData();
     },
@@ -181,7 +191,7 @@ export default {
             return _.last(label.split("/"));
         },
         initData(){
-            let root = ["",this.auth.signedUser.Company.ospace].join("/");
+            let root = this.rootPath;
             this.m3.ruleGet(root).then( (rtn)=>{
                 this.treeData = [rtn.message];
             });
@@ -238,7 +248,7 @@ export default {
                     this.$message.success("删除成功");
 
                     // 刷新
-                    let root = ["",this.auth.signedUser.Company.ospace].join("/");
+                    let root = this.rootPath;
                     if(item.key == root){
                         this.initData();
                     } else {
@@ -333,7 +343,7 @@ export default {
             let key = "";
     
             if(_.isNull(data)){
-                key = ["",this.auth.signedUser.Company.ospace].join("/");
+                key = this.rootPath;
             }else {
                 key = data.key;
             }
@@ -407,11 +417,12 @@ export default {
         },
         onDragStart(data, event) {
             
-            let node = _.extend(data, {
+            let node = {
                 type: 'rule',
+                name: data.key,
                 title: data.key
-            })
-            event.dataTransfer.setData("Text",JSON.stringify(node));
+            };
+            event.dataTransfer.setData("Text", JSON.stringify(node));
         },
         onDragEnd(event){
             console.log(event)

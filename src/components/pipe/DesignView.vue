@@ -1,7 +1,7 @@
 <template>
     <el-container style="height: calc(100vh - 225px);">
         <el-header style="height:auto;padding:0px;">
-            <el-dropdown>
+            <!-- <el-dropdown>
                 <el-button type="text" icon="el-dropdown-link">
                     编辑 <i class="el-icon-arrow-down el-icon--right"></i>
                 </el-button>
@@ -12,7 +12,7 @@
                 <el-dropdown-item  @click.native="onClose" divided>关闭</el-dropdown-item>
                 </el-dropdown-menu>
             </el-dropdown>
-            <el-divider direction="vertical"></el-divider>
+            <el-divider direction="vertical"></el-divider> -->
             <el-tooltip content="数据源" placement="top">
                 <el-popover
                     title="选择数据源"
@@ -42,14 +42,14 @@
                     popper-class="info-popper">
                     <el-container>
                         <el-main ref="ruleBar">
-                            <RuleTree ref="ruleTreeView"></RuleTree>
+                            <RuleTree :root="dialog.rule.ruleRoot" ref="ruleTreeView"></RuleTree>
                         </el-main>
                     </el-container>
                     <el-button slot="reference" type="text">数据规则</el-button>
                 </el-popover>
             </el-tooltip>
             <el-divider direction="vertical"></el-divider>
-            <el-tooltip content="数据操作" placement="top">
+            <!-- <el-tooltip content="数据操作" placement="top">
                 <el-popover
                     title="选择数据操作"
                     placement="right-start"
@@ -66,7 +66,7 @@
                     <el-button slot="reference" type="text">数据操作</el-button>
                 </el-popover>
             </el-tooltip>
-            <el-divider direction="vertical"></el-divider>
+            <el-divider direction="vertical"></el-divider> -->
             <el-tooltip content="定时器" placement="top">
                 <el-popover
                     title="选择定时器"
@@ -159,59 +159,102 @@
                 </el-tab-pane>
             </el-tabs>
         </el-footer>
-        <el-dialog title="数据源" 
+        <el-dialog :title="dialog.jsonForm.base.fileContent.title" 
             :visible.sync="dialog.source.show" 
-            v-if="dialog.source.show" 
+            v-if="dialog.source.show"
             width="40vw">
-            <el-container style="width:100%;height:100%">
-                <el-header>
-                        <el-button type="success" @click="onJsonToToml">Json To Toml</el-button>
-                        <el-button type="success" @click="onTomlToJson">Toml To Json</el-button>
-                </el-header>
-                <el-main style="padding:0px;overflow:hidden;">
-                    <Split>
-                        <SplitArea :size="50" :minSize="0" style="overflow:hidden;">
-                            <Editor
-                                v-model="dialog.source.jsonEditor.data"
-                                @init="onJsonEditorInit"
-                                :lang="dialog.source.jsonEditor.lang.value"
-                                :theme="dialog.source.jsonEditor.theme.value"
-                                width="100%"
-                                height="calc(100vh - 300px)"
-                                style="border:1px solid #f2f2f2;"
-                            ></Editor>
-                        </SplitArea>
-                        <SplitArea :size="50" :minSize="0" style="overflow:hidden;">
-                            <Editor
-                                v-model="dialog.source.tomlEditor.data"
-                                @init="onTomlEditorInit"
-                                :lang="dialog.source.tomlEditor.lang.value"
-                                :theme="dialog.source.tomlEditor.theme.value"
-                                width="100%"
-                                height="calc(100vh - 300px)"
-                                style="border:1px solid #f2f2f2;"
-                            ></Editor>
-                        </SplitArea>
-                    </Split>
-                </el-main>
-            </el-container>
+            <el-tabs value="form" type="border-card">
+                <el-tab-pane name="form">
+                    <span slot="label"> 配置 <i class="el-icon-date"></i></span>
+                        <el-container style="height: calc(100vh - 300px);">
+                            <el-header style="text-align:right;height:40px;line-height:40px;">
+                                <el-button type="success" @click="onSaveCell('source',dialog.jsonForm)">
+                                    提交
+                                </el-button>
+                            </el-header>
+                            <el-main>
+                                <el-form :model="form" label-position="top" :key="key" v-for="(form,key) in dialog.jsonForm.schema">
+                                    <div>
+                                        <h3>
+                                            {{form.label}} 
+                                            <el-popover
+                                            placement="top-start"
+                                            width="200"
+                                            trigger="hover"
+                                            :content="form.desc">
+                                            <el-button type="text" icon="el-icon-question" slot="reference"></el-button>
+                                        </el-popover></h3>
+                                    </div>
+                                    <el-form-item :label="item.label" :key="idx" v-for="(item,idx) in form.data">
+                                        <el-input-number v-model="dialog.jsonForm.data[key][item.name]" :placeholder="item.label" v-if="item.type==='number'"></el-input-number>
+                                        <el-input type="textarea" autosize v-model="dialog.jsonForm.data[key][item.name]" :placeholder="item.label" v-else-if="item.type==='textarea'"></el-input>
+                                        <el-select v-model="dialog.jsonForm.data[key][item.name]" :placeholder="item.label" v-else-if="item.type==='select'"
+                                            multiple
+                                            filterable
+                                            allow-create
+                                            default-first-option>
+                                            <el-option v-for="data in dialog.jsonForm.data[key][item.name]" :key="data">{{data}}</el-option>
+                                        </el-select>
+                                        <el-switch v-model="dialog.jsonForm.data[key][item.name]" v-else-if="item.type==='switch'"></el-switch>
+                                        <template v-else-if="item.type==='object'">
+                                            <el-form-item :label="subItem.label" :key="ix" v-for="(subItem,ix) in item.data" style="background: #f2f2f2;padding: 20px;">
+                                                <el-input-number v-model="dialog.jsonForm.data[key][item.name][subItem.name]" :placeholder="subItem.label" v-if="subItem.type==='number'"></el-input-number>
+                                                <el-switch v-model="dialog.jsonForm.data[key][item.name][subItem.name]" v-else-if="subItem.type==='switch'"></el-switch>
+                                                <el-input v-model="dialog.jsonForm.data[key][item.name][subItem.name]" :placeholder="subItem.label" v-else></el-input>
+                                            </el-form-item>
+                                        </template>
+                                        <el-input v-model="dialog.jsonForm.data[key][item.name]" :placeholder="item.label" v-else></el-input>
+                                    </el-form-item>
+                                </el-form>
+                            </el-main>
+                        </el-container>
+                </el-tab-pane>
+                <el-tab-pane name="json">
+                    <span slot="label">JSON</span>
+                    <Editor
+                        v-model="dialog.source.jsonEditor.data"
+                        @init="onJsonEditorInit"
+                        :lang="dialog.source.jsonEditor.lang.value"
+                        :theme="dialog.source.jsonEditor.theme.value"
+                        width="100%"
+                        height="calc(100vh - 350px)"
+                        style="border:1px solid #f2f2f2;"
+                    ></Editor>
+                </el-tab-pane>
+                <el-tab-pane label="TOML" name="toml">
+                    <Editor
+                        v-model="dialog.source.tomlEditor.data"
+                        @init="onTomlEditorInit"
+                        :lang="dialog.source.tomlEditor.lang.value"
+                        :theme="dialog.source.tomlEditor.theme.value"
+                        width="100%"
+                        height="calc(100vh - 370px)"
+                        style="border:1px solid #f2f2f2;"
+                    ></Editor>
+                </el-tab-pane>
+            </el-tabs>
         </el-dialog>
-        <el-dialog title="数据规则" 
+        <el-dialog :title="'规则 ' + dialog.rule.data.key" 
             :visible.sync="dialog.rule.show" 
-            v-if="dialog.rule.show" 
+            v-if="dialog.rule.show"
             width="40vw">
             <el-container style="width:100%;height:100%">
-                <el-main style="padding:0px;overflow:hidden;">
+                <el-header style="text-align:right;height:40px;line-height:40px;">
+                    <el-button type="success" @click="onSaveCell('rule',dialog.rule.data)">
+                        提交
+                    </el-button>
+                </el-header>
+                <el-main style="overflow:hidden;">
                     <el-tabs value="editor" type="border-card">
                         <el-tab-pane name="editor">
                             <span slot="label">规则 <i class="el-icon-date"></i></span>
                             <Editor
-                                v-model="dialog.rule.editor.data"
+                                v-model="dialog.rule.data.value"
                                 @init="onRuleEditorInit"
                                 :lang="dialog.rule.editor.lang.value"
                                 :theme="dialog.rule.editor.theme.value"
                                 width="100%"
-                                height="calc(100vh - 300px)"
+                                height="calc(100vh - 370px)"
                                 style="border:1px solid #f2f2f2;"
                             ></Editor>
                         </el-tab-pane>
@@ -229,6 +272,28 @@
                 </el-main>
             </el-container>
         </el-dialog>
+        <el-dialog :title="'Cron ' + dialog.cron.data.title" 
+            :visible.sync="dialog.cron.show" 
+            v-if="dialog.cron.show">
+            <el-container style="width:100%;height:100%">
+                <el-header style="text-align:right;height:40px;line-height:40px;">
+                    <el-button type="success" @click="onSaveCell('cron',dialog.cron)">
+                        提交
+                    </el-button>
+                </el-header>
+                <el-main style="overflow:hidden;">
+                    <Editor
+                        v-model="dialog.cron.data.value"
+                        @init="onCronEditorInit"
+                        :lang="dialog.cron.editor.lang.value"
+                        :theme="dialog.cron.editor.theme.value"
+                        width="100%"
+                        height="calc(100vh - 350px)"
+                        style="border:1px solid #f2f2f2;"
+                    ></Editor>
+                </el-main>
+            </el-container>
+        </el-dialog>
     </el-container>
 </template>
 
@@ -240,8 +305,8 @@
     import LogView from '../consolelog/LogView';
     import mxgraph from '../diagnosis/mxGraph.js';
     const {mxEditor,mxGraph,mxDivResizer,mxOutline,mxImage,mxRectangle,mxCell,mxGeometry,mxPerimeter,mxRubberband,mxConstants,mxClient,mxEdgeStyle,mxUtils,mxCodec,mxEvent,mxHierarchicalLayout,mxMorphing,mxFastOrganicLayout,mxCompactTreeLayout,mxCircleLayout} = mxgraph;
-    const TOML = require('@iarna/toml')
-
+    const TOML = require('@iarna/toml');
+    
     export default{
         name: "DesignView",
         props: {
@@ -280,6 +345,11 @@
                     activeName: "log"
                 },
                 dialog:{
+                    jsonForm:{
+                        base: null,
+                        data: null,
+                        schema: null
+                    },
                     source: {
                         show: false,
                         data: {
@@ -287,7 +357,7 @@
                             tomlStr: null
                         },
                         jsonEditor: {
-                            data: null,
+                            data: {},
                             loading: false,
                             lang: {
                                 value: "json",
@@ -312,13 +382,10 @@
                         }
                     },
                     rule: {
+                        ruleRoot: ["",`${this.m3.auth.signedUser.Company.name}`,'rules'].join("/"),
                         show: false,
-                        data: {
-                            jsonStr: null,
-                            tomlStr: null
-                        },
+                        data: null,
                         editor: {
-                            data: null,
                             loading: false,
                             lang: {
                                 value: "lua",
@@ -329,9 +396,45 @@
                                 list: this.m3.EDITOR_THEME
                             }
                         }
+                    },
+                    cron: {
+                        show: false,
+                        cell: null,
+                        data: null,
+                        editor: {
+                            loading: false,
+                            lang: {
+                                value: "cron",
+                                list: []
+                            },
+                            theme: {
+                                value: "monokai",
+                                list: this.m3.EDITOR_THEME
+                            }
+                        }
                     }
                 }
             }
+        },
+        watch: {
+            'dialog.jsonForm.data':{
+                handler(val){
+                    this.dialog.source.jsonEditor.data = JSON.stringify(val,null,2);
+                },
+                deep:true
+            },
+            'dialog.source.jsonEditor.data':{
+                handler(val){
+                    this.dialog.source.tomlEditor.data = TOML.stringify(JSON.parse(val));
+                    this.dialog.jsonForm.data = JSON.parse(val);
+                }
+            },
+            'dialog.source.tomlEditor.data':{
+                handler(val){
+                    this.dialog.source.jsonEditor.data = JSON.stringify(TOML.parse(val),null,2);
+                }
+            }
+
         },
         created(){
             // 初始化配置
@@ -353,6 +456,8 @@
                 require(`brace/mode/${this.dialog.source.jsonEditor.lang.value}`); //language
                 require(`brace/snippets/${this.dialog.source.jsonEditor.lang.value}`); //snippet
                 require(`brace/theme/${this.dialog.source.jsonEditor.theme.value}`); //language
+
+                this.onShowSource();
             },
             onTomlEditorInit(){
                 require("brace/ext/language_tools"); //language extension prerequsite...
@@ -366,11 +471,15 @@
                 require(`brace/snippets/${this.dialog.rule.editor.lang.value}`); //snippet
                 require(`brace/theme/${this.dialog.rule.editor.theme.value}`); //language
             },
-            onJsonToToml(){
-                this.dialog.source.tomlEditor.data = TOML.stringify(JSON.parse(this.dialog.source.jsonEditor.data));
+            onCronEditorInit(){
+                require("brace/ext/language_tools"); //language extension prerequsite...
+                require(`brace/mode/${this.dialog.cron.editor.lang.value}`); //language
+                require(`brace/snippets/${this.dialog.cron.editor.lang.value}`); //snippet
+                require(`brace/theme/${this.dialog.cron.editor.theme.value}`); //language
             },
-            onTomlToJson(){
-                this.dialog.source.jsonEditor.data = JSON.stringify(TOML.parse(this.dialog.source.tomlEditor.data),null,2);
+            onShowSource(){
+                
+                
             },
             // 初始化图容器
             init(container, outline) {
@@ -685,7 +794,7 @@
                             }
                         };
 
-                        var items = [JSON.parse(evt.dataTransfer.getData("Text"))];
+                        let items = [JSON.parse(evt.dataTransfer.getData("Text"))];
 
                         addCellToGraph(items);
                     }
@@ -718,21 +827,58 @@
                     // bind事件到备注按钮    
                     mxEvent.addListener(imgTip, 'click',
                         mxUtils.bind(this, (evt)=>{
-                            console.log(66,state.cell,state.cell.value.type)
+                            
                             try{
                                 // source
-                                if(_.includes(['source','covert','operate','cron'],state.cell.value.type)){
-                                    this.dialog.source.jsonEditor.data = JSON.stringify(state.cell.value.fileContent.model,null,2);
+                                if(_.includes(['source','covert','operate'],state.cell.value.type)){
+
+                                    let name = [this.model.name.split(".")[0],state.cell.getId()].join("/");
+                                    let param = encodeURIComponent( JSON.stringify({name: name}) );
+                                    this.m3.callFS("/matrix/eventConsole/pipe/getPipeCellByName.js",param).then(rtn=>{
+                                        console.log(232323,rtn,state.cell.value)
+                                        this.dialog.source.jsonEditor.data = rtn.message?rtn.message:state.cell.value.fileContent;
+
+                                        this.dialog.jsonForm.cell = state.cell;
+                                        this.dialog.jsonForm.base = state.cell.value;
+                                        this.dialog.jsonForm.data = JSON.parse(this.dialog.source.jsonEditor.data);
+                                        this.dialog.jsonForm.schema = state.cell.value.fileContent.schema;
+                                    }).catch(err=>{
+                                        console.log(err);
+                                        this.dialog.source.jsonEditor.data = JSON.stringify(state.cell.value.fileContent.model,null,2);
+
+                                        this.dialog.jsonForm.cell = state.cell;
+                                        this.dialog.jsonForm.base = state.cell.value;
+                                        this.dialog.jsonForm.data = JSON.parse(this.dialog.source.jsonEditor.data);
+                                        this.dialog.jsonForm.schema = state.cell.value.fileContent.schema;
+                                    })
+                                    
+
                                     this.dialog.source.show = true;
                                 }
                                 // rule
                                 else if(state.cell.value.type === 'rule'){
-                                    this.dialog.rule.editor.data = state.cell.value.value;
-                                    this.dialog.rule.show = true;
+                                    this.m3.ruleGet(state.cell.value.name).then(rtn=>{
+                                        this.dialog.rule.data = rtn.message;
+                                        this.dialog.rule.show = true;
+                                    })
+                                }
+                                // cron
+                                else if(state.cell.value.type === 'cron'){
+                                    let name = [this.model.name.split(".")[0],state.cell.getId()].join("/");
+                                    let param = encodeURIComponent( JSON.stringify({name: name}) );
+                                    this.m3.callFS("/matrix/eventConsole/pipe/getPipeCellByName.js",param).then( rtn=>{
+                                        this.dialog.cron.cell = state.cell;
+                                        this.dialog.cron.data = rtn.message?JSON.parse(rtn.message):state.cell.value.fileContent;
+                                    }).catch(err=>{
+                                        console.log(err);
+                                        this.dialog.cron.data = state.cell.value.fileContent;
+                                    })
+
+                                    this.dialog.cron.show = true;
                                 }
 
                                 mxEvent.consume(evt);
-                                this.destroy();
+                                // this.destroy();
 
                             } catch(err){
                                 console.error(err);
@@ -766,7 +912,7 @@
                             // 点击查看实体信息
                             this.dialog.source.show = true;
                             mxEvent.consume(evt);
-                            this.destroy();
+                            // this.destroy();
                         })
                     );
                     
@@ -1277,15 +1423,78 @@
                 
                 let encoder = new mxCodec();
                 let node = encoder.encode(this.editor.graph.getModel());
-                let content = mxUtils.getPrettyXml(node);
-                let term = encodeURIComponent(JSON.stringify( { content:content, model:this.model } ));
-                    
-                this.m3.callFS("/matrix/eventConsole/pipe/savePipe.js", term).then( ()=>{
+                let graph = mxUtils.getPrettyXml(node);
+                let name = this.model.name.split(".")[0]
+                let param = encodeURIComponent(JSON.stringify( { graph:graph, name:name } ));
+                
+                this.m3.callFS("/matrix/eventConsole/pipe/savePipe.js", param).then( ()=>{
                     this.$message({
                         type: "success",
                         message: "保存成功"
                     })
                 } );
+
+            },
+            // 图节点配置保存
+            onSaveCell(type,data){
+                if( type==='rule' ){
+                    
+            
+                    const h = this.$createElement;
+                    this.$msgbox({
+                            title: `确认要更新规则`, 
+                            message: h('span', null, [
+                                h('p', null, `位置：${data.key}`),
+                                h('p', null, `值：${_.truncate(data.value)}`),
+                                h('p', null, `TTL：${ _.isUndefined(data.ttl) ? '' : data.ttl }`)
+                            ]),
+                            showCancelButton: true,
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                    }).then(() => {
+
+                        this.m3.ruleUpdate(data).then( ()=>{
+                            
+                            this.$message({
+                                type: "success",
+                                message: "更新成功！"
+                            });
+                            
+                        }).catch(err=>{
+                            this.$message({
+                                type: "error",
+                                message: "更新失败：" + err
+                            })
+                        });
+
+                    }).catch(() => {
+                            
+                    }); 
+                    
+                } else if( type==='cron' ) {
+                    let id = data.cell.getId();
+                    let name = [this.model.name.split(".")[0],id].join("/")
+                    let param = encodeURIComponent(JSON.stringify( { name:name, data: data.data } ));
+                    
+                    this.m3.callFS("/matrix/eventConsole/pipe/savePipeCell.js", param).then( ()=>{
+                        this.$message({
+                            type: "success",
+                            message: "节点配置保存成功"
+                        })
+                    } )
+                } else {
+                    let id = data.cell.getId();
+                    let name = [this.model.name.split(".")[0],id].join("/")
+                    let param = encodeURIComponent(JSON.stringify( { name:name, data: data.data } ));
+                    
+                    this.m3.callFS("/matrix/eventConsole/pipe/savePipeCell.js", param).then( ()=>{
+                        this.$message({
+                            type: "success",
+                            message: "节点配置保存成功"
+                        })
+                    } );
+                }
             },
             // 图另存为
             onSaveAs(){
@@ -1355,6 +1564,6 @@
     }
 </script>
 
-<style scoped>
+<style>
     
 </style>

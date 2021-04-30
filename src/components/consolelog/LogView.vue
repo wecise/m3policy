@@ -70,7 +70,7 @@
                 :lang="editor.lang.value"
                 :theme="editor.theme.value"
                 width="100%"
-                height="calc(100vh - 300px)"
+                height="calc(100vh - 370px)"
                 style="border:1px solid #f2f2f2;"
             ></Editor>
         </el-main>

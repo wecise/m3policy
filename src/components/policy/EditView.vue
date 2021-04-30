@@ -9,7 +9,7 @@
                     <el-input type="textarea" :rows="6" v-model="policy.data.attr.remark"></el-input>
                 </el-form-item>
                 <el-form-item>
-                    <TagView domain='eventPolicy' :model.sync="policy.data.tags" :id="policy.data.id" :limit="4"></TagView>
+                    <TagView domain='policy' :model.sync="policy.data.tags" :id="policy.data.id" :limit="4"></TagView>
                 </el-form-item>
                 <el-form-item>
                     <el-button @click="onClose">取消</el-button>

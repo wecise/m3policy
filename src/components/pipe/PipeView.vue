@@ -5,7 +5,7 @@
                 <el-tab-pane label="规则列表" name="table-view">
                     <el-container style="height: calc(100vh - 225px);">
                         <el-aside width="200px" style="background: #f2f2f2;" ref="leftView" v-show="control.tagTree.show">
-                            <mx-tag-tree :model="{parent:'/pipe',name:'pipe_tree_data.js',domain:'pipe'}" :fun="onRefreshByTag" ref="tagTree"></mx-tag-tree>
+                            <TagTreeView :model="{domain:'pipe'}" :fun="onRefreshByTag" ref="pipeTagTree"></TagTreeView>
                         </el-aside>
                         <el-container ref="mainView">
                             <el-header style="height:35px;line-height:35px;">
@@ -65,14 +65,14 @@
                             </el-header>
                             <el-main v-if="showView=='table'">
                                 <el-table
-                                    :data="dt.rows.slice((dt.pagination.currentPage - 1) * dt.pagination.pageSize,dt.pagination.currentPage * dt.pagination.pageSize)"
+                                    :data="dt.rows"
                                     :highlight-current-row="true"
                                     stripe
                                     style="width: 100%;"
                                     :row-class-name="rowClassName"
                                     ref="table"
-                                    v-if="dt.rows.length>0">
-                                    <el-table-column type="selection" align="center" width="55"></el-table-column> 
+                                    v-if="dt.columns.length>0">
+                                    
                                     <template v-for="(item,index) in dt.columns">
                                         <el-table-column
                                             sortable 
@@ -87,7 +87,12 @@
                                                         v-if="typeof item.render === 'function'">
                                                     </div>
                                                     <div v-else>
-                                                        {{scope.row[item.field]}}
+                                                        <span v-if="item.field=='name'">
+                                                            {{scope.row[item.field].split(".")[0]}}
+                                                        </span>
+                                                        <span v-else>
+                                                            {{scope.row[item.field]}}
+                                                        </span>
                                                     </div>
                                                 </template>
                                         </el-table-column>
@@ -98,6 +103,13 @@
                                         </template>
                                     </el-table-column>
                                     <el-table-column label="操作" width="160">
+                                        <template slot="header">
+                                            <el-input
+                                            v-model="dt.term"
+                                            size="mini"
+                                            clearable
+                                            placeholder="输入关键字搜索"/>
+                                        </template>
                                         <template slot-scope="scope">
                                             <el-tooltip content="新建接入组" placement="top">
                                                 <el-button type="text" @click="onNewGroup(scope.row, scope.$index)" icon="el-icon-folder-add"></el-button>
@@ -143,7 +155,7 @@
                                 </div>
                             </el-main>
                             <el-main v-else>
-                                <el-checkbox-group v-model="dt.selected" class="pipe-grid-node" v-if="dt.rows.length>0">
+                                <el-checkbox-group v-model="dt.selected" class="pipe-grid-node" v-if="dt.columns.length>0">
                                     <el-button type="default" 
                                             style="max-width: 12em;width: 12em;height:110px;border-radius: 10px!important;margin: 5px;border: unset;box-shadow: 0 0px 5px 0 rgba(0, 0, 0, 0.05);"
                                             @dblclick.native="onForward(item.fullname)"
@@ -153,7 +165,7 @@
                                             <i class="el-icon-folder" style="font-size:48px;margin:5px;color:#FF9800;" v-if="item.ftype=='dir'"></i>
                                             <i class="el-icon-cpu" style="font-size:48px;margin:5px;color:#FF9800;" v-else></i>
                                             <p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:5px;text-align:center;">
-                                                {{item.name}}
+                                                {{item.name.split(".")[0]}}
                                             </p>
                                             <el-checkbox :label="item" :ref="'checkBox_'+item.id"></el-checkbox>
                                     </el-button>
@@ -187,23 +199,14 @@
                                 </div>
                             </el-main>
                             <el-footer style="height:30px;line-height:30px;">
-                                <el-pagination
-                                    @size-change="onPageSizeChange"
-                                    @current-change="onCurrentPageChange"
-                                    :page-sizes="[10, 15, 20, 50, 100, 300]"
-                                    :page-size="dt.pagination.pageSize"
-                                    :total="dt.rows.length"
-                                    layout="total, sizes, prev, pager, next"
-                                    v-if="showView=='table'">
-                                </el-pagination>
-                                <span v-else>{{ info.join(' &nbsp; | &nbsp;') }}</span>
+                                {{ info.join(' &nbsp; | &nbsp;') }}
                             </el-footer>
                         </el-container>
                     </el-container>
                 </el-tab-pane>
                 <el-tab-pane :key="tab.id" :name="tab.name"  v-for="tab in main.tabs">
                     <span slot="label">
-                        <i class="el-icon-files" style="color:rgb(64, 158, 255);"></i> {{tab.name}}
+                        <i class="el-icon-files" style="color:rgb(64, 158, 255);"></i> {{tab.name.split(".")[0]}}
                         <el-dropdown trigger="click">
                             <span class="el-dropdown-link">
                                 <i class="el-icon-arrow-down"></i>
@@ -227,6 +230,7 @@
     import _ from 'lodash';
     import DesignView from './DesignView';
     import TagView from '../tags/TagView';
+    import TagTreeView from '../tags/TagTreeView';
 
     export default{
         name: 'PipeView',
@@ -236,7 +240,8 @@
         },
         components:{
             TagView,
-            DesignView
+            DesignView,
+            TagTreeView
         },
         data() {
             return {
@@ -244,10 +249,7 @@
                     rows:[],
                     columns: [],
                     selected: [],
-                    pagination:{
-                        pageSize: 10,
-                        currentPage: 1
-                    }
+                    term: ""
                 },
                 info: [],
                 dfs: {
@@ -271,11 +273,19 @@
                 handler(){
                     this.info = [];
                     this.info.push(`共 ${this.dt.rows.length} 项`);
-                    this.info.push(`已选择 ${this.dt.selected.length} 项`);
                     this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS"));
                 },
                 deep:true,
                 immediate:true
+            },
+            'dt.term':{
+                handler(val){
+                    if(_.isEmpty(val)){
+                        this.initData();
+                    } else {
+                        this.dt.rows = this.dt.rows.filter(data => !val || data.name.toLowerCase().includes(val.toLowerCase()));
+                    }
+                }
             }
         },
         computed: {
@@ -295,13 +305,7 @@
         methods: {
             rowClassName({rowIndex}){
                 return `row-${rowIndex}`;
-            },
-            onPageSizeChange(val) {
-                this.dt.pagination.pageSize = val;
-            },
-            onCurrentPageChange(val) {
-                this.dt.pagination.currentPage = val;
-            },				
+            },			
             onTogglePanel(){
                 this.control.tagTree.show = !this.control.tagTree.show;
 
