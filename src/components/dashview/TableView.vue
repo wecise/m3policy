@@ -4,7 +4,7 @@
       :data="dt.rows"
       border
       stripe
-      style="width: 100%;height:20vh!important;">
+      style="width: 100%;height:40vh!important;">
       <template v-for="(item,index) in dt.columns">
         <el-table-column
             :key="index"
@@ -12,6 +12,7 @@
             :prop="item.field"
             :label="item.title"
             show-overflow-tooltip
+            width="200"
             v-if="item.field">
         </el-table-column>
       </template>

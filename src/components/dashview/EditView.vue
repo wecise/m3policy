@@ -1,123 +1,146 @@
 <template>  
-        <el-tabs value="info" v-if="view.model">
-            <el-tab-pane label="基本信息" name="info" v-if="view.model.info">
-                <el-form ref="form" :model="view.model.info" label-width="80px">
-                    <el-form-item label="名称">
-                        <el-input v-model="view.model.info.name"></el-input>
-                    </el-form-item>
-                    <el-form-item label="描述">
-                        <el-input type="textarea" :rows="6" v-model="view.model.info.attr.remark"></el-input>
-                    </el-form-item>
-                    <el-form-item>
-                        <el-button type="success" @click="onApplyInfo" :loading="view.loading">应用</el-button>
-                        <el-button @click="onClose">取消</el-button>
-                    </el-form-item>
-                </el-form>
-            </el-tab-pane>
-            <el-tab-pane label="数据源" name="datasource" v-if="view.model.datasource">
-                <el-container style="height: calc(100vh - 310px);background: #f2f2f2;">
-                    <el-main style="overflow:hidden;">
-                        <el-tabs value="source" type="border-card" tab-position="top" style="height:100%;">
-                            <el-tab-pane label="数据源" name="source">
-                                <el-form ref="form" :model="view.model.datasource" label-width="80px">
-                                    <el-form-item label="数据源">
-                                        <el-input v-model="view.model.datasource.class" disabled>
-                                            <el-dropdown slot="prepend">
-                                                <span class="el-dropdown-link">
-                                                    <i class="el-icon-coin el-icon--right" style="cursor:pointer;"></i>
-                                                </span>
-                                                <el-dropdown-menu slot="dropdown">
-                                                    <ActionView :root="datasource.root" 
-                                                        @node-click="onDataSourceSelect"
-                                                        @treedata-loaded="initDataSourceFields"></ActionView>
-                                                </el-dropdown-menu>
-                                            </el-dropdown>
-                                        </el-input>
-                                    </el-form-item>
-                                    <el-form-item label="过滤条件">
+
+    <el-tabs value="info" v-if="view.model" type="border-card">
+        <el-tab-pane name="info" v-if="view.model.info">
+            <h3 slot="label">
+                1、基本信息<small> 设置视图名称和描述信息</small>
+            </h3>
+            <el-form ref="form" :model="view.model.info" label-width="80px">
+                <el-form-item label="名称">
+                    <el-input v-model="view.model.info.name"></el-input>
+                </el-form-item>
+                <el-form-item label="描述">
+                    <el-input type="textarea" :rows="6" v-model="view.model.info.attr.remark"></el-input>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="success" @click="onApplyInfo" :loading="view.loading">应用</el-button>
+                    <el-button @click="onClose">取消</el-button>
+                </el-form-item>
+            </el-form>
+        </el-tab-pane>
+        <el-tab-pane name="datasource" v-if="view.model.datasource">
+            <h3 slot="label">
+                2、选择数据源<small> 选择数据源</small>
+            </h3>
+            <el-container>
+                <el-main>
+                    <el-form ref="form" :model="view.model.datasource" label-width="80px">
+                        <el-form-item label="数据源">
+                            <el-input v-model="view.model.datasource.class" disabled>
+                                <el-dropdown slot="prepend">
+                                    <span class="el-dropdown-link">
+                                        <i class="el-icon-coin el-icon--right" style="cursor:pointer;"></i>
+                                    </span>
+                                    <el-dropdown-menu slot="dropdown">
+                                        <ActionView :root="datasource.root" 
+                                            @node-click="onDataSourceSelect"
+                                            @treedata-loaded="initDataSourceFields"></ActionView>
+                                    </el-dropdown-menu>
+                                </el-dropdown>
+                            </el-input>
+                        </el-form-item>
+                        <el-form-item label="过滤条件">
+                            <Editor
+                                v-model="view.model.datasource.filter"
+                                @init="onEditorInit"
+                                :lang="editor.lang.value"
+                                :theme="editor.theme.value"
+                                width="99.8%"
+                                height="20vh"
+                                style="border:1px solid #f2f2f2;"
+                            ></Editor>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="success" @click="onTestDataSource" :loading="editor.loading">测试数据源</el-button>
+                            <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button>
+                            <el-button @click="onClose">取消</el-button>
+                        </el-form-item>
+                        <el-form-item label="数据结果" v-if="editor.data">
+                            <TableView :model="editor.data"></TableView>
+                        </el-form-item>
+                    </el-form>
+                </el-main>
+            </el-container>
+        </el-tab-pane>
+        <el-tab-pane name="props" v-if="view.model.datasource">
+             <h3 slot="label">
+                3、显示定义<small> 根据所选数据源列出属性，选择需要显示的属性</small>
+            </h3>
+             <el-container>
+                <el-main>
+                    <el-transfer
+                        v-model="view.model.datasource.fields.value"
+                        :data="datasource.fields"
+                        :props="{
+                            key: 'field',
+                            label: 'title'
+                        }"
+                        :titles="['选择属性', '已选属性']"
+                        :button-texts="['取消选择', '选择属性']"
+                        filterable
+                        :filter-method="onPropsFilter"
+                        filter-placeholder="关键字"
+                        @change="onRightChange">
+                        <div slot-scope="{ option }">
+                            <el-form :model="option" :inline="true">
+                                <el-form-item style="width:80px;">
+                                    <span style="color:#606266;font-size: 12px;">{{option.field}}</span>
+                                </el-form-item>
+                                <el-form-item label="标题">
+                                    <el-input v-model="option.title" size="mini"></el-input>
+                                </el-form-item>
+                                <el-form-item label="宽度">
+                                    <el-input-number v-model="option.width" size="mini"></el-input-number>
+                                </el-form-item>
+                                <el-form-item label="可见">
+                                    <el-switch v-model="option.visible" size="mini"></el-switch>
+                                </el-form-item>
+                                <el-form-item>
+                                    <el-popover
+                                        placement="right"
+                                        width="400"
+                                        popper-class="props-render-popper"
+                                        trigger="click">
+                                        <div style="width:100%;height:40px;line-height:40px;">
+                                            <el-button type="default" @click="onSetRender(option,item)" :key="index" v-for="(item,index) in render">
+                                                {{item.name}}
+                                            </el-button>
+                                        </div>
                                         <Editor
-                                            v-model="view.model.datasource.filter"
+                                            v-model="option.render"
                                             @init="onEditorInit"
                                             :lang="editor.lang.value"
                                             :theme="editor.theme.value"
                                             width="99.8%"
-                                            height="15vh"
+                                            height="calc(100% - 40px)"
                                             style="border:1px solid #f2f2f2;"
                                         ></Editor>
-                                    </el-form-item>
-                                    <el-form-item label="数据结果" v-if="editor.data">
-                                        <TableView :model="editor.data"></TableView>
-                                    </el-form-item>
-                                </el-form>
-                            </el-tab-pane>
-                            <el-tab-pane label="显示定义" name="columns">
+                                        <el-button slot="reference">属性渲染定义 </el-button>
+                                    </el-popover>
+                                </el-form-item>
+                                <el-form-item>
+                                    <span @click="onTip()" class="el-icon-question"></span>
+                                </el-form-item>
+                            </el-form>
                                 
-                                <el-transfer
-                                    v-model="view.model.datasource.fields.value"
-                                    :data="datasource.fields"
-                                    :props="{
-                                        key: 'field',
-                                        label: 'title'
-                                    }"
-                                    :titles="['选择属性', '已选属性']"
-                                    filterable
-                                    :filter-method="onPropsFilter"
-                                    filter-placeholder="关键字"
-                                    @change="onRightChange">
-                                    <div slot-scope="{ option }">
-                                        <el-form :model="option" :inline="true">
-                                            <el-form-item style="width:80px;">
-                                                <span style="color:#606266;font-size: 12px;">{{option.field}}</span>
-                                            </el-form-item>
-                                            <el-form-item label="标题">
-                                                <el-input v-model="option.title" size="mini"></el-input>
-                                            </el-form-item>
-                                            <el-form-item label="宽度">
-                                                <el-input-number v-model="option.width" size="mini"></el-input-number>
-                                            </el-form-item>
-                                            <el-form-item label="可见">
-                                                <el-switch v-model="option.visible" size="mini"></el-switch>
-                                            </el-form-item>
-                                            <el-form-item>
-                                                <el-popover
-                                                    placement="right"
-                                                    width="400"
-                                                    trigger="click">
-                                                    <Editor
-                                                        v-model="option.render"
-                                                        @init="onEditorInit"
-                                                        :lang="editor.lang.value"
-                                                        :theme="editor.theme.value"
-                                                        width="99.8%"
-                                                        height="15vh"
-                                                        style="border:1px solid #f2f2f2;"
-                                                    ></Editor>
-                                                    <el-button slot="reference" size="mini">属性渲染</el-button>
-                                                </el-popover>
-                                            </el-form-item>
-                                        </el-form>
-                                            
-                                    </div>
-                                </el-transfer>
-                            </el-tab-pane>
-                        </el-tabs>
-                    </el-main>
-                    <el-footer style="line-height:60px;">
-                        <el-button type="primary" @click="onTestDataSource" :loading="editor.loading">测试数据源</el-button>
-                        <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用数据源</el-button>
-                        <el-button @click="onClose">取消</el-button>
-                    </el-footer>
-                </el-container>
-            </el-tab-pane>
-            <el-tab-pane label="主题设置" name="theme" v-if="view.model.theme">
-                <el-form ref="form" :model="view.model.theme" label-width="80px">
-                    <el-form-item>
-                        <el-button type="success">应用</el-button>
-                        <el-button @click="onClose">取消</el-button>
-                    </el-form-item>
-                </el-form>
-            </el-tab-pane>
-        </el-tabs>
+                        </div>
+                    </el-transfer>
+                </el-main>
+                <el-footer style="line-height:60px;text-align: center;">
+                    <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button>
+                    <el-button @click="onClose">取消</el-button>
+                </el-footer>
+            </el-container>
+        </el-tab-pane>
+        <el-tab-pane label="主题设置" name="theme" v-if="view.model.theme">
+            <el-form ref="form" :model="view.model.theme" label-width="80px">
+                <el-form-item>
+                    <el-button type="success">应用</el-button>
+                    <el-button @click="onClose">取消</el-button>
+                </el-form-item>
+            </el-form>
+        </el-tab-pane>
+    </el-tabs>
     
 
 </template>
@@ -150,7 +173,7 @@ export default {
             data: null,
             loading: false,
             lang: {
-                value: "html",
+                value: "javascript",
                 list: []
             },
             theme: {
@@ -162,7 +185,35 @@ export default {
             root: "/matrix/devops",
             loading: false,
             fields: []
-        }
+        },
+        render: [
+            {
+                name: '状态转换',
+                code: `var s=function(row, column, cellValue, index){ 
+    return global.register.event.status[cellValue][1];
+};eval(s);`
+            },
+            {
+                name: '级别映射',
+                code: `var s=function(row, column, cellValue, index){ 
+    /* by row */
+    var el = document.querySelector('.row-'+index);
+    /* by column */
+    /* var el = document.querySelector('.row-'+index+' >.'+column.id+' > .cell');*/
+    el.style.backgroundColor = global.register.event.severity[cellValue][2];
+    el.style.color = '#ffffff';
+    el.style.textAlign = 'center';
+    return global.register.event.severity[cellValue][1]; 
+};eval(s);`
+            },
+            {
+                name: '时间转换',
+                code: `var s=function(row, column, cellValue, index){
+    return moment(cellValue).format("YYYY-MM-DD HH:mm:ss");
+};
+eval(s);`
+            }
+        ]
     };
   },
   filters:{
@@ -399,6 +450,18 @@ export default {
     },
     onRightChange(value, direction, movedKeys){
        console.log(value, direction, movedKeys);
+    },
+    onSetRender(data,item){
+        _.extend(data, {render: item.code});
+    },
+    onTip(){
+        
+        this.$notify({
+          title: "属性渲染示例",
+          duration: 30 * 1000 ,
+          dangerouslyUseHTMLString: true,
+          message: this.render.map(v=>{ return `<h3>${v.name}</h3><pre style="background:#f2f2f2;padding:5px;">${v.code}</pre>`}).join("\n")
+        });
     }
   }
 };
@@ -406,18 +469,51 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
-    #pane-columns .el-transfer-panel:first-child {
-        width: 333px;
+    
+    #pane-props .el-transfer-panel:first-child {
+        width: 100%;
     }
-    #pane-columns .el-transfer-panel:last-child {
-        width: calc(85% - 333px);
+    #pane-props .el-transfer-panel:last-child {
+        width: 100%;
     }
-    #pane-columns .el-form-item__label {
+    #pane-props .el-transfer-panel:last-child .el-transfer-panel__body,
+    #pane-props .el-transfer-panel:last-child .el-transfer-panel__list.is-filterable{
+        height: auto;
+    }
+    
+
+    #pane-props .el-form-item__label {
         color: #a1a4a9;
     }
-    #pane-columns .el-transfer-panel__item.el-checkbox {
+    #pane-props .el-transfer-panel__item.el-checkbox {
         margin-bottom: 10px;
         border-bottom: 1px solid #ddd;
         padding-bottom: 10px;
+    }
+    .el-dialog__body{
+        height: auto;
+        background: #ffffff!important;
+    }
+    #pane-props .el-transfer__buttons {
+        line-height: 60px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .el-dialog__body small{
+        color: #999;
+    }
+
+    .el-dialog__body .el-tabs__item.is-top{
+        height: 60px;
+    }
+
+    .el-notification{
+        width: auto!important;
+    }
+    
+    .props-render-popper.el-popover.el-popper{
+        width: 60vw!important;
+        height: 40vh!important;
     }
 </style>

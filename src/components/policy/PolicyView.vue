@@ -23,7 +23,8 @@
                               <i class="el-icon-arrow-down el-icon--right"></i>
                             </span>
                             <el-dropdown-menu slot="dropdown">
-                              <el-dropdown-item @click.native="onEdit(item)">编辑</el-dropdown-item>
+                              <el-dropdown-item @click.native="onDeploy(item)">下发</el-dropdown-item>
+                              <el-dropdown-item @click.native="onEdit(item)" divided>编辑</el-dropdown-item>
                               <el-dropdown-item @click.native="onDelete(item)" divided>删除</el-dropdown-item>
                             </el-dropdown-menu>
                           </el-dropdown>
@@ -47,6 +48,17 @@
                       v-if="dt.selected">
                     <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose"></EditView>
                   </el-dialog>
+
+                  <el-dialog :title="'策略下发 ' + dialog.deploy.data.name" 
+                      :visible.sync="dialog.deploy.show" 
+                      :show-close="false"
+                      :close-on-press-escape="true"
+                      :close-on-click-modal="false"
+                      :destroy-on-close="true"
+                      v-if="dialog.deploy.show">
+                    
+                  </el-dialog>
+
                 </el-container>
             </SplitArea>
         </Split>
@@ -84,6 +96,12 @@ export default {
       },
       edit:{
         show: false
+      },
+      dialog: {
+        deploy: {
+          show: false,
+          data: null
+        }
       }
     };
   },
@@ -163,6 +181,10 @@ export default {
     onClose(){
       this.edit.show = false;
       this.onRefresh();
+    },
+    onDeploy(item){
+      this.dialog.deploy.show = true;
+      this.dialog.deploy.data = item;
     }
 
   },

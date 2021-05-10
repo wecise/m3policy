@@ -30,9 +30,19 @@ export default({
     methods:{
         init(){
             this.m3.dfsRead({parent:"/script/matrix/eventConsole/tools", name:"tools.json"}).then(rtn=>{
-                this.list = _.chain(JSON.parse(rtn.message)).filter(res=>{
+                
+                this.list = _.chain(rtn).filter(res=>{
                     return res['status']!==false;
                 }).value();
+
+                // role
+                this.list = _.filter(this.list, v=>{
+                    if(this.m3.auth.signedUser.isadmin){ 
+                        return v;
+                    } else {
+                        return null;//!_.includes(['fsView','pipeView'],v.id);
+                    }
+                })
             })
         }
     }

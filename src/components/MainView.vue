@@ -101,7 +101,7 @@ import EventList from './EventList.vue';
 import DiagnosisView from './diagnosis/DiagnosisView';
 import SmartGroupView from './diagnosis/SmartGroupView';
 import EntityView from './diagnosis/EntityView';
-import CtmenuKeepView from './contextmenu/CtmenuKeepView';
+import CtmenuKeepView from './contextmenu/EditView';
 import SeverityView from './utils/SeverityView';
 import DashView from './dashview/DashView';
 import NotifyView from './notify/NotifyView';

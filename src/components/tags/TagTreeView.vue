@@ -21,7 +21,7 @@
                 <span slot-scope="{ node, data }" style="width:100%;height:30px;line-height: 30px;"  @mouseenter="onMouseEnter(data)" @mouseleave="onMouseLeave(data)">
                     <div v-if="auth.isadmin">
                         <span class="el-icon-price-tag" style="color: #f8a502;font-size: 14px;"></span>
-                        <span v-if="data.name == null">
+                        <span v-if="data.name === '' && data.name.length === 0">
                             <span>标签</span>
                             <el-button v-show="data.show" type="text" @click="addTagDir(data,$event)" style="float:right;width:14px;margin:0 5px;" icon="el-icon-plus"></el-button>
                             <el-button v-show="data.show" type="text" @click.stop="loadNodes" style="float:right;width:14px;margin:0 5px;" icon="el-icon-refresh"></el-button>
@@ -31,6 +31,16 @@
                             <el-button v-show="data.show" type="text" @click="delTagDir(data,$event)" style="float:right;width:14px;margin:0 5px;" icon="el-icon-delete"></el-button>
                             <el-button v-show="data.show" type="text" @click="editTagDir(data,$event)" style="float:right;width:14px;margin-left:5px;" icon="el-icon-edit"></el-button>
                             <el-button v-show="data.show" type="text" @click="addTagDir(data,$event)" style="float:right;width:14px;" icon="el-icon-plus"></el-button>
+                        </span>
+                    </div>
+                    <div v-else>
+                        <span class="el-icon-price-tag" style="color: #f8a502;font-size: 14px;"></span>
+                        <span v-if="data.name === '' && data.name.length === 0">
+                            <span>标签</span>
+                            <el-button v-show="data.show" type="text" @click.stop="loadNodes" style="float:right;width:14px;margin:0 5px;" icon="el-icon-refresh"></el-button>
+                        </span>
+                        <span v-else>
+                            <span>{{node.label}}</span>
                         </span>
                     </div>
                 </span>                  

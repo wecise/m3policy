@@ -1,6 +1,6 @@
 <template>		
-    <el-container v-if="auth.isAdmin" style="border:unset!important;color:#ffffff;height: unset!important;">
-        <el-main v-if="model.length > limit">
+    <div v-if="auth.isAdmin" style="border:unset!important;color:#ffffff;height: unset!important;">
+        <div v-if="model.length > limit">
             <el-dropdown>
                 <span class="el-dropdown-link">
                     <i class="el-icon-price-tag el-icon--right"></i>
@@ -26,8 +26,8 @@
                 @blur="handleInputConfirm">
             </el-input>
             <el-button type="text" icon="el-icon-plus" v-else class="button-new-tag" size="mini" @click.stop="showInput"></el-button>
-        </el-main>
-        <el-main style="padding:0px;overflow: hidden;" v-else>
+        </div>
+        <div style="padding:0px;overflow: hidden;" v-else>
             <el-tag
                 :key="tag"
                 v-for="tag in model"
@@ -45,10 +45,10 @@
                 @keyup.enter.native="handleInputConfirm"
                 @blur="handleInputConfirm"></el-input>
             <el-button type="text" icon="el-icon-plus" v-else class="button-new-tag" size="mini" @click.stop="showInput"></el-button>
-        </el-main>
-    </el-container>
-    <el-container v-else>
-        <el-main style="padding:0px;overflow: hidden;">
+        </div>
+    </div>
+    <div v-else>
+        <div style="padding:0px;overflow: hidden;min-height:20px;">
             <el-dropdown v-if="model.length > limit">
                 <span class="el-dropdown-link">
                     <i class="el-icon-price-tag el-icon--right"></i>
@@ -72,24 +72,25 @@
                 @close="onTagClose(tag)"
                 v-else>
                 {{tag}}
-                </el-tag>
+            </el-tag>
             <el-select v-model="inputValue" 
                 filterable 
                 placeholder="请选择标签" 
                 @change="handleInputConfirm"
                 ref="saveTagInput"
-                    v-if="inputVisible">
+                v-if="inputVisible"
+                style="display:none;">
                 <el-option
                     v-for="item in allTags"
                     :key="item.id"
                     :value="item.name">
-                    <span style="float: left;">#{ item.name }#</span>
+                    <span style="float: left;">{{ item.name }}</span>
                     <span style="float: right; color: #8492a6; font-size: 13px">{{ item.domain }}</span>
                 </el-option>
             </el-select>
-            <el-button type="text" icon="el-icon-plus" v-else class="button-new-tag" size="mini" @click.stop="showInput"></el-button>
-        </el-main>
-    </el-container>
+            <el-button type="text" icon="el-icon-plus" v-else class="button-new-tag" size="mini" @click.stop="showInput" style="display:none;"></el-button>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -108,7 +109,7 @@
                 inputVisible: false,
                 inputValue: "",
                 allTags: [],
-                auth: window.auth
+                auth: this.m3.auth
             };
         },
         created(){
