@@ -4,12 +4,12 @@
         <el-main style="padding:0px;">
             <Split direction="horizontal">
                 <SplitArea :size="25" :minSize="0">
-                    <el-container>
-                        <el-header>
+                    <el-container style="height:100%;">
+                        <el-header style="line-height:60px;">
                             <span>菜单设计</span>
                             <span style="float:right;">
-                                <el-button type="text" @click="onLoad" icon="el-icon-refresh"></el-button>
-                                <el-button type="text" @click="onNew(null,$event)" icon="el-icon-plus"></el-button>
+                                <el-button type="default" @click="onLoad" icon="el-icon-refresh">刷新</el-button>
+                                <el-button type="success" @click="onNew(null,$event)" icon="el-icon-plus">新建</el-button>
                             </span>
                         </el-header>
                         <el-main>
@@ -22,19 +22,19 @@
                                 handle=".handle">
                                 <div
                                     class="list-group-item"
-                                    v-for="element in tree.list"
+                                    v-for="(element,index) in tree.list"
                                     :key="element.name"
                                     @click="onTreeNodeClick(element)">
-                                    <span v-if="element.type==='divider'" style="border:1px solid #ddd;"> 
-                                        <span class="el-icon-s-grid handle"></span>&nbsp;&nbsp;
-                                        ---
-                                        <span class="el-icon-close" @click.stop="onDelete(element)" style="float:right;"></span>
+                                    <span class="handle" style="line-height:30px;">
+                                        <span class="el-icon-s-grid"></span>&nbsp;&nbsp;
+                                        <span v-if="element.type==='divider'">---</span>
+                                        <span v-else>{{element.name}}</span>
                                     </span>
-                                    <span v-else>
-                                        <span class="el-icon-s-grid handle"></span>&nbsp;&nbsp;
-                                        {{element.name}}
-                                        <span class="el-icon-close" @click.stop="onDelete(element)" style="float:right;"></span>
-                                    </span>
+                                    <el-button type="text" icon="el-icon-close" @click.stop="onDelete(element)" style="float:right;padding-left:10px;"></el-button>
+                                    <el-tooltip content="添加分隔符">
+                                        <el-button type="text" icon="el-icon-minus" @click.stop="onAppendDivider(index)" style="float:right;"></el-button>
+                                    </el-tooltip>
+                                     <nested-draggable :tasks="element.subMenu" v-if="element.type==='dir'"></nested-draggable>
                                 </div>
                             </draggable>
                         </el-main>
@@ -42,7 +42,7 @@
                 </SplitArea>
                 <SplitArea :size="25" :minSize="0" style="overflow:hidden;">
                     <el-container style="height:100%;">
-                        <el-header>
+                        <el-header style="line-height:60px;">
                             <span>效果预览</span>
                         </el-header>
                         <el-main>
@@ -94,6 +94,9 @@
                 <SplitArea :size="50" :minSize="0" style="overflow:hidden;">
                     
                     <el-container style="height:calc(100vh - 55px);">
+                        <el-header style="line-height:60px;">
+                            <span>内容编辑</span>
+                        </el-header>
                         <el-main>
                             <el-form ref="form" :model="form.data" label-width="80px" v-if="form.data">
                                 <el-form-item label="名称">
@@ -146,7 +149,7 @@
                                     </el-form-item>
                                  </template>
                                 <el-form-item>
-                                    <el-button type="primary" @click="onUpdate">提交</el-button>
+                                    <el-button type="primary" @click="onUpdate">更新</el-button>
                                 </el-form-item>
                                 </el-form>
                         </el-main>
@@ -169,13 +172,12 @@
                 新建类型
                 <p>
                     <el-radio-group v-model="dialog.new.type">
-                        <el-radio-button label="component">组件</el-radio-button>
+                        <!-- <el-radio-button label="component">组件</el-radio-button> -->
                         <el-radio-button label="action">动作</el-radio-button>
                         <el-radio-button label="url">URL</el-radio-button>
                         <!-- <el-radio-button label="attachment">附件</el-radio-button>
                         <el-radio-button label="tags">标签</el-radio-button> -->
-                        <el-radio-button label="dir">菜单目录</el-radio-button>
-                        <el-radio-button label="divider">分隔线</el-radio-button>
+                        <!-- <el-radio-button label="dir">菜单目录</el-radio-button> -->
                     </el-radio-group>
                 </p>
                 <el-form :model="dialog.new.data" :rules="dialog.new.rules" ref="newDataForm" label-position="top" v-if="dialog.new.data" style="padding-bottom:20px;">
@@ -276,7 +278,7 @@ export default {
         dialog: {
             new:{
                 show: false,
-                type: "dir",
+                type: "url",
                 data: null,
                 rules: {
                     name: [
@@ -342,9 +344,24 @@ export default {
         this.saveHandler(this.tree.list);
     },
     onDelete(data){
-        this.tree.list = _.xor(this.tree.list, [data]);
 
-        this.saveHandler(this.tree.list);
+        this.$confirm(`确定要删除该菜单项【${data.type==='divider'?'分隔符':data.name}】, 是否继续?`, '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+        
+            this.tree.list = _.xor(this.tree.list, [data]);
+
+            this.saveHandler(this.tree.list);
+
+        }).catch(() => {
+            this.$message({
+            type: 'info',
+            message: '已取消删除'
+            });          
+        })
+
     },
     onLoad(){
         this.m3.callFS("/matrix/eventConsole/contextmenu/getContextMenu.js").then( rtn=>{
@@ -381,6 +398,16 @@ export default {
             })
         })
     },
+    onAppendDivider(index){
+        let data = this.m3.EventViewTools['divider'];
+        this.tree.list.splice(index+1,0,_.extend(data,{
+                                id: _.now(),
+                                name: _.now()
+                            }));
+        this.tree.list = _.uniqBy(this.tree.list, 'name');
+        
+        this.saveHandler(this.tree.list);
+    },
     onEdit(){
 
     }
@@ -390,12 +417,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-
-    .el-header{
-        height: 30px!important;
-        line-height: 30px;
-        background: #f2f2f2;
-    }
 
     .ace_editor {
         border: 1px solid #ddd;
@@ -421,6 +442,7 @@ export default {
     
     .list-group {
         min-height: 20px;
+        border: 1px dashed #999;
     }
 
     .list-group-item:first-child {
@@ -434,6 +456,12 @@ export default {
         padding: .75rem 1.25rem;
         margin-bottom: -1px;
         background-color: #fff;
+        border-bottom: 2px dashed #999;
+    }
+
+    .list-group-item:hover {
+        background: #f2f2f2;
+        box-shadow: 0 2px 2px 0 rgb(0 0 0 / 14%), 0 3px 1px -2px rgb(0 0 0 / 20%), 0 1px 5px 0 rgb(0 0 0 / 12%);
     }
     
     .list-group-item {

@@ -196,8 +196,11 @@ export default {
                 
                 // 添加tab
                 this.tabs.activeIndex = id;
-                this.m3.dfsRead(data).then((rtn)=>{
-                    this.tabs.list.push({data: data, content: rtn.message});
+                
+                this.m3.dfsRead(data).then(rtn=>{
+                    this.tabs.list.push({data: data, content: rtn});
+                }).catch(err=>{
+                    console.error(err)
                 })
 
             } catch(err){

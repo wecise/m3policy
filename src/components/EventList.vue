@@ -227,7 +227,7 @@
                         {{ menu.name }}
                     </el-link>
 
-                    <div style="height:40px;line-height:40px;" v-else-if="menu.name && menu.type==='tag'" >
+                    <div style="height:40px;line-height:40px;" v-else-if="menu.type==='tag'" >
                         <TagView domain='event' :model.sync="data.tags" :id="data.id" :limit="4"></TagView>
                     </div>
 

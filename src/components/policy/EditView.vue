@@ -53,6 +53,35 @@
                             </el-dropdown-menu>
                         </el-dropdown>
                     </el-tooltip>
+                    <el-popover
+                        placement="left"
+                        trigger="click"
+                        popper-class="info-popper"
+                        style="float:right;padding-left:10px;font-size: 15px;">
+                        <el-container>
+                            <el-main style="padding:0px;">
+                                <el-tabs value="setup" label-position="top">
+                                    <el-tab-pane label="编辑器设置" name="setup">
+                                        <el-form>
+                                            <el-form-item label="TabSize">
+                                                <el-input v-model="editor.options.tabSize"></el-input>
+                                            </el-form-item>
+                                            <el-form-item label="UseSoftTabs">
+                                                <el-switch
+                                                    v-model="editor.options.useSoftTabs"
+                                                    active-color="#13ce66"
+                                                    inactive-color="#dddddd">
+                                                </el-switch>
+                                            </el-form-item>
+                                        </el-form>
+                                    </el-tab-pane>
+                                </el-tabs>
+                            </el-main>
+                        </el-container>
+                        <el-button type="text" slot="reference">
+                            <i class="el-icon-setting" style="float:right;"> </i>
+                        </el-button>
+                    </el-popover>
                 </el-header>
                 <el-main style="overflow:hidden;padding:0px;border-bottom:1px solid #dddddd;border-right:1px solid #dddddd;">
                     <Editor
@@ -137,6 +166,10 @@ export default {
             theme: {
                 value: "chrome",
                 list: this.m3.EDITOR_THEME
+            },
+            options:{
+                tabSize: 4,     
+                useSoftTabs: false
             }
         }
     };
@@ -152,7 +185,19 @@ export default {
              this.initData();
          },
          immediate: true
-     }
+    },
+    'editor.options.tabSize':{
+        handler(val){
+            let editor = this.$refs.editor.editor;
+            editor.getSession().setTabSize(val);
+        }
+    },
+    'editor.options.useSoftTabs':{
+        handler(val){
+            let editor = this.$refs.editor.editor;
+            editor.getSession().setUseSoftTabs(val);
+        }
+    }
   },
   methods: {
     initFileInfo(){

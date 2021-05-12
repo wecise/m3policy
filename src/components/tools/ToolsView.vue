@@ -31,7 +31,7 @@ export default({
         init(){
             this.m3.dfsRead({parent:"/script/matrix/eventConsole/tools", name:"tools.json"}).then(rtn=>{
                 
-                this.list = _.chain(rtn).filter(res=>{
+                this.list = _.chain(JSON.parse(rtn)).filter(res=>{
                     return res['status']!==false;
                 }).value();
 

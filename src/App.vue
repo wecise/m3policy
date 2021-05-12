@@ -44,6 +44,9 @@ export default {
     padding: 0px;
   }
   
+  .el-table .el-table__body td {
+      padding: 3px;
+  }
   
   /* mxgraph contextmenu style */
   td.mxPopupMenuIcon div {
