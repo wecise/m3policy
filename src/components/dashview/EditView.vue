@@ -80,8 +80,10 @@
                         filterable
                         :filter-method="onPropsFilter"
                         filter-placeholder="关键字"
-                        @change="onRightChange">
-                        <div slot-scope="{ option }">
+                        @change="onRightChange"
+                        ref="transfer">
+                        <div slot-scope="{ option }" :draggable="true">
+                            
                             <el-form :model="option" :inline="true">
                                 <el-form-item style="width:80px;">
                                     <span style="color:#606266;font-size: 12px;">{{option.field}}</span>
@@ -147,6 +149,7 @@
 
 <script>
 import _ from 'lodash';
+import Sortable from 'sortablejs';
 import TableView from './TableView';
 import ActionView from './ActionView';
 
@@ -162,7 +165,7 @@ export default {
   },
   data() {
     return {
-        
+        draggingKey:null,
         view: {
             loading: false,
             activeName: "",
@@ -245,6 +248,50 @@ eval(s);`
              _.extend(this.view.model.info, {attr:  {remark: "", icon: ""} });   
         }
     },
+    initTransfer(){
+        const transfer = this.$refs.transfer.$el
+        const leftPanel = transfer.getElementsByClassName("el-transfer-panel")[0].getElementsByClassName("el-transfer-panel__body")[0];
+        const rightPanel = transfer.getElementsByClassName("el-transfer-panel")[1].getElementsByClassName("el-transfer-panel__body")[0];
+        const rightEl = rightPanel.getElementsByClassName("el-transfer-panel__list")[0]
+        Sortable.create(rightEl,{
+          onEnd: (evt) => {
+            const {oldIndex,newIndex} = evt;
+            const temp = this.view.model.datasource.fields.value[oldIndex] 
+            if (!temp || temp === 'undefined') {
+              return
+            }// 解决右边最后一项从右边拖左边，有undefined的问题
+            this.$set(this.view.model.datasource.fields.value,oldIndex,this.view.model.datasource.fields.value[newIndex])  
+            this.$set(this.view.model.datasource.fields.value,newIndex,temp)
+          }
+        })
+        const leftEl = leftPanel.getElementsByClassName("el-transfer-panel__list")[0]
+        Sortable.create(leftEl,{
+          onEnd: (evt) => {
+            const {oldIndex,newIndex} = evt;
+            const temp = this.datasource.fields[oldIndex] 
+            if (!temp || temp === 'undefined') {
+              return
+            } // 解决右边最后一项从右边拖左边，有undefined的问题
+            this.$set(this.datasource.fields,oldIndex,this.datasource.fields[newIndex]) 
+            this.$set(this.datasource.fields,newIndex,temp)
+          }
+        })
+        leftPanel.ondragover = (ev) => {
+          ev.preventDefault()
+        }
+        leftPanel.ondrop = (ev) => {
+          ev.preventDefault();
+          const index = this.view.model.datasource.fields.value.indexOf(this.draggingKey) if(index !== -1){ this.view.model.datasource.fields.value.splice(index,1)
+          }
+        }
+        rightPanel.ondragover = (ev) => {
+          ev.preventDefault()
+        }
+        rightPanel.ondrop = (ev) => {
+          ev.preventDefault();  if(this.view.model.datasource.fields.value.indexOf(this.draggingKey) === -1){ this.view.model.datasource.fields.value.push(this.draggingKey)
+          }
+        }
+    },  
     initData(){
         let param = encodeURIComponent(JSON.stringify({  action: "read", data: this.model }));
         this.m3.callFS("/matrix/eventConsole/view/action.js", param).then((rtn)=>{
