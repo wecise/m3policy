@@ -3,8 +3,8 @@
     <el-main @dblclick.native="reverse=!reverse">
       <el-timeline :reverse="reverse">
             <el-timeline-item
-            v-for="row in dt.rows"
-            :key="row.id"
+            v-for="(row,index) in dt.rows"
+            :key="index"
             :color="row.severity | pickSeverityColor"
             :timestamp="row.vtime | formatDateTime">
             消息：{{row.msg}}

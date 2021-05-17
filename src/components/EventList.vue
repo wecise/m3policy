@@ -2,12 +2,6 @@
     <el-container :style="dtContainerHeight">
         <el-header v-if="dtOptions.header">
             
-            <!--el-tooltip :content="$t('event.actions.runningMode')"  placement="top">
-                <el-button type="text" @click="onToggle">
-                    <span class="el-icon-notebook-2" style="cursor:pointer;font-size:16px;"></span>
-                </el-button>
-            </el-tooltip-->
-
             <el-tooltip :content="$t('event.actions.refresh')"  placement="top">
                 <el-button type="text" @click="onRefresh">
                     <span class="el-icon-refresh" style="cursor:pointer;font-size:16px;"></span>
@@ -127,22 +121,6 @@
                 class="event-list"
                 style="width:100%;">
                 <el-table-column type="selection" align="center"></el-table-column> 
-                <!--el-table-column type="expand">
-                    <template>
-                        <el-container style="width:50vw;">
-                            <el-main>
-                                <el-form label-position="right" label-width="120px">
-                                    <el-form-item v-for="(v,k) in props.row" :label="k" :key="k">
-                                        <el-input :type="(k,metaColumns) | pickType" :value="this.moment(v).format(global.register.format)"  v-if="pickFtype(k) == 'timestamp'"></el-input>
-                                        <el-input :type="(k,metaColumns) | pickType" :value="this.moment(v).format('YYYY-MM-DD')"  v-else-if="pickFtype(k) == 'date'"></el-input>
-                                        <el-input :type="(k,metaColumns) | pickType" :rows="6" :value="JSON.stringify(v,null,4)"  v-else-if="_.includes(['map','set','list'],pickFtype(k))"></el-input>
-                                        <el-input :type="(k,metaColumns) | pickType" :value="v"  v-else></el-input>
-                                    </el-form-item>
-                                </el-form>
-                            </el-main>
-                        </el-container>
-                    </template>
-                </el-table-column-->
                 <template v-for="(item,index) in dt.columns">
                     <el-table-column 
                         :prop="item.field"
@@ -829,7 +807,7 @@ export default {
             } 
             // 监控模式
             else if(this.control.mode.value.name === 'm'){
-                this.m3.fullScreen(false);
+                this.m3.fullScreen(true);
             }
             // 运维模式
             else {
