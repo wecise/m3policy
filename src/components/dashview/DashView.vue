@@ -43,7 +43,7 @@
                     </el-card>
                   
                 </el-main>
-                <el-dialog :title="'视图编辑 ' + dt.selected.name" 
+                <el-dialog :title="'视图编辑 ' + dt.selected.name.replace(/.json/,'')" 
                     :visible.sync="edit.show" 
                     :show-close="false"
                     :close-on-press-escape="true"
@@ -52,7 +52,7 @@
                     dialogDrag
                     dialogChange
                     v-if="dt.selected">
-                  <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose"></EditView>
+                  <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose" @view-delete="(()=>{ edit.show=false; this.onRefresh();})"></EditView>
                 </el-dialog>
               </el-container>
             </SplitArea>

@@ -16,6 +16,7 @@
                     <TagView domain='dashview' :model.sync="view.model.info.tags" :id="view.model.info.id" :limit="4"></TagView>
                 </el-form-item>
                 <el-form-item>
+                    <el-button type="danger" @click="onDelete(model)" :loading="view.loading">删除视图</el-button>
                     <el-button type="success" @click="onApplyInfo" :loading="view.loading">应用</el-button>
                     <el-button @click="onClose">取消</el-button>
                 </el-form-item>
@@ -609,6 +610,32 @@ eval(s);`
             }
             
         }
+    },
+    onDelete(item){
+      this.$confirm(`确定要删除该视图 ${item.name}, 是否继续?`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+       
+        this.m3.dfsDelete(item).then(()=>{
+          this.$message({
+            type: "success",
+            message: "删除成功"
+          })
+          this.$emit("view-delete");
+        }).catch((err)=>{
+          this.$message({
+            type: "error",
+            message: "删除失败 " + err
+          })
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });          
+      })
     }
   }
 };
