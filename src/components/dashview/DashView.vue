@@ -51,6 +51,7 @@
                     :destroy-on-close="true"
                     dialogDrag
                     dialogChange
+                    custom-class="dashview"
                     v-if="dt.selected">
                   <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose" @view-delete="(()=>{ edit.show=false; this.onRefresh();})"></EditView>
                 </el-dialog>

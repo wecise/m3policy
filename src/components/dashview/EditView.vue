@@ -141,7 +141,7 @@
                     </el-transfer>
                 </el-main>
                 <el-footer style="line-height:60px;text-align: center;">
-                    <!-- <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button> -->
+                    <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button>
                     <el-button @click="onClose">取消</el-button>
                 </el-footer>
             </el-container>
@@ -599,11 +599,14 @@ eval(s);`
             $(rightPanel).find('.alias').hide();
             $(rightPanel).find('.ftype').hide();
         } else if(tabName.name === 'sort'){
+            
             if(_.isEmpty(this.view.model.datasource.fields.data)){
+                console.log(11,tabName.name)
                 this.sort.data = _.map(this.view.model.datasource.fields.value,v=>{
                     return _.find(this.datasource.fields, {field:v});
                 });
             } else {
+                console.log(22,tabName.name)
                 this.sort.data = _.cloneDeep(this.view.model.datasource.fields.data);
             }
             
@@ -718,7 +721,7 @@ eval(s);`
         color: #999;
     }
 
-    .el-dialog__body .el-tabs__item.is-top{
+    .dashview .el-dialog__body .el-tabs__item.is-top{
         height: 60px;
     }
 

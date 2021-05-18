@@ -47,6 +47,7 @@
                           </el-option>
                         </el-select>
                     </div>
+
                     <div style="height:30px;line-height:30px;" v-else-if="item.field === 'rtype'">
                         <el-select :value="scope.row[item.field]" v-if="scope.row[item.field]">
                           <el-option
@@ -65,6 +66,7 @@
                     <div v-else>
                         {{scope.row[item.field]}}
                     </div>
+
                 </template>
             </el-table-column>
         </template>
@@ -145,7 +147,6 @@
             </el-select>
           </el-form-item>
         </el-form>
-        
         <span slot="footer" class="dialog-footer">
           <el-button @click="dialog.rule.show = false">取 消</el-button>
           <el-button type="primary" @click="onSave">确 定</el-button>
@@ -171,9 +172,19 @@ export default {
       },
       rtype: {
         list: [
-          {name:'sms',title:'短信',address:"47.92.151.165",port:8080},
-          {name:'email',title:'邮件',address:"47.92.151.165",port:8080},
-          {name:'wechat',title:'企业微信',address:"47.92.151.165",port:8080}
+          { name:'sms', title:'短信', type:"netgate", 
+            netgate:{
+              address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
+            },
+            jdbc:{
+              driver:"com.mysql.jdbc.Driver", url:"jdbc:mysql://47.92.151.165:port/dbname", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
+            },
+            rest:{
+              url:"http://47.92.151.165", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
+            }
+          } ,
+          { name:'email', title:'邮件', address:"smtp.mxhichina.com", port:25, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5},
+          { name:'wechat', title:'企业微信', address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5}
         ]
       },
       persons: {
@@ -290,6 +301,7 @@ export default {
       this.dialog.rule.action = "add";
     },
     onSave(){
+
         let param = encodeURIComponent(JSON.stringify({
                     action: this.dialog.rule.action,
                     model: this.dialog.rule.data
@@ -358,13 +370,16 @@ export default {
     padding:0px;
     overflow: hidden;
   }
-
+  
   
 </style>
 
 <style>
   .notifyRule-dialog .el-dialog{
     width: 70vw!important;
-    height: 60vh;
+    height: auto;
+  }
+  .el-table__body .el-input__inner{
+    border:unset!important;
   }
 </style>
