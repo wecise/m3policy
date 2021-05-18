@@ -57,7 +57,7 @@
                         </el-form-item>
                         <el-form-item>
                             <el-button type="success" @click="onTestDataSource" :loading="editor.loading">测试数据源</el-button>
-                            <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button>
+                            <!-- <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button> -->
                             <el-button @click="onClose">取消</el-button>
                         </el-form-item>
                         <el-form-item label="数据结果" v-if="editor.data">
@@ -141,7 +141,7 @@
                     </el-transfer>
                 </el-main>
                 <el-footer style="line-height:60px;text-align: center;">
-                    <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button>
+                    <!-- <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button> -->
                     <el-button @click="onClose">取消</el-button>
                 </el-footer>
             </el-container>
@@ -516,8 +516,7 @@ eval(s);`
             return _.find(this.datasource.fields, {field:v});
         }));
         
-        
-        this.$set(this.view.model.datasource.fields,'data', fieldsValue);
+        this.$set(this.view.model.datasource.fields, 'data', fieldsValue);
 
         let content = JSON.stringify(this.view.model,null,2);
     
@@ -532,7 +531,6 @@ eval(s);`
               message: "更新数据源成功"
             })  
             this.initData();
-
             this.datasource.loading = false;
         }).catch((err)=>{
             this.$message({
