@@ -62,7 +62,7 @@ export default {
   data() {
     return {
       currentView:"timeline-view",
-      baseUrl: "/script/matrix/eventConsole/attachment",
+      baseUrl: "/script/matrix/m3event/attachment",
       dt: {
           rows: [],
           selected: []

@@ -231,7 +231,7 @@ export default {
   methods: {
     initView(){
       let param = encodeURIComponent(JSON.stringify({action:'getDefaultView'}));
-      this.m3.callFS("/matrix/eventConsole/view/action.js",param).then(rtn=>{
+      this.m3.callFS("/matrix/m3event/view/action.js",param).then(rtn=>{
         this.view.value = rtn.message;
       })
     },

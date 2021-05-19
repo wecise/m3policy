@@ -41,6 +41,21 @@
                                 </el-switch>
                             </p>
                         </div>
+
+                        <!-- 声音告警 -->
+                        <div class="tool">
+                            <div>{{control.ifVoiceNotify?'声音告警':'声音告警'}}</div>
+                            <p>
+                                <el-switch
+                                    v-model="control.ifVoiceNotify"
+                                    active-color="#13ce66"
+                                    inactive-color="#dddddd"
+                                    :active-value="true"
+                                    :inactive-value="false">
+                                </el-switch>
+                            </p>
+                        </div>
+
                         <!-- 业务工具 -->
                         <div class="tool">
                             <div>{{control.ifSmartGroup?'智能分组':'智能分组'}}</div>
@@ -221,6 +236,7 @@
 
 import _ from 'lodash';
 import $ from 'jquery';
+import {Howl} from 'howler';
 import Cookies from 'js-cookie';
 import VueContext from 'vue-context';
 import 'vue-context/dist/css/vue-context.css';
@@ -291,6 +307,7 @@ export default {
                 ifSmart: false,
                 ifSmartGroup: false,
                 ifRefresh: false,
+                ifVoiceNotify: false,
                 mode: {
                     value: {name:'r',title:'运维模式',value:true},
                     list: [
@@ -306,12 +323,15 @@ export default {
                     data: null,
                     upload: {
                         Authorization:Cookies.get("matrixSession"),
-                        baseUrl: "/script/matrix/eventConsole/attachment",
+                        baseUrl: "/script/matrix/m3event/attachment",
                         ifIndex: {
                             index:true
                         }
                     }
                 }
+            },
+            notify: {
+                sound: null
             }
         }
     },
@@ -345,6 +365,11 @@ export default {
         'control.ifSmartGroup':{
             handler(val){
                 this.onToogleSmartGroup(val);
+            }
+        },
+        'control.ifVoiceNotify':{
+            handler(val){
+                this.onVoiceNotify(val);
             }
         },
         'control.mode.value':{
@@ -455,7 +480,7 @@ export default {
             this.dt.selectedSeverity = _.xor(this.dt.selectedSeverity,[key]);
         },
         initContextMenu(){
-            this.m3.callFS("/matrix/eventConsole/contextmenu/getContextMenu.js").then( (rtn)=>{
+            this.m3.callFS("/matrix/m3event/contextmenu/getContextMenu.js").then( (rtn)=>{
                 this.dt.contextmenu.list = rtn.message;
             } );
             document.addEventListener('click',()=>{
@@ -781,6 +806,37 @@ export default {
         onToolsKeep(menu){
             let row = {id: menu.id};
             this.$emit("addTab",{row:row, data:menu});
+        },
+        /* 声音告警 */
+        onVoiceNotify(val){
+            if(val){
+                if(this.model.notify > 0){
+                    this.onNotifyPlay();
+                } else {
+                    this.onNotifyStop();
+                }
+            }else{
+                this.onNotifyStop();
+            }
+        },
+        /* 声音播放 */
+        onNotifyPlay(){
+      
+            if(this.notify.sound){
+                this.notify.sound.stop();
+            }
+
+            let src = `/static/assets/audio/notification.mp3`;
+            this.notify.sound = new Howl({
+                src: [src],
+                volume: 1,
+                loop: true
+            });
+            this.notify.sound.play();
+        },
+        /* 声音停止 */
+        onNotifyStop(){
+            this.notify.sound.stop();
         },
         /* 运行模式 */
         onToogleRunMode(val){

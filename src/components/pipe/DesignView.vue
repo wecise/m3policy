@@ -834,7 +834,7 @@
 
                                     let name = [this.model.name.split(".")[0],state.cell.getId()].join("/");
                                     let param = encodeURIComponent( JSON.stringify({name: name}) );
-                                    this.m3.callFS("/matrix/eventConsole/pipe/getPipeCellByName.js",param).then(rtn=>{
+                                    this.m3.callFS("/matrix/m3event/pipe/getPipeCellByName.js",param).then(rtn=>{
                                         console.log(232323,rtn,state.cell.value)
                                         this.dialog.source.jsonEditor.data = rtn.message?rtn.message:state.cell.value.fileContent;
 
@@ -866,7 +866,7 @@
                                 else if(state.cell.value.type === 'cron'){
                                     let name = [this.model.name.split(".")[0],state.cell.getId()].join("/");
                                     let param = encodeURIComponent( JSON.stringify({name: name}) );
-                                    this.m3.callFS("/matrix/eventConsole/pipe/getPipeCellByName.js",param).then( rtn=>{
+                                    this.m3.callFS("/matrix/m3event/pipe/getPipeCellByName.js",param).then( rtn=>{
                                         this.dialog.cron.cell = state.cell;
                                         this.dialog.cron.data = rtn.message?JSON.parse(rtn.message):state.cell.value.fileContent;
                                     }).catch(err=>{
@@ -998,7 +998,7 @@
             initGraph(graph){
                 let term = encodeURIComponent(JSON.stringify( this.model ));
 
-                this.m3.callFS("/matrix/eventConsole/pipe/getPipeContentByName.js", term).then( (rtn)=>{
+                this.m3.callFS("/matrix/m3event/pipe/getPipeContentByName.js", term).then( (rtn)=>{
                     let doc = mxUtils.parseXml(rtn.message);
                     let codec = new mxCodec(doc);
                     codec.decode(doc.documentElement, graph.getModel());
@@ -1007,7 +1007,7 @@
             },
             // 初始化菜单项目
             onInitConfig(){
-                this.m3.callFS("/matrix/eventConsole/pipe/getConfigList.js").then( (rtn)=>{
+                this.m3.callFS("/matrix/m3event/pipe/getConfigList.js").then( (rtn)=>{
                     this.config = rtn.message;
                 });
             },
@@ -1427,7 +1427,7 @@
                 let name = this.model.name.split(".")[0]
                 let param = encodeURIComponent(JSON.stringify( { graph:graph, name:name } ));
                 
-                this.m3.callFS("/matrix/eventConsole/pipe/savePipe.js", param).then( ()=>{
+                this.m3.callFS("/matrix/m3event/pipe/savePipe.js", param).then( ()=>{
                     this.$message({
                         type: "success",
                         message: "保存成功"
@@ -1477,7 +1477,7 @@
                     let name = [this.model.name.split(".")[0],id].join("/")
                     let param = encodeURIComponent(JSON.stringify( { name:name, data: data.data } ));
                     
-                    this.m3.callFS("/matrix/eventConsole/pipe/savePipeCell.js", param).then( ()=>{
+                    this.m3.callFS("/matrix/m3event/pipe/savePipeCell.js", param).then( ()=>{
                         this.$message({
                             type: "success",
                             message: "节点配置保存成功"
@@ -1488,7 +1488,7 @@
                     let name = [this.model.name.split(".")[0],id].join("/")
                     let param = encodeURIComponent(JSON.stringify( { name:name, data: data.data } ));
                     
-                    this.m3.callFS("/matrix/eventConsole/pipe/savePipeCell.js", param).then( ()=>{
+                    this.m3.callFS("/matrix/m3event/pipe/savePipeCell.js", param).then( ()=>{
                         this.$message({
                             type: "success",
                             message: "节点配置保存成功"
@@ -1554,11 +1554,11 @@
             // 生成配置实例
             newInstance(model, id){
                 let term = encodeURIComponent( JSON.stringify( { model:model, id:id } ) );
-                this.m3.callFS("/matrix/eventConsole/pipe/newInstance.js", term);
+                this.m3.callFS("/matrix/m3event/pipe/newInstance.js", term);
             },
             // 删除配置实例
             deleteInstance(id){
-                this.m3.callFS("/matrix/eventConsole/pipe/deleteInstance.js", encodeURIComponent(id));
+                this.m3.callFS("/matrix/m3event/pipe/deleteInstance.js", encodeURIComponent(id));
             },
         }
     }

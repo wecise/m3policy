@@ -251,7 +251,7 @@ export default {
   },
   methods: {
     initData(){
-      this.m3.callFS("/matrix/eventConsole/notify/getRuleList.js").then((rt)=>{
+      this.m3.callFS("/matrix/m3event/notify/getRuleList.js").then((rt)=>{
         let rtn = rt.message;
 
         this.$set(this.dt,'rows', rtn.rows);
@@ -275,12 +275,12 @@ export default {
         this.persons.list = rtn.message;
       })
 
-      this.m3.callFS("/matrix/eventConsole/notify/getTemplateList.js").then(rtn=>{
+      this.m3.callFS("/matrix/m3event/notify/getTemplateList.js").then(rtn=>{
         this.templates.list = rtn.message.rows;
       })
 
       let param = encodeURIComponent( JSON.stringify({action:'list'}) );
-      this.m3.callFS("/matrix/eventConsole/notify/situationAction.js",param).then(res=>{
+      this.m3.callFS("/matrix/m3event/notify/situationAction.js",param).then(res=>{
         this.situation.list = res.message.rows;
       })
     },
@@ -312,7 +312,7 @@ export default {
           return false;
         }
 
-        this.m3.callFS("/matrix/eventConsole/notify/ruleAction.js",param).then(()=>{
+        this.m3.callFS("/matrix/m3event/notify/ruleAction.js",param).then(()=>{
           this.$message({
             type: "success",
             message: "新建规则成功！"
@@ -331,7 +331,7 @@ export default {
                     }).then(() => {
         
         let term = encodeURIComponent(JSON.stringify({action:"delete",model:item}));
-        this.m3.callFS("/matrix/eventConsole/notify/ruleAction.js",term).then(()=>{
+        this.m3.callFS("/matrix/m3event/notify/ruleAction.js",term).then(()=>{
           this.$message({
                 type: 'success',
                 message: '删除规则成功!'

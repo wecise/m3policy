@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-main>
-        <el-tabs value="email" type="border-card">
+        <el-tabs value="email" tabPosition="left" type="border-card">
           <el-tab-pane label="邮件配置" name="email">
               <el-form :model="rtype.data.email"  label-width="100px">
                 <el-form-item label="SMTP地址" prop="address">
@@ -154,7 +154,7 @@
           </el-tab-pane>
 
           <el-tab-pane label="微信配置" name="wechat">
-            
+
             <el-form :model="rtype.data.wechat"  label-width="100px">
                 <el-form-item label="地址" prop="address">
                   <el-input v-model="rtype.data.wechat.address"></el-input>
@@ -191,85 +191,7 @@
           </el-tab-pane>
 
         </el-tabs>
-        <!-- <Split :direction="vertical">
-            <SplitArea :size="20" :minSize="0" style="overflow:hidden;">
-                <el-container>
-                  <el-main>
-                      <el-tree :data="treeData" 
-                            :props="defaultProps" 
-                            node-key="fullname"
-                            highlight-current
-                            default-expand-all
-                            auto-expand-parent
-                            @node-click="onNodeClick"
-                            :expand-on-click-node="false"
-                            style="background: #f2f2f2;height: 100%;"
-                            ref="tree">
-                        <span slot-scope="{ node, data }" style="width:100%;height:30px;line-height: 30px;">
-                            <span v-if="data.ftype=='dir'">
-                                <i class="el-icon-folder" style="color:#FFC107;"></i> 
-                                <span v-if="data.content"> {{data.content.info.title}}</span>
-                                <span v-else> {{node.label}}</span>
-                            </span>
-                            <span v-else>
-                                <i class="el-icon-c-scale-to-original" style="color:#0088cc;"></i>
-                                <span v-if="data.content"> {{data.content.info.title}}</span>
-                                <span v-else> {{node.label}}</span>
-                            </span>
-                        </span>  
-                    </el-tree>
-                  </el-main>
-                </el-container>
-            </SplitArea>
-            <SplitArea :size="80" :minSize="0" style="overflow:hidden;">
-                <el-container>
-                    <el-header>
-                      <el-tooltip content="刷新">
-                        <el-button type="text" icon="el-icon-refresh" @click="onRefresh"></el-button>
-                      </el-tooltip>
-                      <el-tooltip content="新建服务">
-                        <el-button type="text" icon="el-icon-plus" @click="onNew"></el-button>
-                      </el-tooltip>
-                    </el-header>
-                    <el-main>
-                      <el-table
-                        :data="dt.rows"
-                        stripe
-                        style="width: 100%">
-                        <template v-for="(item,index) in dt.columns">
-                            <el-table-column 
-                                :prop="item.field"
-                                :label="item.title" 
-                                sortable 
-                                show-overflow-tooltip
-                                :key="index"
-                                :width="item.width"
-                                :formatter="item.render"
-                                v-if="item.visible">
-                                <template slot-scope="scope">
-                                    <div style="height:30px;line-height:30px;" v-if="item.field=='tags'">
-                                        <TagView domain='notifyRule' :model.sync="scope.row.tags" :id="scope.row.id" :limit="1"></TagView>
-                                    </div>
-                                    <div v-html='item.render(scope.row, scope.column, scope.row[item.field], scope.$index)' 
-                                        v-else-if="typeof item.render === 'function'">
-                                    </div>
-                                    <div v-else>
-                                        {{scope.row[item.field]}}
-                                    </div>
-                                </template>
-                            </el-table-column>
-                        </template>
-                        <el-table-column label="操作">
-                          <template slot-scope="scope">
-                            <el-button type="text" icon="el-icon-edit"  @click="onEdit(scope.$index, scope.row)"> 编辑</el-button>
-                            <el-button type="text" icon="el-icon-delete"  @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
-                          </template>
-                        </el-table-column>
-                      </el-table>
-                    </el-main>
-                  </el-container>
-            </SplitArea>
-        </Split> -->
+        
     </el-main>
   </el-container>
 
@@ -280,12 +202,9 @@ import _ from 'lodash';
 
 export default {
   name: "SetupView",
-  props: {
-    model: Object
-  },
   data() {
     return {
-      root: '/script/matrix/eventConsole/notify/server',
+      root: '/script/matrix/m3event/notify/server',
       defaultProps: {
           children: 'children',
           label: 'name'
@@ -313,15 +232,19 @@ export default {
           { name:'wechat', title:'企业微信', address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5}
         ],
         data: {
-          netgate:{
-            address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
-          },
-          jdbc:{
-            driver:"com.mysql.jdbc.Driver", url:"jdbc:mysql://47.92.151.165:port/dbname", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
-          },
-          rest:{
-            url:"http://47.92.151.165", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
-          }
+          sms: { name:'sms', title:'短信', type:"netgate", 
+            netgate:{
+              address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
+            },
+            jdbc:{
+              driver:"com.mysql.jdbc.Driver", url:"jdbc:mysql://47.92.151.165:port/dbname", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
+            },
+            rest:{
+              url:"http://47.92.151.165", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
+            }
+          } ,
+          email: { name:'email', title:'邮件', address:"smtp.mxhichina.com", port:25, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5},
+          wechat: { name:'wechat', title:'企业微信', address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5}
         }
       }
     };

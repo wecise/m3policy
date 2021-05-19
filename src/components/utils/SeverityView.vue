@@ -124,7 +124,7 @@ export default {
     },
     initData(){
       let param = encodeURIComponent(JSON.stringify({action:"list"}));
-      this.m3.callFS("/matrix/eventConsole/severity/action.js",param).then((rtn)=>{
+      this.m3.callFS("/matrix/m3event/severity/action.js",param).then((rtn)=>{
         _.extend(this.dt,rtn.message);
       });
     },
@@ -151,7 +151,7 @@ export default {
       }).then(() => {
         
         let param = encodeURIComponent(JSON.stringify({action:"delete", name: row.name, model:row}));
-        this.m3.callFS("/matrix/eventConsole/severity/action.js",param).then(()=>{
+        this.m3.callFS("/matrix/m3event/severity/action.js",param).then(()=>{
           this.onRefresh();
         });
 
@@ -165,7 +165,7 @@ export default {
     onSave(){
       let model = [this.dialog.severity.data.title_en,this.dialog.severity.data.title_cn,this.dialog.severity.data.color];
       let param = encodeURIComponent(JSON.stringify({action: this.dialog.severity.action, name:this.dialog.severity.data.name, model: model}));
-        this.m3.callFS("/matrix/eventConsole/severity/action.js",param).then(()=>{
+        this.m3.callFS("/matrix/m3event/severity/action.js",param).then(()=>{
           this.onRefresh();
           this.$message({
             type: 'success',

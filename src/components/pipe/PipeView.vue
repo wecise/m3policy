@@ -253,8 +253,8 @@
                 },
                 info: [],
                 dfs: {
-                    root: `/script/matrix/eventConsole/pipe/view`,
-                    path: `/script/matrix/eventConsole/pipe/view`
+                    root: `/script/matrix/m3event/pipe/view`,
+                    path: `/script/matrix/m3event/pipe/view`
                 },
                 showView: 'table',
                 control: {
@@ -319,7 +319,7 @@
             },
             initData(){
                 
-                this.m3.callFS("/matrix/eventConsole/pipe/getPipeList.js").then( (val)=>{
+                this.m3.callFS("/matrix/m3event/pipe/getPipeList.js").then( (val)=>{
                     let rtn = val.message;
 
                     this.dt.rows = rtn.rows;
@@ -341,7 +341,7 @@
             },
             onForward(fullname){
 
-                this.m3.callFS("/matrix/eventConsole/pipe/getChildPipeList.js", encodeURIComponent(fullname) ).then(rtn=>{
+                this.m3.callFS("/matrix/m3event/pipe/getChildPipeList.js", encodeURIComponent(fullname) ).then(rtn=>{
                     this.dt.rows = rtn.message;
                     if(fullname){
                         this.dfs.path = fullname;
@@ -449,7 +449,7 @@
                     type: 'warning'
                 }).then(() => {
                     
-                    this.m3.callFS("/matrix/eventConsole/pipe/deletePipeById.js", encodeURIComponent(row.id)).then( (rtn)=>{
+                    this.m3.callFS("/matrix/m3event/pipe/deletePipeById.js", encodeURIComponent(row.id)).then( (rtn)=>{
                         if( rtn.status == 'ok' ){
                             this.$message({
                                 type: "success",

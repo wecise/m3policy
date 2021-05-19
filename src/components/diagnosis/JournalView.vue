@@ -52,7 +52,7 @@ export default {
   methods: {
     initData(){
         let param = encodeURIComponent(JSON.stringify(this.model).replace(/%/gi,'%25'));
-        this.m3.callFS("/matrix/eventConsole/diagnosis/journal.js", param).then((rtn)=>{
+        this.m3.callFS("/matrix/m3event/diagnosis/journal.js", param).then((rtn)=>{
             this.dt.rows = rtn.message;
         })
     }

@@ -62,7 +62,7 @@
         },
         data(){
             return {
-                appRoot: "/matrix/eventConsole/tags",
+                appRoot: "/matrix/m3event/tags",
                 auth: this.m3.auth.signedUser,
                 defaultProps: {
                     children: 'nodes',

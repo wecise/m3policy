@@ -217,7 +217,7 @@ export default {
     },
     initData(){
         let param = encodeURIComponent(JSON.stringify({  action: "read", data: this.model }));
-        this.m3.callFS("/matrix/eventConsole/policy/action.js", param).then(rtn=>{
+        this.m3.callFS("/matrix/m3event/policy/action.js", param).then(rtn=>{
             
             this.editor.data = rtn.message;
             

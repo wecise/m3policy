@@ -131,7 +131,7 @@ export default {
     },
     initData(){
         let term = encodeURIComponent(JSON.stringify(this.model));
-        this.m3.callFS("/matrix/eventConsole/diagnosis/smartGroup.js", term).then((rtn)=>{
+        this.m3.callFS("/matrix/m3event/diagnosis/smartGroup.js", term).then((rtn)=>{
             let rt = rtn.message;
             _.extend(this.smartGroup.dt, {columns: _.map(rt.template, (v)=>{
                 
@@ -158,7 +158,7 @@ export default {
 
         let term = encodeURIComponent(JSON.stringify(val));
 
-        this.m3.callFS("/matrix/eventConsole/diagnosis/eventListBySmartGroup.js", term).then( (rtn) =>{
+        this.m3.callFS("/matrix/m3event/diagnosis/eventListBySmartGroup.js", term).then( (rtn) =>{
             
             let rt = rtn.message;
 

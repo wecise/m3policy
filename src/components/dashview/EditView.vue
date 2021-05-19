@@ -284,7 +284,7 @@ eval(s);`
   methods: {
     initData(){
         let param = encodeURIComponent(JSON.stringify({  action: "read", data: this.model }));
-        this.m3.callFS("/matrix/eventConsole/view/action.js", param).then((rtn)=>{
+        this.m3.callFS("/matrix/m3event/view/action.js", param).then((rtn)=>{
             this.view.model = JSON.parse(rtn.message);
 
             this.view.model.info = _.cloneDeep(this.model);
@@ -452,7 +452,7 @@ eval(s);`
         let view = this.model.name.replace(/.json/,'');
         let param = encodeURIComponent(JSON.stringify({  view: view, term: this.view.model.datasource.filter }));
         
-        this.m3.callFS("/matrix/eventConsole/event_list.js", param).then((rt)=>{
+        this.m3.callFS("/matrix/m3event/event_list.js", param).then((rt)=>{
             
             this.editor.data = rt.message;
 

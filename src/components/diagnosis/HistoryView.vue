@@ -44,7 +44,7 @@ export default {
     methods:{
         initData(){
             let param = encodeURIComponent(JSON.stringify(this.model).replace(/%/g,'%25'));
-            this.m3.callFS("/matrix/eventConsole/diagnosis/history.js", param).then((rtn)=>{
+            this.m3.callFS("/matrix/m3event/diagnosis/history.js", param).then((rtn)=>{
                 let rt = rtn.message;
                 _.extend(this.dt, {columns: _.map(rt.columns, (v)=>{
                     

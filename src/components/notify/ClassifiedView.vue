@@ -185,7 +185,7 @@ export default {
     },
     initData(){
       let param = encodeURIComponent( JSON.stringify({action:'list'}) );
-      this.m3.callFS("/matrix/eventConsole/notify/situationAction.js",param).then(res=>{
+      this.m3.callFS("/matrix/m3event/notify/situationAction.js",param).then(res=>{
         this.dt.rows = res.message.rows;
         this.dt.columns = _.map(res.message.columns,v=>{
         
@@ -237,7 +237,7 @@ export default {
           
           let param = encodeURIComponent( JSON.stringify({action: "delete", model:item}) );
 
-          this.m3.callFS("/matrix/eventConsole/notify/situationAction.js",param).then(()=>{
+          this.m3.callFS("/matrix/m3event/notify/situationAction.js",param).then(()=>{
             this.$message({
                     type: 'success',
                     message: '删除成功'
@@ -258,7 +258,7 @@ export default {
     },
     onSave(){
       let param = encodeURIComponent( JSON.stringify({action: this.dialog.classified.action, model:this.dialog.classified.data}) );
-      this.m3.callFS("/matrix/eventConsole/notify/situationAction.js",param).then(res=>{
+      this.m3.callFS("/matrix/m3event/notify/situationAction.js",param).then(res=>{
         console.log(res)
         this.$message({
             type: "success",

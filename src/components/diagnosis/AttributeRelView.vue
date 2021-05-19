@@ -178,7 +178,7 @@ export default {
     },
     onSearchByTags(val){
         let term = encodeURIComponent(JSON.stringify(  val.join(" | ") ).replace(/%/gi,'%25'));
-        this.m3.callFS("/matrix/eventConsole/diagnosis/attributeRel.js", term).then( (rtn)=>{
+        this.m3.callFS("/matrix/m3event/diagnosis/attributeRel.js", term).then( (rtn)=>{
             this.result.dt = rtn.message;
         } )
     },

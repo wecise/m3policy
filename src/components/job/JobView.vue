@@ -86,7 +86,7 @@ export default {
         };
 
         this.m3.callFS(
-          "/matrix/eventConsole/job/job_list.js",
+          "/matrix/m3event/job/job_list.js",
           encodeURIComponent(JSON.stringify(param))
         ).then( (rt)=>{
             let rtn = rt.message; 

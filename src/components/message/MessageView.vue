@@ -70,7 +70,7 @@ export default {
   },
   methods: {
     initData() {
-      this.m3.callFS("/matrix/eventConsole/message/getMessage.js").then(rtn=>{
+      this.m3.callFS("/matrix/m3event/message/getMessage.js").then(rtn=>{
         this.dt.rows = rtn.message;
       })
     }

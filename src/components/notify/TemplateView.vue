@@ -163,7 +163,7 @@ export default {
         return `row-${rowIndex}`;
     },
     initData(){
-      this.m3.callFS("/matrix/eventConsole/notify/getTemplateList.js",null).then((rt)=>{
+      this.m3.callFS("/matrix/m3event/notify/getTemplateList.js",null).then((rt)=>{
         let rtn = rt.message;
 
         this.$set(this.dt,'rows', rtn.rows);

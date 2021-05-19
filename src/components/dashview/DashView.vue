@@ -106,7 +106,7 @@ export default {
   methods: {
     initData(){
         let param = encodeURIComponent(JSON.stringify({  action: "list"  }));
-        this.m3.callFS("/matrix/eventConsole/view/action.js", param).then((rtn)=>{
+        this.m3.callFS("/matrix/m3event/view/action.js", param).then((rtn)=>{
             this.dt.rows = _.orderBy(rtn.message,['name'],['asc']);
             this.edit.show = false;
         })
@@ -119,7 +119,7 @@ export default {
           this.initData();
         } else {
           let param = encodeURIComponent(JSON.stringify({  action: "search", param: tag  }));
-          this.m3.callFS("/matrix/eventConsole/view/action.js", param).then((rtn)=>{
+          this.m3.callFS("/matrix/m3event/view/action.js", param).then((rtn)=>{
               this.dt.rows = _.orderBy(rtn.message,['name'],['asc']);
               this.edit.show = false;
           })
@@ -127,14 +127,14 @@ export default {
     },
     onNew(){
       let param = encodeURIComponent(JSON.stringify({  action: "add", data:this.m3.EventViewDataObj }));
-      this.m3.callFS("/matrix/eventConsole/view/action.js", param).then((rtn)=>{
+      this.m3.callFS("/matrix/m3event/view/action.js", param).then((rtn)=>{
           this.dt.rows = rtn.message;
           this.onRefresh();
       })
     },
     onSetDefaultView(item){
       let param = encodeURIComponent(JSON.stringify({  action: "setDefaultView", data: { key: 'defaultView', value: item.fullname } }));
-      this.m3.callFS("/matrix/eventConsole/view/action.js", param).then(()=>{
+      this.m3.callFS("/matrix/m3event/view/action.js", param).then(()=>{
           this.onRefresh();
           this.$notify.success(`已设置 ${item.name.replace(/.json/,'')} 为默认视图`);
           this.$emit("toggle-view");

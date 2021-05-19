@@ -364,11 +364,11 @@ export default {
 
     },
     onLoad(){
-        this.m3.callFS("/matrix/eventConsole/contextmenu/getContextMenu.js").then( rtn=>{
+        this.m3.callFS("/matrix/m3event/contextmenu/getContextMenu.js").then( rtn=>{
             this.tree.list = rtn.message;
         });
 
-        this.m3.dfsRead({parent:"/script/matrix/eventConsole/tools", name:"tools.json"}).then( rtn=>{
+        this.m3.dfsRead({parent:"/script/matrix/m3event/tools", name:"tools.json"}).then( rtn=>{
             this.component.list = JSON.parse(rtn.message);
         })
     },
@@ -382,7 +382,7 @@ export default {
         let content = JSON.stringify(data,null,2);
     
         let param = {
-                        parent: "/script/matrix/eventConsole/contextmenu", name: "context-menu.json", 
+                        parent: "/script/matrix/m3event/contextmenu", name: "context-menu.json", 
                         data: { content: content, type: 'json', attr: '', index: true }    
                     };
         

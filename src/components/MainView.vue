@@ -37,7 +37,7 @@
               </el-input>
             </el-header>
             <el-main :loading="loading">
-              <EventList ref="eventList" :model="search.result.list" :global="global" :options="search.result.options" 
+              <EventList ref="eventList" :model="search.result.list" :global="global" :options="search.result.options"
                 @onSearch="onSearch" 
                 @DiagnosisView="((data)=>{ addTab(data.row,data.menu) })"
                 @severity:change="onSearchBySeverity"
@@ -174,6 +174,7 @@ export default {
       handler(val){
         this.onToggleDefaultView(val);
         this.onSearch();
+        this.$refs.eventList.control.ifVoiceNotify = false;
       }
     },
     'search.model.term':{
@@ -207,14 +208,14 @@ export default {
     onToggleDefaultView(val){
       let view = _.find(this.views.list,{label:val});
       let param = encodeURIComponent(JSON.stringify({  action: "setDefaultView", data: { key: 'defaultView', value: view.fullname } }));
-      this.m3.callFS("/matrix/eventConsole/view/action.js", param).then(()=>{
+      this.m3.callFS("/matrix/m3event/view/action.js", param).then(()=>{
           this.$notify.success(`已设置 ${view.name.replace(/.json/,'')} 为默认视图`);
           this.initViews();
       })
     },
     initViews(){
         let term = encodeURIComponent(JSON.stringify({  action: "list"  }));
-        this.m3.callFS("/matrix/eventConsole/view/action.js", term).then((rtn)=>{
+        this.m3.callFS("/matrix/m3event/view/action.js", term).then((rtn)=>{
             this.views.list = _.map(_.orderBy(rtn.message,['name'],['asc']),v=>{
                                 
                                 let label = v.name.replace(/\.json/,'');
@@ -243,10 +244,10 @@ export default {
       };
 
       this.m3.callFS(
-        "/matrix/eventConsole/event_list.js",
+        "/matrix/m3event/event_list.js",
         encodeURIComponent(JSON.stringify(param))
       ).then( (rtn)=>{
-          this.search.result.list = rtn.message; 
+          this.search.result.list = rtn.message;
           this.loading = false;
       }).catch( err=>{
         this.search.result.list = null;

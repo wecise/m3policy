@@ -112,7 +112,7 @@ export default {
   },
   methods: {
     initData(){
-      this.m3.callFS("/matrix/eventConsole/notify/getVoiceList.js",null).then((rt)=>{
+      this.m3.callFS("/matrix/m3event/notify/getVoiceList.js",null).then((rt)=>{
         let rtn = rt.message;
         this.$set(this.dt,'rows', rtn.rows);
         this.$set(this.dt,'columns', _.map(rtn.columns, (v)=>{
