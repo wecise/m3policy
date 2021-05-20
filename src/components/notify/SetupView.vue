@@ -1,190 +1,190 @@
 <template>
   <el-container>
     <el-main>
-        <el-tabs value="email" tabPosition="left" type="border-card">
-          <el-tab-pane label="邮件配置" name="email">
-              <el-form :model="rtype.data.email"  label-width="100px">
+        <el-tabs value="email" tabPosition="left" type="border-card" v-if="rtype">
+          <el-tab-pane label="邮件配置" name="email" v-if="rtype.email && rtype.email.status">
+              <el-form :model="rtype.email"  label-width="100px">
                 <el-form-item label="SMTP地址" prop="address">
-                  <el-input v-model="rtype.data.email.address"></el-input>
+                  <el-input v-model="rtype.email.address"></el-input>
                 </el-form-item>
                 <el-form-item label="端口" prop="port">
-                  <el-input v-model="rtype.data.email.port"></el-input>
+                  <el-input v-model="rtype.email.port"></el-input>
                 </el-form-item>
                 <el-form-item label="用户名" prop="username">
-                  <el-input v-model="rtype.data.email.username"></el-input>
+                  <el-input v-model="rtype.email.username"></el-input>
                 </el-form-item>
                 <el-form-item label="用户口令" prop="password">
-                  <el-input v-model="rtype.data.email.password"></el-input>
+                  <el-input v-model="rtype.email.password"></el-input>
                 </el-form-item>
                 <el-form-item label="定时器" prop="cron">
-                  <el-input v-model="rtype.data.email.cron"></el-input>
+                  <el-input v-model="rtype.email.cron"></el-input>
                 </el-form-item>
                 <el-form-item label="服务器" prop="group">
-                  <el-input v-model="rtype.data.email.group"></el-input>
+                  <el-input v-model="rtype.email.group"></el-input>
                 </el-form-item>
                 <el-form-item label="开启日志" prop="log">
-                  <el-switch v-model="rtype.data.email.log"></el-switch>
+                  <el-switch v-model="rtype.email.log"></el-switch>
                 </el-form-item>
                 <el-form-item label="重试间隔" prop="retry_interval">
-                  <el-input-number v-model="rtype.data.email.retry_interval"></el-input-number>
+                  <el-input-number v-model="rtype.email.retry_interval"></el-input-number>
                 </el-form-item>
                 <el-form-item label="重试次数" prop="retry_num">
-                  <el-input-number v-model="rtype.data.email.retry_num"></el-input-number>
+                  <el-input-number v-model="rtype.email.retry_num"></el-input-number>
                 </el-form-item>
                 <el-form-item label="发送数量" prop="send_num">
-                  <el-input-number v-model="rtype.data.email.send_num"></el-input-number>
+                  <el-input-number v-model="rtype.email.send_num"></el-input-number>
                 </el-form-item>
               </el-form>
           </el-tab-pane>
 
-          <el-tab-pane label="短信配置" name="sms">
-            <el-form :model="rtype.data.sms"  label-width="100px">
+          <el-tab-pane label="短信配置" name="sms" v-if="rtype.sms && rtype.sms.status">
+            <el-form :model="rtype.sms"  label-width="100px">
                 
                 <el-form-item label="接口类型">
-                  <el-radio-group v-model="rtype.data.sms.type">
+                  <el-radio-group v-model="rtype.sms.type">
                     <el-radio label="netgate">网关</el-radio>
                     <el-radio label="jdbc">JDBC</el-radio>
                     <el-radio label="rest">REST</el-radio>
                   </el-radio-group>
                 </el-form-item>
 
-                <template v-if="rtype.data.sms.type==='netgate'">
+                <template v-if="rtype.sms.type==='netgate'">
 
                   <el-form-item label="地址" prop="address">
-                    <el-input v-model="rtype.data.sms.netgate.address"></el-input>
+                    <el-input v-model="rtype.sms.netgate.address"></el-input>
                   </el-form-item>
                   <el-form-item label="端口" prop="port">
-                    <el-input v-model="rtype.data.sms.netgate.port"></el-input>
+                    <el-input v-model="rtype.sms.netgate.port"></el-input>
                   </el-form-item>
                   <el-form-item label="用户名" prop="username">
-                    <el-input v-model="rtype.data.sms.netgate.username"></el-input>
+                    <el-input v-model="rtype.sms.netgate.username"></el-input>
                   </el-form-item>
                   <el-form-item label="用户口令" prop="password">
-                    <el-input v-model="rtype.data.sms.netgate.password"></el-input>
+                    <el-input v-model="rtype.sms.netgate.password"></el-input>
                   </el-form-item>
                   <el-form-item label="定时器" prop="cron">
-                    <el-input v-model="rtype.data.sms.netgate.cron"></el-input>
+                    <el-input v-model="rtype.sms.netgate.cron"></el-input>
                   </el-form-item>
                   <el-form-item label="服务器" prop="group">
-                    <el-input v-model="rtype.data.sms.netgate.group"></el-input>
+                    <el-input v-model="rtype.sms.netgate.group"></el-input>
                   </el-form-item>
                   <el-form-item label="开启日志" prop="log">
-                    <el-switch v-model="rtype.data.sms.netgate.log"></el-switch>
+                    <el-switch v-model="rtype.sms.netgate.log"></el-switch>
                   </el-form-item>
                   <el-form-item label="重试间隔" prop="retry_interval">
-                    <el-input-number v-model="rtype.data.sms.netgate.retry_interval"></el-input-number>
+                    <el-input-number v-model="rtype.sms.netgate.retry_interval"></el-input-number>
                   </el-form-item>
                   <el-form-item label="重试次数" prop="retry_num">
-                    <el-input-number v-model="rtype.data.sms.netgate.retry_num"></el-input-number>
+                    <el-input-number v-model="rtype.sms.netgate.retry_num"></el-input-number>
                   </el-form-item>
                   <el-form-item label="发送数量" prop="send_num">
-                    <el-input-number v-model="rtype.data.sms.netgate.send_num"></el-input-number>
+                    <el-input-number v-model="rtype.sms.netgate.send_num"></el-input-number>
                   </el-form-item>
 
                 </template>
-                <template v-if="rtype.data.sms.type==='jdbc'">
+                <template v-if="rtype.sms.type==='jdbc'">
                   
                    <el-form-item label="Driver" prop="driver">
-                      <el-input v-model="rtype.data.sms.jdbc.driver"></el-input>
+                      <el-input v-model="rtype.sms.jdbc.driver"></el-input>
                     </el-form-item>
                   <el-form-item label="Url" prop="url">
-                    <el-input v-model="rtype.data.sms.jdbc.url"></el-input>
+                    <el-input v-model="rtype.sms.jdbc.url"></el-input>
                   </el-form-item>
                   <el-form-item label="用户名" prop="username">
-                    <el-input v-model="rtype.data.sms.jdbc.username"></el-input>
+                    <el-input v-model="rtype.sms.jdbc.username"></el-input>
                   </el-form-item>
                   <el-form-item label="用户口令" prop="password">
-                    <el-input v-model="rtype.data.sms.jdbc.password"></el-input>
+                    <el-input v-model="rtype.sms.jdbc.password"></el-input>
                   </el-form-item>
                   <el-form-item label="定时器" prop="cron">
-                    <el-input v-model="rtype.data.sms.jdbc.cron"></el-input>
+                    <el-input v-model="rtype.sms.jdbc.cron"></el-input>
                   </el-form-item>
                   <el-form-item label="服务器" prop="group">
-                    <el-input v-model="rtype.data.sms.jdbc.group"></el-input>
+                    <el-input v-model="rtype.sms.jdbc.group"></el-input>
                   </el-form-item>
                   <el-form-item label="开启日志" prop="log">
-                    <el-switch v-model="rtype.data.sms.jdbc.log"></el-switch>
+                    <el-switch v-model="rtype.sms.jdbc.log"></el-switch>
                   </el-form-item>
                   <el-form-item label="重试间隔" prop="retry_interval">
-                    <el-input-number v-model="rtype.data.sms.jdbc.retry_interval"></el-input-number>
+                    <el-input-number v-model="rtype.sms.jdbc.retry_interval"></el-input-number>
                   </el-form-item>
                   <el-form-item label="重试次数" prop="retry_num">
-                    <el-input-number v-model="rtype.data.sms.jdbc.retry_num"></el-input-number>
+                    <el-input-number v-model="rtype.sms.jdbc.retry_num"></el-input-number>
                   </el-form-item>
                   <el-form-item label="发送数量" prop="send_num">
-                    <el-input-number v-model="rtype.data.sms.jdbc.send_num"></el-input-number>
+                    <el-input-number v-model="rtype.sms.jdbc.send_num"></el-input-number>
                   </el-form-item>
 
                 </template>
-                <template v-if="rtype.data.sms.type==='rest'">
+                <template v-if="rtype.sms.type==='rest'">
                   
                   <el-form-item label="URL" prop="url">
-                    <el-input v-model="rtype.data.sms.rest.url"></el-input>
+                    <el-input v-model="rtype.sms.rest.url"></el-input>
                   </el-form-item>
                   <el-form-item label="端口" prop="port">
-                    <el-input v-model="rtype.data.sms.rest.port"></el-input>
+                    <el-input v-model="rtype.sms.rest.port"></el-input>
                   </el-form-item>
                   <el-form-item label="用户名" prop="username">
-                    <el-input v-model="rtype.data.sms.rest.username"></el-input>
+                    <el-input v-model="rtype.sms.rest.username"></el-input>
                   </el-form-item>
                   <el-form-item label="用户口令" prop="password">
-                    <el-input v-model="rtype.data.sms.rest.password"></el-input>
+                    <el-input v-model="rtype.sms.rest.password"></el-input>
                   </el-form-item>
                   <el-form-item label="定时器" prop="cron">
-                    <el-input v-model="rtype.data.sms.rest.cron"></el-input>
+                    <el-input v-model="rtype.sms.rest.cron"></el-input>
                   </el-form-item>
                   <el-form-item label="服务器" prop="group">
-                    <el-input v-model="rtype.data.sms.rest.group"></el-input>
+                    <el-input v-model="rtype.sms.rest.group"></el-input>
                   </el-form-item>
                   <el-form-item label="开启日志" prop="log">
-                    <el-switch v-model="rtype.data.sms.rest.log"></el-switch>
+                    <el-switch v-model="rtype.sms.rest.log"></el-switch>
                   </el-form-item>
                   <el-form-item label="重试间隔" prop="retry_interval">
-                    <el-input-number v-model="rtype.data.sms.rest.retry_interval"></el-input-number>
+                    <el-input-number v-model="rtype.sms.rest.retry_interval"></el-input-number>
                   </el-form-item>
                   <el-form-item label="重试次数" prop="retry_num">
-                    <el-input-number v-model="rtype.data.sms.rest.retry_num"></el-input-number>
+                    <el-input-number v-model="rtype.sms.rest.retry_num"></el-input-number>
                   </el-form-item>
                   <el-form-item label="发送数量" prop="send_num">
-                    <el-input-number v-model="rtype.data.sms.rest.send_num"></el-input-number>
+                    <el-input-number v-model="rtype.sms.rest.send_num"></el-input-number>
                   </el-form-item>
 
                 </template>
               </el-form>
           </el-tab-pane>
 
-          <el-tab-pane label="微信配置" name="wechat">
+          <el-tab-pane label="微信配置" name="wechat"  v-if="rtype.wechat && rtype.wechat.status">
 
-            <el-form :model="rtype.data.wechat"  label-width="100px">
+            <el-form :model="rtype.wechat"  label-width="100px">
                 <el-form-item label="地址" prop="address">
-                  <el-input v-model="rtype.data.wechat.address"></el-input>
+                  <el-input v-model="rtype.wechat.address"></el-input>
                 </el-form-item>
                 <el-form-item label="端口" prop="port">
-                  <el-input v-model="rtype.data.wechat.port"></el-input>
+                  <el-input v-model="rtype.wechat.port"></el-input>
                 </el-form-item>
                 <el-form-item label="用户名" prop="username">
-                  <el-input v-model="rtype.data.wechat.username"></el-input>
+                  <el-input v-model="rtype.wechat.username"></el-input>
                 </el-form-item>
                 <el-form-item label="用户口令" prop="password">
-                  <el-input v-model="rtype.data.wechat.password"></el-input>
+                  <el-input v-model="rtype.wechat.password"></el-input>
                 </el-form-item>
                 <el-form-item label="定时器" prop="cron">
-                  <el-input v-model="rtype.data.wechat.cron"></el-input>
+                  <el-input v-model="rtype.wechat.cron"></el-input>
                 </el-form-item>
                 <el-form-item label="服务器" prop="group">
-                  <el-input v-model="rtype.data.wechat.group"></el-input>
+                  <el-input v-model="rtype.wechat.group"></el-input>
                 </el-form-item>
                 <el-form-item label="开启日志" prop="log">
-                  <el-switch v-model="rtype.data.wechat.log"></el-switch>
+                  <el-switch v-model="rtype.wechat.log"></el-switch>
                 </el-form-item>
                 <el-form-item label="重试间隔" prop="retry_interval">
-                  <el-input-number v-model="rtype.data.wechat.retry_interval"></el-input-number>
+                  <el-input-number v-model="rtype.wechat.retry_interval"></el-input-number>
                 </el-form-item>
                 <el-form-item label="重试次数" prop="retry_num">
-                  <el-input-number v-model="rtype.data.wechat.retry_num"></el-input-number>
+                  <el-input-number v-model="rtype.wechat.retry_num"></el-input-number>
                 </el-form-item>
                 <el-form-item label="发送数量" prop="send_num">
-                  <el-input-number v-model="rtype.data.wechat.send_num"></el-input-number>
+                  <el-input-number v-model="rtype.wechat.send_num"></el-input-number>
                 </el-form-item>
               </el-form>
 
@@ -193,6 +193,9 @@
         </el-tabs>
         
     </el-main>
+    <el-footer>
+      <el-button type="success" @click="onApply">提交</el-button>
+    </el-footer>
   </el-container>
 
 </template>
@@ -205,48 +208,7 @@ export default {
   data() {
     return {
       root: '/script/matrix/m3event/notify/server',
-      defaultProps: {
-          children: 'children',
-          label: 'name'
-      },
-      treeData: [],
-      dt: {
-        rows:[],
-        columns: [],
-        selected: []
-      },
-      rtype: {
-        list: [
-          { name:'sms', title:'短信', type:"netgate", 
-            netgate:{
-              address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
-            },
-            jdbc:{
-              driver:"com.mysql.jdbc.Driver", url:"jdbc:mysql://47.92.151.165:port/dbname", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
-            },
-            rest:{
-              url:"http://47.92.151.165", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
-            }
-          } ,
-          { name:'email', title:'邮件', address:"smtp.mxhichina.com", port:25, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5},
-          { name:'wechat', title:'企业微信', address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5}
-        ],
-        data: {
-          sms: { name:'sms', title:'短信', type:"netgate", 
-            netgate:{
-              address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
-            },
-            jdbc:{
-              driver:"com.mysql.jdbc.Driver", url:"jdbc:mysql://47.92.151.165:port/dbname", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
-            },
-            rest:{
-              url:"http://47.92.151.165", username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5
-            }
-          } ,
-          email: { name:'email', title:'邮件', address:"smtp.mxhichina.com", port:25, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5},
-          wechat: { name:'wechat', title:'企业微信', address:"47.92.151.165", port:8080, username:"",password:"", cron: "*/1 * * * *", group: "mxsvr", log: true, retry_interval: 5, retry_num: 3, send_num: 5}
-        }
-      }
+      rtype: null
     };
   },
   created(){
@@ -254,22 +216,9 @@ export default {
   },
   methods: {
     initData(){
-        let param = {parent: this.root , fullname: this.root};
-        this.m3.dfsList(param).then( res=>{
-            var tmp = [];
-            _.forEach(res.message,v=>{
-          
-              this.m3.dfsRead(v).then(r=>{
-                  tmp.push(_.extend(v, {content:JSON.parse(r.message)}));
-              }).catch(err=>{
-                  tmp.push(_.extend(v, {content:err}));
-              })
-                
-            });
-            setTimeout(()=>{
-              this.treeData = [{ id:-1,fullname:this.root,parent:this.root, name:'服务设置',children: _.orderBy(tmp, ['fullname'],['asc']), ftype:'dir'}];
-            },500)
-            
+        let param = {parent: this.root , fullname: this.root, name: 'server.json'};
+        this.m3.dfsRead(param).then( res=>{
+            this.rtype = JSON.parse(res);
         } );
     },
     onNodeClick(node){
@@ -294,7 +243,34 @@ export default {
     onRefresh(){
       this.initData();
     },
-    onNew(){
+    onApply(){
+
+      let content = JSON.stringify(this.rtype,null,2);
+    
+      let param = {
+                      parent: this.root, name: "server.json", 
+                      data: { content: content, type: 'json', attr: '', index: true }    
+                  };
+      
+      this.m3.dfsWrite(param).then(()=>{
+          
+          
+          let data = _.filter(this.rtype,v=>{ return v.status; });
+          let param = encodeURIComponent( JSON.stringify(data) );
+          this.m3.callFS("/matrix/m3event/notify/setup.js", param).then(rtn=>{
+            console.log(rtn);
+          })
+          
+          this.$message({
+            type: "success",
+            message: "更新成功"
+          })  
+      }).catch((err)=>{
+          this.$message({
+            type: "error",
+            message: "更新失败 " + err.message
+          })
+      })
 
     },
     onEdit(index,row){
@@ -319,5 +295,9 @@ export default {
   .el-main{
     padding: 0px;
     overflow: hidden;
+  }
+  .el-footer{
+    text-align: center;
+    line-height: 60px;
   }
 </style>

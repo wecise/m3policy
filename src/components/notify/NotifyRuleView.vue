@@ -33,7 +33,7 @@
                 v-if="item.visible">
                 <template slot-scope="scope">
                   
-                    <div style="height:30px;line-height:30px;" v-if="item.field=='tags'">
+                    <div style="height:30px;line-height:30px;" v-if="item.field === 'tags'">
                         <TagView domain='notifyRule' :model.sync="scope.row.tags" :id="scope.row.id" :limit="1"></TagView>
                     </div>
                     
@@ -49,7 +49,7 @@
                     </div>
 
                     <div style="height:30px;line-height:30px;" v-else-if="item.field === 'rtype'">
-                        <el-select :value="scope.row[item.field]" v-if="scope.row[item.field]">
+                        <el-select :value="scope.row[item.field][0]" v-if="scope.row[item.field]">
                           <el-option
                             v-for="subItem in scope.row[item.field]"
                             :key="subItem"
@@ -114,12 +114,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="场景" prop="situation">
-            <el-select v-model="dialog.rule.data.situation" multiple placeholder="请选择">
+            <el-select v-model="dialog.rule.data.situation" placeholder="请选择">
               <el-option
                 v-for="item in situation.list"
-                :key="item.name"
+                :key="item.id"
                 :label="item.name"
-                :value="item.name">
+                :value="item.id">
                 <span style="float: left">{{ item.name }}</span>
                 <span style="float: right; color: #8492a6; font-size: 8px">{{ item.status }}</span>
               </el-option>
@@ -142,7 +142,6 @@
                 :label="item.name"
                 :value="item">
                 <span style="float: left">{{ item.name | formatName }}</span>
-                <!-- <span style="float: right; color: #8492a6; font-size: 8px">{{ item.ctime | formatTime }}</span> -->
               </el-option>
             </el-select>
           </el-form-item>
@@ -193,6 +192,7 @@ export default {
           value: 'id',
           label: 'username',
           children: 'nodes',
+          checkStrictly: false
         },
         list: []
       },
@@ -207,11 +207,11 @@ export default {
             show: false,
             data: {
               name: "",
-              persons:"",
-              rtype:"",
-              situation:"",
-              status:1,
-              template:""
+              persons: null,
+              rtype: "",
+              situation: null,
+              status: 0,
+              template: null
             },
             rules: {
                 name:[
@@ -272,7 +272,7 @@ export default {
     },
     init(){
       this.m3.userList().then(rtn=>{
-        this.persons.list = rtn.message;
+        this.persons.list = [rtn.message];
       })
 
       this.m3.callFS("/matrix/m3event/notify/getTemplateList.js").then(rtn=>{
@@ -291,14 +291,19 @@ export default {
       this.initData();
     },
     onReset(){
-      if(this.$refs['notifyRuleForm']){
-        this.$refs['notifyRuleForm'].resetFields();
-      }
+      this.dialog.rule.data = {
+                                name: "",
+                                persons: null,
+                                rtype: "",
+                                situation: null,
+                                status: 0,
+                                template: null
+                              };
     },
     onNew(){
-      this.onReset();
       this.dialog.rule.show = true;
       this.dialog.rule.action = "add";
+      this.onReset();
     },
     onSave(){
 
@@ -318,7 +323,7 @@ export default {
             message: "新建规则成功！"
           })
           this.initData();
-
+          this.onReset();
           this.dialog.rule.show = false;
         });
     },

@@ -317,6 +317,6 @@ export default {
 <style>
   .classified-dialog .el-dialog {
     width: 70vw!important;
-    height: 85vh;
+    height: auto;
   }
 </style>
