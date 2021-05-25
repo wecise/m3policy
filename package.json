@@ -23,6 +23,7 @@
     "moment": "^2.29.1",
     "mxgraph": "^4.2.2",
     "papaparse": "^5.3.0",
+    "sortablejs": "^1.10.2",
     "svg-sprite-loader": "^6.0.2",
     "vue": "^2.6.11",
     "vue-context": "^6.0.0",

@@ -25,6 +25,9 @@
                 <el-form-item label="开启日志" prop="log">
                   <el-switch v-model="rtype.email.log"></el-switch>
                 </el-form-item>
+                <el-form-item label="HTML" prop="html">
+                  <el-switch v-model="rtype.email.html"></el-switch>
+                </el-form-item>
                 <el-form-item label="重试间隔" prop="retry_interval">
                   <el-input-number v-model="rtype.email.retry_interval"></el-input-number>
                 </el-form-item>

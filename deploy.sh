@@ -1,9 +1,9 @@
 #! /bin/bash
 set -euo
 
-company="wecise"
+company="eventbus"
 username="admin"
-password="admin1234)(*&"
+password="admin"
 target="app.zip"
 
 auth="$company.$username:$password"

@@ -78,7 +78,7 @@
               placeholder="关键字搜索"/>
           </template>
           <template slot-scope="scope">
-            <el-button type="text"  @click="onEdit(scope.$index, scope.row)"> 编辑</el-button>
+            <el-button type="text"  @click="onEdit(scope.row)"> 编辑</el-button>
             <el-button type="text"  @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
           </template>
         </el-table-column>
@@ -87,19 +87,25 @@
         title="规则管理"
         :visible.sync="dialog.rule.show"
         :append-to-body="true"
-        class="notifyRule-dialog">
+        class="notifyRule-dialog"
+        v-if="dialog.rule.show">
         <el-form :model="dialog.rule.data"  :rules="dialog.rule.rules" ref="notifyRuleForm" label-width="100px">
           <el-form-item label="名称" prop="name">
            <el-input v-model="dialog.rule.data.name" :disabled="dialog.rule.action==='update'?true:false"></el-input>
           </el-form-item>
           <el-form-item label="接收人员" prop="persons">
             <el-cascader
-              v-model="dialog.rule.data.persons"
+              value="dialog.rule.data.persons"
               :options="persons.list"
               :props="persons.props"
-              :show-all-levels="false"
+              @change="onPersonsChange"
               collapse-tags
-              clearable></el-cascader>
+              clearable>              
+              <template slot-scope="{ node, data }">
+                <span>{{ data.username }}</span>
+                <span v-if="!node.isLeaf && data.nodes.length>0"> ({{ data.nodes.length }})</span>
+              </template>
+              </el-cascader>
           </el-form-item>
           <el-form-item label="类型" prop="rtype">
             <el-select v-model="dialog.rule.data.rtype" multiple placeholder="请选择">
@@ -188,11 +194,12 @@ export default {
       },
       persons: {
         props: {
-          multiple:true,
           value: 'id',
           label: 'username',
           children: 'nodes',
-          checkStrictly: false
+          multiple: true,
+          emitPath: true,
+          checkStrictly: true
         },
         list: []
       },
@@ -270,6 +277,9 @@ export default {
         }));
       })
     },
+    onPersonsChange(val){
+       this.dialog.rule.data.persons = val;
+    },
     init(){
       this.m3.userList().then(rtn=>{
         this.persons.list = [rtn.message];
@@ -293,7 +303,7 @@ export default {
     onReset(){
       this.dialog.rule.data = {
                                 name: "",
-                                persons: null,
+                                persons: [],
                                 rtype: "",
                                 situation: null,
                                 status: 0,
@@ -352,11 +362,10 @@ export default {
           
       })
     },
-    onEdit(index,item){
-      console.log(index);
+    onEdit(item){
       this.dialog.rule.data = item;
-      this.dialog.rule.show = true;
       this.dialog.rule.action = "update";
+      this.dialog.rule.show = true;
     }
   }
 };
