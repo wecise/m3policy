@@ -35,6 +35,21 @@
                         <el-input v-model="dialog.classified.data.name" :disabled="dialog.classified.action==='update'?true:false"></el-input>
                       </el-form-item>
                       
+                      <!--el-form-item label="数据源">
+                          <el-input v-model="dialog.classified.datasource.class" disabled>
+                              <el-dropdown slot="prepend">
+                                  <span class="el-dropdown-link">
+                                      <i class="el-icon-coin el-icon--right" style="cursor:pointer;"></i>
+                                  </span>
+                                  <el-dropdown-menu slot="dropdown">
+                                      <ActionView :root="dialog.classified.datasource.root" 
+                                          @node-click="onDataSourceSelect"
+                                          @treedata-loaded="initDataSourceFields"></ActionView>
+                                  </el-dropdown-menu>
+                              </el-dropdown>
+                          </el-input>
+                      </el-form-item-->
+                      
                       <el-form-item label="场景" prop="situation">
                         
                         <editor

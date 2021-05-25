@@ -42,43 +42,78 @@
                 </template>
             </el-table-column>
         </template>
-        <el-table-column label="操作">
-          <template slot-scope="scope">
-            <el-button type="text" @click="onEdit(scope.$index, scope.row)"> 编辑</el-button>
-            <el-button type="text" @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
-          </template>
+        <el-table-column label="操作" width="200">
+            <!-- <template slot="header">
+              <el-input
+                v-model="dt.search"
+                clearable
+                placeholder="关键字搜索" />
+            </template> -->
+            <template slot-scope="scope">
+              <el-button type="text" @click="onEdit(scope.$index, scope.row)"> 编辑</el-button>
+              <el-button type="text" @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
+            </template>
         </el-table-column>
       </el-table>
       <el-dialog
         title="模版管理"
         :visible.sync="dialog.template.show"
-        :append-to-body="true">
-        <el-form :model="dialog.template.data"  :rules="dialog.template.rules" ref="templateForm" label-width="100px">
-          <el-form-item label="名称" prop="name">
-           <el-input v-model="dialog.template.data.name" :disabled="dialog.template.action==='update'?true:false"></el-input>
-          </el-form-item>
-          <el-form-item label="模版定义" prop="content">
-            <editor
-                v-model="dialog.template.data.content"
-                @init="onEditorInit"
-                :lang="editor.lang.value"
-                :theme="editor.theme.value"
-                width="inherit"
-                height="calc(100vh - 425px)"
-                style="border:1px solid #f2f2f2;"
-                ref="editorRef"
-            ></editor>
-          </el-form-item>
-          <el-form-item label="状态" prop="status">
-            <el-switch
-              v-model="dialog.template.data.attr.status"
-              active-color="#13ce66"
-              inactive-color="#dddddd"
-              :active-value="1"
-              :inactive-value="0">>
-            </el-switch>
-          </el-form-item>
-        </el-form>
+        :append-to-body="true"
+        :show-close="false"
+        :close-on-press-escape="false"
+        :close-on-click-modal="false"
+        :destroy-on-close="true"
+        v-if="dialog.template.show">
+        
+          <el-form :model="dialog.template.data"  :rules="dialog.template.rules" ref="templateForm" label-width="100px">
+            
+            <el-form-item label="名称" prop="name">
+              <el-input v-model="dialog.template.data.name" :disabled="dialog.template.action==='update'?true:false"></el-input>
+            </el-form-item>
+
+            <el-form-item label="数据源">
+                <el-input v-model="dialog.template.datasource.class" disabled>
+                    <el-dropdown slot="prepend">
+                        <span class="el-dropdown-link">
+                            <i class="el-icon-coin el-icon--right" style="cursor:pointer;"></i>
+                        </span>
+                        <el-dropdown-menu slot="dropdown">
+                            <DatasourceView :root="dialog.template.datasource.root" 
+                                @node-click="onDataSourceSelect"></DatasourceView>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </el-input>
+            </el-form-item>
+
+            <el-form-item label="属性" v-if="dialog.template.datasource.data">
+                <DataFieldsView :fields="dialog.template.datasource.data.fields" 
+                    @fields-change="onDataFieldsSelect"
+                    @node-click="onDataFieldsSelect"></DataFieldsView>
+            </el-form-item>
+            
+            <el-form-item label="模版定义" prop="content">
+              <editor
+                  v-model="dialog.template.data.content"
+                  @init="onEditorInit"
+                  :lang="editor.lang.value"
+                  :theme="editor.theme.value"
+                  width="inherit"
+                  height="calc(100vh - 425px)"
+                  style="border:1px solid #f2f2f2;"
+                  ref="editorRef"
+              ></editor>
+            </el-form-item>
+            <el-form-item label="状态" prop="status">
+              <el-switch
+                v-model="dialog.template.data.attr.status"
+                active-color="#13ce66"
+                inactive-color="#dddddd"
+                :active-value="1"
+                :inactive-value="0">>
+              </el-switch>
+            </el-form-item>
+          </el-form>
+          
         <span slot="footer" class="dialog-footer">
           <el-button @click="dialog.template.show = false">取 消</el-button>
           <el-button type="primary" @click="onSave">确 定</el-button>
@@ -91,6 +126,8 @@
 <script>
 import _ from 'lodash';
 import TagView from '../tags/TagView';
+import DatasourceView from './DatasourceView';
+import DataFieldsView from './DataFieldsView';
 
 export default {
   name: "TemplateView",
@@ -99,7 +136,9 @@ export default {
   },
   components:{
     TagView,
-    editor:require("vue2-ace-editor")
+    editor:require("vue2-ace-editor"),
+    DatasourceView,
+    DataFieldsView
   },
   data() {
     return {
@@ -107,11 +146,18 @@ export default {
         rows:[],
         columns: [],
         selected: [],
-        radio:''
+        radio:'',
+        search: ""
       },
       dialog:{
         template:{
           show: false,
+          datasource: {
+              root: "/matrix/devops",
+              fields: [],
+              class: "",
+              data: null
+          },
           data: {
             name: "",
             ftype: "json",
@@ -141,6 +187,18 @@ export default {
       }
     };
   },
+  watch: {
+    'dt.search':{
+      handler(val){
+        console.log(val)
+        if(_.isEmpty(val)){
+          this.initData();
+        }else {
+          this.dt.rows = this.dt.rows.filter(data => !val || data.name.toLowerCase().includes(val.toLowerCase()) || data.name.includes(val))
+        }
+      }
+    }
+  },
   created(){
      this.initData();
   },
@@ -161,6 +219,21 @@ export default {
     },
     rowClassName({rowIndex}){
         return `row-${rowIndex}`;
+    },
+    /* 数据源选择切换 */
+    onDataSourceSelect(data){
+      this.dialog.template.datasource.class = data.class;
+      this.dialog.template.datasource.data = data;
+
+      let content = JSON.parse(this.dialog.template.data.content);
+      content.class = data.class;
+      this.dialog.template.data.content = JSON.stringify(content,null,2);
+    },
+    onDataFieldsSelect(data){
+        this.dialog.template.datasource.fields = data;
+        let content = JSON.parse(this.dialog.template.data.content);
+        content.fields = data;
+        this.dialog.template.data.content = JSON.stringify(content,null,2);
     },
     initData(){
       this.m3.callFS("/matrix/m3event/notify/getTemplateList.js",null).then((rt)=>{

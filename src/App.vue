@@ -106,7 +106,7 @@ export default {
 
   .el-dialog{
       width: 90vw!important;
-      height:85vh;
+      height:auto;
       margin-top: 0!important;
   }
   

@@ -71,15 +71,15 @@
             </el-table-column>
         </template>
         <el-table-column label="操作" width="200">
-          <template slot="header">
+          <!-- <template slot="header">
             <el-input
-              v-model="dt.term"
-              clearable=""
+              v-model="dt.search"
+              clearable
               placeholder="关键字搜索"/>
-          </template>
+          </template> -->
           <template slot-scope="scope">
             <el-button type="text"  @click="onEdit(scope.row)"> 编辑</el-button>
-            <el-button type="text"  @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
+            <el-button type="text"  @click="onDelete(scope.row)"> 删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -88,6 +88,7 @@
         :visible.sync="dialog.rule.show"
         :append-to-body="true"
         class="notifyRule-dialog"
+        @show="init"
         v-if="dialog.rule.show">
         <el-form :model="dialog.rule.data"  :rules="dialog.rule.rules" ref="notifyRuleForm" label-width="100px">
           <el-form-item label="名称" prop="name">
@@ -95,11 +96,9 @@
           </el-form-item>
           <el-form-item label="接收人员" prop="persons">
             <el-cascader
-              value="dialog.rule.data.persons"
+              v-model="dialog.rule.data.persons"
               :options="persons.list"
               :props="persons.props"
-              @change="onPersonsChange"
-              collapse-tags
               clearable>              
               <template slot-scope="{ node, data }">
                 <span>{{ data.username }}</span>
@@ -173,7 +172,7 @@ export default {
         rows:[],
         columns: [],
         selected: [],
-        term: ""
+        search: ""
       },
       rtype: {
         list: [
@@ -198,7 +197,7 @@ export default {
           label: 'username',
           children: 'nodes',
           multiple: true,
-          emitPath: true,
+          emitPath: false,
           checkStrictly: true
         },
         list: []
@@ -242,7 +241,7 @@ export default {
     TagView
   },
   watch:{
-    'dt.term':{
+    'dt.search':{
       handler(val){
         if(_.isEmpty(val)){
           this.initData();
@@ -276,9 +275,6 @@ export default {
           
         }));
       })
-    },
-    onPersonsChange(val){
-       this.dialog.rule.data.persons = val;
     },
     init(){
       this.m3.userList().then(rtn=>{
@@ -327,7 +323,23 @@ export default {
           return false;
         }
 
+        if(_.isEmpty(this.dialog.rule.data.persons)){
+          this.$message.warning("请选择接收人员");
+          return false;
+        }
+
+        if(_.isEmpty(this.dialog.rule.data.situation)){
+          this.$message.warning("请选择场景");
+          return false;
+        }
+
+        if(_.isEmpty(this.dialog.rule.data.template)){
+          this.$message.warning("请选择通知内容模版");
+          return false;
+        }
+
         this.m3.callFS("/matrix/m3event/notify/ruleAction.js",param).then(()=>{
+          
           this.$message({
             type: "success",
             message: "新建规则成功！"
@@ -335,35 +347,40 @@ export default {
           this.initData();
           this.onReset();
           this.dialog.rule.show = false;
+
         });
     },
-    onDelete(index,item){
-      console.log(index);
+    onDelete(item){
       this.$confirm(`确认要删除该规则：${item.name}？`, '提示', {
                         confirmButtonText: '确定',
                         cancelButtonText: '取消',
                         type: 'warning'
                     }).then(() => {
         
-        let term = encodeURIComponent(JSON.stringify({action:"delete",model:item}));
-        this.m3.callFS("/matrix/m3event/notify/ruleAction.js",term).then(()=>{
+        let param = encodeURIComponent(JSON.stringify({action:"delete",model:item}));
+        this.m3.callFS("/matrix/m3event/notify/ruleAction.js",param).then(()=>{
+          
           this.$message({
                 type: 'success',
                 message: '删除规则成功!'
           })
 
           this.initData();
+
         }).catch((err)=>{
+          
           this.$message({
               type: 'error',
               message: '删除规则失败 ' + err.message
           });
+
         });
           
       })
     },
     onEdit(item){
       this.dialog.rule.data = item;
+      this.dialog.rule.data.template = _.find(this.templates.list, {fullname: _.values(item.template)[0]});
       this.dialog.rule.action = "update";
       this.dialog.rule.show = true;
     }
