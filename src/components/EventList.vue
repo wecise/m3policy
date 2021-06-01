@@ -28,19 +28,21 @@
                 <el-dropdown-menu slot="dropdown">
                     <div class="tool-box">
                         <!-- 运行模式 -->
-                        <div class="tool" :key="item.name" v-for="item in control.mode.list">
-                            <div>{{item.value?item.title+'开':item.title+'关'}}</div>
-                            <p>
-                                <el-switch
-                                    v-model="item.value"
-                                    active-color="#13ce66"
-                                    inactive-color="#dddddd"
-                                    :active-value="true"
-                                    :inactive-value="false"
-                                    @change="control.mode.value=item">
-                                </el-switch>
-                            </p>
-                        </div>
+                        <template v-for="item in control.mode.list">
+                            <div  class="tool" :key="item.name" v-if="item.status" >
+                                <div>{{item.value?item.title+'开':item.title+'关'}}</div>
+                                <p>
+                                    <el-switch
+                                        v-model="item.value"
+                                        active-color="#13ce66"
+                                        inactive-color="#dddddd"
+                                        :active-value="true"
+                                        :inactive-value="false"
+                                        @change="control.mode.value=item">
+                                    </el-switch>
+                                </p>
+                            </div>
+                        </template>
 
                         <!-- 声音告警 -->
                         <div class="tool">
@@ -57,7 +59,7 @@
                         </div>
 
                         <!-- 业务工具 -->
-                        <div class="tool">
+                        <!-- <div class="tool">
                             <div>{{control.ifSmartGroup?'智能分组':'智能分组'}}</div>
                             <p>
                                 <el-switch
@@ -68,7 +70,7 @@
                                     :inactive-value="false">
                                 </el-switch>
                             </p>
-                        </div>
+                        </div> -->
 
                         <ToolsView @tool-click="((data)=>{onToolsKeep(data)})"></ToolsView>
 
@@ -311,9 +313,9 @@ export default {
                 mode: {
                     value: {name:'r',title:'运维模式',value:true},
                     list: [
-                        {name:'m',title:'监控模式',value:false},
-                        {name:'r',title:'运维模式',value:true},
-                        {name:'f',title:'全屏模式',value:false}
+                        {name:'m',title:'监控模式',value:false, status: false},
+                        {name:'r',title:'运维模式',value:true, status: true},
+                        {name:'f',title:'全屏模式',value:false, status: true}
                     ]
                 }
             },

@@ -257,7 +257,7 @@ export default {
 
     },
     addTab(row,menu){
-
+      
       let find = _.find(this.tabs.list, {name:row.id});
       
       if(find){
@@ -265,7 +265,7 @@ export default {
       } else {
         let data = row;
         /* 智能分组需要传入ids */
-        if( _.includes(['smartGroup'],row.id) ){
+        if( _.includes(['smartGroupView'],row.id) ){
             data = _.compact(_.map(this.$refs.eventList.dt.rows,'id'));
         } else if(  _.includes(['entityEtl'],row.id) ){
             data = _.compact(_.map(this.$refs.eventList.dt.rows,'entity'));
