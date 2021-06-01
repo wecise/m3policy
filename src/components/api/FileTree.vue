@@ -110,7 +110,7 @@ export default {
     },
     data(){
         return {
-            root: '/script/matrix/eventConsole',
+            root: '/script/matrix/m3event',
             defaultProps: {
                 children: 'children',
                 label: 'name'

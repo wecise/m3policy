@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="height: calc(100vh - 300px);">
         <EntityCascaderView 
             :multiplenable="true" 
             :entity="entity"

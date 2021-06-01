@@ -5,8 +5,8 @@
             <SplitArea :size="20" :minSize="0" style="overflow:hidden;">
                 <TagTreeView :model="{domain:'policy'}" :fun="onRefreshByTag" ref="policyTagTree"></TagTreeView>
             </SplitArea>
-            <SplitArea :size="80" :minSize="0" style="overflow:hidden;padding:20px;">
-                <el-container>
+            <SplitArea :size="80" :minSize="0" style="overflow:hidden;padding:20px 0px 0px 0px;">
+                <el-container style="height:100%;">
                   <el-header>
                       <el-button type="default" icon="el-icon-refresh" @click="onRefresh">刷新</el-button>
                       <el-button type="success" icon="el-icon-plus" @click="onNew">新建</el-button>
@@ -39,6 +39,9 @@
                       </el-card>
                     
                   </el-main>
+                  <el-footer>
+                      总计：{{dt.rows.length}}
+                  </el-footer>
                   <el-dialog :title="'策略编辑 ' + dt.selected.name" 
                       :visible.sync="edit.show" 
                       :show-close="false"
@@ -206,6 +209,10 @@ export default {
     flex-wrap: wrap;
     align-content: flex-start;
     padding: 10px;
+  }
+  .el-footer{
+    height: 30px!important;
+    line-height: 30px;
   }
   .el-card{
     position: relative;

@@ -85,7 +85,7 @@ export default{
             try{
 
                 let param = encodeURIComponent( JSON.stringify(this.model) );
-                this.m3.callFS("/matrix/m3performance/searchPerformanceByTerm.js",param).then( val=>{
+                this.m3.callFS("/matrix/m3event/diagnosis/tsdb/searchPerformanceByTerm.js",param).then( val=>{
                     let rtn = val.message.result;
 
                     //取实时数据的time作为xAxis

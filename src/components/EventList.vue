@@ -984,7 +984,7 @@ export default {
         white-space: nowrap!important;
         line-height: 18px!important;
     }
-    .el-table .el-table__body-wrapper {
+    .event-list.el-table .el-table__body-wrapper {
         overflow: auto;
         position: relative;
         height: calc(100% - 50px)!important;

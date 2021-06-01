@@ -1,6 +1,6 @@
 <template>
   <el-container>
-    <el-header>
+    <el-header style="display:none;">
       <entity-view 
         @bucket-selected="((data)=>{ onSetBucket(data); })"
         @entity-selected="((data)=>{ onSetEntity(data); })"></entity-view>
@@ -19,7 +19,7 @@ export default {
   components: { TsdbView, EntityView },
   name: 'MainView',
   props: {
-    global: Object
+    model: String
   },
   data(){
     return {
@@ -27,10 +27,26 @@ export default {
       bucket: null
     }
   },
+  watch: {
+    model:{
+      handler(val){
+        this.init(val);
+      },
+      immediate: true
+    }
+  },
   mounted(){
     document.body.style.setProperty('overflow-y','auto','important');
   },
   methods: {
+    // 根据实体初始化bucket
+    init(value){
+      let param = encodeURIComponent(value);
+      this.m3.callFS("/matrix/m3event/diagnosis/tsdb/getBucketByEntity.js", param).then( rtn=>{
+          this.bucket = rtn.message.bucket;
+          this.entity = rtn.message.entity;
+      })
+    },
     //选择的bucket定义
     onSetBucket(data){
       this.bucket = data;

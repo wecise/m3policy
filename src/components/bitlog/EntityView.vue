@@ -14,8 +14,8 @@
                                 <template>
                                     <el-tree :data="tree.data" :props="tree.defaultProps" @node-click="onNodeClick">
                                         <span slot-scope="{ node, data }">
-                                            <span v-if="data.children">{{ node.label }}</span>
-                                            <span v-else>{{data.field}}</span>
+                                            <span v-if="data.children && data.children.length > 0">{{ node.label }}</span>
+                                            <!-- <span v-else>{{data.field}}</span> -->
                                         </span>
                                     </el-tree>
                                 </template>
@@ -138,7 +138,7 @@ export default {
   },
   methods:{
       getBitlog(){
-        this.m3.callFS("/matrix/m3log/getBitlogList.js").then( rtn=>{
+        this.m3.callFS("/matrix/m3event/diagnosis/bitlog/getBitlogList.js").then( rtn=>{
             this.bitlog = rtn.message;
 
             this.tree.data = _.sortBy(_.map(_.groupBy(this.bitlog,'class'), (v,k)=>{
@@ -153,7 +153,7 @@ export default {
       searchEntityByClass(){
 
           let param = JSON.stringify( {term: this.entity.term, class: this.entity.prefix.class} );
-          this.m3.callFS("/matrix/m3log/searchEntityByClass.js", param).then(rtn=>{
+          this.m3.callFS("/matrix/m3event/diagnosis/bitlog/searchEntityByClass.js", param).then(rtn=>{
               this.entity.tree.data = rtn.message;
           })
       },

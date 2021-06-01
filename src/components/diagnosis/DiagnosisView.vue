@@ -9,8 +9,8 @@
           <AttributeRelView :model="model" :global="global" v-else-if="item.type==='attribute'"></AttributeRelView>
           <HistoryView :model="model" :global="global" v-else-if="item.type==='history'"></HistoryView>
           <GraphView :model="[model.entity]" v-else-if="item.type==='graph'"></GraphView>
-          <BitLogView :model="[model.entity]" v-else-if="item.type==='bitlog'"></BitLogView>
-          <TsdbView :model="[model.entity]" v-else-if="item.type==='tsdb'"></TsdbView>
+          <BitLogView :model="model.entity" v-else-if="item.type==='bitlog'"></BitLogView>
+          <TsdbView :model="model.entity" v-else-if="item.type==='tsdb'"></TsdbView>
           <AttachmentView :model="model" v-else-if="item.type==='attachmment'"></AttachmentView>
         </el-tab-pane>
       </el-tabs>

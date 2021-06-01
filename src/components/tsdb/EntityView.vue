@@ -137,7 +137,7 @@ export default {
   },
   methods:{
       getTsdb(){
-        this.m3.callFS("/matrix/m3performance/getTsdbList.js").then( rtn=>{
+        this.m3.callFS("/matrix/m3event/diagnosis/tsdb/getTsdbList.js").then( rtn=>{
             this.tsdb = rtn.message;
 
             this.tree.data = _.sortBy(_.map(_.groupBy(this.tsdb,'class'), (v,k)=>{
@@ -152,7 +152,7 @@ export default {
       searchEntityByClass(){
 
           let param = JSON.stringify( {term: this.entity.term, class: this.entity.prefix.class} );
-          this.m3.callFS("/matrix/m3performance/searchEntityByClass.js", param).then(rtn=>{
+          this.m3.callFS("/matrix/m3event/diagnosis/tsdb/searchEntityByClass.js", param).then(rtn=>{
               this.entity.tree.data = rtn.message;
           })
       },

@@ -73,6 +73,13 @@
                                                     inactive-color="#dddddd">
                                                 </el-switch>
                                             </el-form-item>
+                                            <el-form-item label="分隔符">
+                                                <el-select v-model="editor.options.split">
+                                                    <el-option label="," value=","></el-option>
+                                                    <el-option label="tab" value="  "></el-option>
+                                                    <el-option label="space" value=" "></el-option>
+                                                </el-select>
+                                            </el-form-item>
                                         </el-form>
                                     </el-tab-pane>
                                 </el-tabs>
@@ -84,15 +91,30 @@
                     </el-popover>
                 </el-header>
                 <el-main style="overflow:hidden;padding:0px;border-bottom:1px solid #dddddd;border-right:1px solid #dddddd;">
-                    <Editor
-                        v-model="editor.data"
-                        @init="onEditorInit"
-                        :lang="editor.lang.value"
-                        :theme="editor.theme.value"
-                        width="99.8%"
-                        height="100%"
-                        ref="editor"
-                    ></Editor>
+                     <el-tabs v-model="policy.tabs.activeTab" type="border-card">
+                        <el-tab-pane label="编辑模式" name="edit">
+                            <el-container style="height:calc(100vh - 410px);background:#f2f2f2;margin:-15px -16px;" v-if="policy.dt.data.length>0">
+                                <el-main style="padding:0px;">
+                                    <hot-table :settings="policy.dt" height="100%"></hot-table>
+                                </el-main>
+                            </el-container>
+                        </el-tab-pane>
+                        <el-tab-pane label="源文件" name="source">
+                            <el-container style="height:calc(100vh - 120px);background:#f2f2f2;margin:-15px -16px;">
+                                <el-main style="padding:0px;overflow:auto;">
+                                    <Editor
+                                        v-model="editor.data"
+                                        @init="onEditorInit"
+                                        :lang="editor.lang.value"
+                                        :theme="editor.theme.value"
+                                        width="99.8%"
+                                        height="100%"
+                                        ref="editor"
+                                    ></Editor>
+                                </el-main>
+                            </el-container>
+                        </el-tab-pane>
+                    </el-tabs>
                 </el-main>
                 <el-footer style="line-height:60px;width:100%;">
                     <span v-if="policy.parse.data">
@@ -117,7 +139,7 @@
                             <el-button slot="reference" type="text" icon="el-icon-info">错误</el-button>
                         </el-popover>
                     </span>
-                    <span v-if="policy.parse.meta" style="padding-left:10px;">
+                    <span v-if="policy.parse" style="padding-left:10px;">
                         <el-popover
                             placement="top"
                             width="160">
@@ -138,6 +160,7 @@
 import _ from 'lodash';
 import TagView from '../tags/TagView';
 import Papa from 'papaparse';
+import { HotTable } from '@handsontable/vue';
 
 export default {
   name: "EditView",
@@ -146,14 +169,74 @@ export default {
   },
   components:{
     Editor:require("vue2-ace-editor"),
-    TagView
+    TagView,
+    HotTable
   },
   data() {
     return {   
         policy: {
             loading: false,
             data: null,
-            parse: null
+            parse: null,
+            tabs: {
+                activeTab: 'edit'
+            },
+            dt: {
+                data: [],
+                rowHeaders: true,
+                colHeaders: true,
+                autoWrapRow: false,
+                minRows: 50,
+                
+                stretchH: 'all',
+                afterChange: (changes, source)=> {
+                    console.log(changes, source)
+                },
+                minSpareCols: 2, //列留白
+                minSpareRows: 2,//行留白,
+                contextMenu: {
+                    "items": {
+                        "row_above": {
+                            "name": "上方插入一行"
+                        },
+                        "row_below": {
+                            "name": "下方插入一行"
+                        },
+                        "col_left": {
+                            "name": "左方插入列"
+                        },
+                        "col_right": {
+                            "name": "右方插入列"
+                        },
+                        "hsep1": "---------",
+                        "remove_row": {
+                            "name": "删除行"
+                        },
+                        "remove_col": {
+                            "name": "删除列"
+                        },
+                        "make_read_only": {
+                            "name": "只读"
+                        },
+                        "borders": {
+                            "name": "表格线"
+                        },
+                        "commentsAddEdit": {
+                            "name": "添加备注"
+                        },
+                        "commentsRemove": {
+                            "name": "取消备注"
+                        },
+                        "freeze_column": {
+                            "name": "固定列"
+                        },
+                        "unfreeze_column": {
+                            "name": "取消列固定"
+                        },
+                        "hsep2": "---------"
+                    }
+                }
+            }
         },
         editor: {
             term: "",
@@ -169,7 +252,8 @@ export default {
             },
             options:{
                 tabSize: 4,     
-                useSoftTabs: false
+                useSoftTabs: false,
+                split: " "
             }
         }
     };
@@ -197,6 +281,23 @@ export default {
             let editor = this.$refs.editor.editor;
             editor.getSession().setUseSoftTabs(val);
         }
+    },
+    'editor.data':{
+        handler(val){
+            this.policy.parse = Papa.parse(val);
+            console.log(111,this.policy.parse.data)
+            this.policy.dt.data = this.policy.parse.data;
+            console.log(222,this.policy.dt.data)
+            // this.policy.dt.data.slice(1);
+            // this.policy.dt.data.shift(this.policy.parse.data[0][0].split(this.editor.options.split));
+            //this.policy.dt.colHeaders = this.policy.parse.data[0][0].split(" ");
+        },
+        immediate:true
+    },
+    'editor.options.split':{
+        handler(val){
+            this.policy.dt.data[0] = this.policy.parse.data[0][0].split(val);
+        }
     }
   },
   methods: {
@@ -216,6 +317,7 @@ export default {
         }
     },
     initData(){
+        
         let param = encodeURIComponent(JSON.stringify({  action: "read", data: this.model }));
         this.m3.callFS("/matrix/m3event/policy/action.js", param).then(rtn=>{
             
@@ -224,8 +326,6 @@ export default {
             this.policy.data = _.cloneDeep(this.model);
             this.policy.data.name = this.policy.data.name.split(".")[0];
 
-            this.policy.parse = Papa.parse(this.editor.data);
-            
             this.initFileInfo();
 
         }).catch((err)=>{
@@ -360,3 +460,12 @@ export default {
         color: #333333;
     }
 </style>
+<style>
+    #hot-display-license-info{
+        display: none!important;
+    }
+    .htMenu.htContextMenu.handsontable{
+        z-index: 3000;
+    }
+</style>
+<style src="../../../node_modules/handsontable/dist/handsontable.full.css"></style>
