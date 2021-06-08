@@ -31,7 +31,8 @@
                                 :data="attr.dt.rows"
                                 tooltip-effect="dark"
                                 style="width: 100%"
-                                @selection-change="onAttrSelectionChange">
+                                @selection-change="onAttrSelectionChange"
+                                class="diagnosis-attr-table">
                                 <el-table-column
                                     type="selection"
                                     width="55">
@@ -201,13 +202,20 @@ export default {
     padding:0px;
 }
 
-  .tag-box{
-    display: flex;
-    flex-wrap: wrap;
-    height:100px!important;
-    align-items: center;
-  }
-  .tag-box-item{
-      margin: 5px;
-  }
+.tag-box{
+display: flex;
+flex-wrap: wrap;
+height:100px!important;
+align-items: center;
+}
+.tag-box-item{
+    margin: 5px;
+}
+</style>
+
+<style>
+.diagnosis-attr-table.el-table .el-table__body-wrapper {
+    height: calc(100vh - 310px);
+    overflow: auto;
+}
 </style>

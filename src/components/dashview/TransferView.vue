@@ -73,7 +73,7 @@
                             </div>
 
                             <div v-else-if="item.field === 'width'">
-                                <el-input-number v-model="scope.row[item.field]" size="mini"></el-input-number>
+                                <el-input type="number" v-model="scope.row[item.field]" size="mini" @focus.stop.prevent="$event.target.select()"></el-input>
                             </div>
 
                             <div v-else-if="item.field === 'visible'">
@@ -290,6 +290,7 @@ export default({
                 onEnd ({ newIndex, oldIndex }) {
                     const currRow = self.dt.right.rows.splice(oldIndex, 1)[0];
                     self.dt.right.rows.splice(newIndex, 0, currRow);
+                    self.$emit("site-change");
                 }
             });
 

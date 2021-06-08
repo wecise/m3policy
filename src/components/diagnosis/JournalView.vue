@@ -32,27 +32,41 @@ export default {
       dt: {
           rows: []
       },
-      reverse: true
+      reverse: true,
     };
   },
   filters:{
       pickSeverityColor(val){
-          return window.global.register.event.severity[val][2];
+          try{
+            return window.global.register.event.severity[val][2];
+          } catch(err){
+            return null;  
+          }
       },
       pickStatus(val){
+        try{
           return window.global.register.event.status[val][1];
+        } catch(err) {
+          return null;
+        }
       },
       formatDateTime(val){
-          return new Date(val).toLocaleString();//format(window.global.register.format);
+          return new Date(val).toLocaleString();
       }
   },
-  created(){
-     this.initData();
+  watch:{
+    model:{
+      handler(val){
+          console.log(val)
+          this.initData(val);
+      },
+      immediate: true
+    }
   },
   methods: {
-    initData(){
-        let param = encodeURIComponent(JSON.stringify(this.model).replace(/%/gi,'%25'));
-        this.m3.callFS("/matrix/m3event/diagnosis/journal.js", param).then((rtn)=>{
+    initData(val){
+        let param = encodeURIComponent(JSON.stringify(val).replace(/%/gi,'%25'));
+        this.m3.callFS("/matrix/m3event/diagnosis/journal.js", param).then(rtn=>{
             this.dt.rows = rtn.message;
         })
     }

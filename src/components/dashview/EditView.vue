@@ -43,8 +43,11 @@
                                 </el-dropdown>
                             </el-input>
                         </el-form-item>
+                        <el-form-item label="返回记录数">
+                            <el-input-number v-model="view.model.datasource.top" controls-position="right"></el-input-number> <span style="color:#999999;font-size: 10px;">视图最大返回记录数量</span>
+                        </el-form-item>
                         <el-form-item label="过滤条件">
-                            <div style="color:#999999;background: #f2f2f2;border: 1px solid #ddd;padding: 0 20px;font-size: 10px;">过滤条件可参考一键搜索语法，示例：severity>=3 | status=10 | top 500 | print id,name,class</div>
+                            <div style="color:#999999;background: #f2f2f2;border: 1px solid #ddd;padding: 0 20px;font-size: 10px;">过滤条件可参考一键搜索语法，示例：severity>=3 | status=10 | print id,name,class</div>
                             <Editor
                                 v-model="view.model.datasource.filter"
                                 @init="onEditorInit"
@@ -56,7 +59,7 @@
                             ></Editor>
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="success" @click="onTestDataSource" :loading="editor.loading">测试数据源</el-button>
+                            <el-button type="primary" @click="onTestDataSource" :loading="editor.loading">测试数据源</el-button>
                             <!-- <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button> -->
                             <el-button @click="onClose">取消</el-button>
                         </el-form-item>
@@ -65,6 +68,10 @@
                         </el-form-item>
                     </el-form>
                 </el-main>
+                <el-footer style="line-height:60px;text-align: center;">
+                    <el-button type="success" @click="onApplyDataSource" :loading="datasource.loading">应用</el-button>
+                    <el-button @click="onClose">取消</el-button>
+                </el-footer>
             </el-container>
         </el-tab-pane>
         <el-tab-pane name="props" v-if="view.model.datasource">
@@ -77,6 +84,7 @@
                         :data="datasource.fields" 
                         :selected="view.model.datasource.fields"
                         @selected-change="((data)=>{ this.view.model.datasource.fields = data; })"
+                        @site-change="(()=>{ this.onApplyDataSource(); })"
                         :titles="['选择属性生成显示视图', '已选属性']"
                         :button-texts="['取消选择', '选择属性']"
                         v-if="datasource.fields"></TransferView>
@@ -308,7 +316,8 @@ export default {
         this.editor.loading = true;
 
         let view = this.model.name.replace(/.json/,'');
-        let param = encodeURIComponent(JSON.stringify({  view: view, term: this.view.model.datasource.filter }));
+        let term = this.view.model.datasource.filter;
+        let param = encodeURIComponent(JSON.stringify({  view: view, term: term }));
         
         this.m3.callFS("/matrix/m3event/event_list.js", param).then((rt)=>{
             

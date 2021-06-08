@@ -58,20 +58,6 @@
                             </p>
                         </div>
 
-                        <!-- 业务工具 -->
-                        <!-- <div class="tool">
-                            <div>{{control.ifSmartGroup?'智能分组':'智能分组'}}</div>
-                            <p>
-                                <el-switch
-                                    v-model="control.ifSmartGroup"
-                                    active-color="#13ce66"
-                                    inactive-color="#dddddd"
-                                    :active-value="true"
-                                    :inactive-value="false">
-                                </el-switch>
-                            </p>
-                        </div> -->
-
                         <ToolsView @tool-click="((data)=>{onToolsKeep(data)})"></ToolsView>
 
                         
@@ -106,14 +92,16 @@
                     </el-header>
                     <el-main>
                         <el-upload
-                            drag
-                            action="string"
-                            :http-request="onAttachmentUpload"
+                            name="uploadfile"
+                            :action="dialog.attachment.upload.action"
+                            :data="dialog.attachment.upload.ifIndex"
                             :on-success="onAttchSuccess"
                             :on-error="onAttchError"
                             :append-to-body="true"
+                            :show-file-list="false"
                             style="width:100%;"
-                            multiple>
+                            multiple
+                            drag>
                             <i class="el-icon-upload"></i>
                             <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
                             <div class="el-upload__tip" slot="tip">单个不超过500MB</div>
@@ -307,7 +295,6 @@ export default {
             info: [],
             control:{
                 ifSmart: false,
-                ifSmartGroup: false,
                 ifRefresh: false,
                 ifVoiceNotify: false,
                 mode: {
@@ -324,6 +311,7 @@ export default {
                     show: false,
                     data: null,
                     upload: {
+                        action: "",
                         Authorization:Cookies.get("matrixSession"),
                         baseUrl: "/script/matrix/m3event/attachment",
                         ifIndex: {
@@ -362,11 +350,6 @@ export default {
         'control.ifRefresh':{
             handler(val){
                 this.onCountdownTimeRefresh(val);
-            }
-        },
-        'control.ifSmartGroup':{
-            handler(val){
-                this.onToogleSmartGroup(val);
             }
         },
         'control.ifVoiceNotify':{
@@ -518,7 +501,7 @@ export default {
         onRefresh(){
             this.onCellClick();
             this.$refs.table.clearSort();
-            this.initData();
+            this.$emit("onSearch");
         },
         pickFtype(key){
 
@@ -534,13 +517,13 @@ export default {
         initData(){
             
             try{
-                _.extend(this.dt, {columns: _.map(this.model.columns, function(v){
+                _.extend(this.dt, {columns: _.map(this.model.columns, (v)=>{
                     
                     if(_.isUndefined(v.visible)){
                         _.extend(v, { visible: true });
                     }
-
-                    if(!v.render){
+                    
+                    if(_.isUndefined(v.render)){
                         return v;
                     } else {
                         return _.extend(v, { render: eval(v.render) });
@@ -555,6 +538,7 @@ export default {
                 */
                 let rows = _.map(_.orderBy(this.model.rows,this.dt.orderBy[0], this.dt.orderBy[1]),(v,index)=>{  v.index = index; return v; });
                 _.extend(this.dt, { rows: rows });
+
             } catch(err){
                 console.log(err)
             }
@@ -623,42 +607,46 @@ export default {
             }
             this.dt.contextmenu.show = !this.dt.contextmenu.show;
         },
-        /* Attachment */
+        /* 打开附近上传 */
         onAttach(data){
             this.dialog.attachment.show = true;
             this.dialog.attachment.data = data;
+            this.dialog.attachment.upload.action = [[
+                '','fs'+this.dialog.attachment.upload.baseUrl,this.dialog.attachment.data.entity].join("/"),
+                this.dialog.attachment.data.id].join("/")+'?issys=true';
+            this.onAttchNewDir();
         },
-        onAttachmentUpload(raw){
-            let param = {parent: [this.dialog.attachment.upload.baseUrl,this.dialog.attachment.data.entity].join("/"),name: this.dialog.attachment.data.id};
-            /* this.m3.dfsCheck([param.parent,param.name].join("/")).then(res=>{
-                console.log(res)
-            }).catch(err=>{
-                console.log(err)
-            }) */
-
-            let url = encodeURIComponent( 'fs'+[param.parent,param.name].join("/") );
-            this.m3.dfsNewDir(param).then(()=>{
-                
-                this.m3.dfsUpload(url,raw.file).then(res=>{
-                    console.log(url,res);
-                }).catch(err=>{
-                    console.log(err);
-                })
-            }).catch(()=>{
-                
-                this.m3.dfsUpload(url,raw.file).then(res=>{
-                    console.log(url,res);
-                }).catch(err=>{
-                    console.log(err);
-                })
-            });
-            
+        onAttchNewDir(){
+            try{
+                let param = {
+                                parent: [this.dialog.attachment.upload.baseUrl,this.dialog.attachment.data.entity].join("/"), 
+                                name: this.dialog.attachment.data.id,
+                                data:{content:null,ftype:'dir',attr:""}
+                };
+                this.m3.dfsNew(param);
+            }catch(err){
+                console.error(err);
+            }
         },
         onAttchSuccess(){
             
+            this.$message({
+                type: "success",
+                dangerouslyUseHTMLString: true,
+                message: `上传成功！`
+            })
+
+            this.dialog.attachment.show = false;
+
         },
         onAttchError(){
-            
+            this.$message({
+                type: "error",
+                dangerouslyUseHTMLString: true,
+                message: `上传失败，请确认！`
+            })
+
+            this.dialog.attachment.show = false;
         },
         /* shift 多选 */
         onCurrentChange(row,oldRow){
@@ -731,39 +719,7 @@ export default {
             
         },
         openPanel(){
-            /* jsPanel.create({
-                headerTitle: row.host || row.id,
-                headerControls: 'xs',
-                headerLogo: "<span class='el-icon-warning'></span>",
-                theme: 'dark',
-                border: 'thin',
-                panelSize: {
-                    width: () => window.innerWidth * 0.6,
-                    height: () => window.innerHeight * 0.6,
-                },
-                content: `<div ref="${row.id}"></div>`,
-                footerToolbar: [`<span style="font-size:12px;">${this.moment().format("LLL")}</span>`],
-                callback: function(){
-                    
-                    $(".jsPanel-headerbar",this).css({
-                        "min-height": "28px",
-                        "border-bottom": "none",
-                        "padding-left": "10px"
-                    });
-                    $(".jsPanel-content",this).css({
-                        "border-top": "none"
-                    });
-                    
-                    $(".jsPanel-titlebar",this).css({
-                        "min-height": "28px"
-                    });
-                    
-                    $(".jsPanel-titlebar h3",this).css({
-                        "font-size": "12px"
-                    });
-
-                }
-            }); */
+            
         },
         /* 倒计时刷新 */
         onCountdownTimeRefresh(val){
@@ -780,31 +736,6 @@ export default {
                 display.textContent = "";
             }
         },  
-        /* 智能分组 */
-        onToogleSmartGroup(val){
-            if(val){
-                this.$message({
-                    type: "info",
-                    message: "智能分组开启"
-                })
-                let row = {id: "smartGroup"};
-                let menu = {
-                    "name": "智能分组", 
-                    "icon": "",
-                    "type": "component",
-                    "component": {
-                        name:"SmartGroupView"
-                    }
-                    };
-                this.$emit("addTab",{row:row, data:menu});
-            } else {
-                this.$message({
-                    type: "info",
-                    message: "智能分组关闭"
-                })
-                this.$emit("removeTab","smartGroup");
-            }
-        },
         onToolsKeep(menu){
             let row = {id: menu.id};
             this.$emit("addTab",{row:row, data:menu});
@@ -957,7 +888,7 @@ export default {
 <style>
     .attachment-dialog.el-dialog{
         width: 50%!important;
-        height: 58%!important;
+        height: auto!important;
     }
 
     .el-upload,
@@ -967,7 +898,7 @@ export default {
 
     /* el-table hover actived style */
     .el-table--enable-row-hover .el-table__body tr:hover>td {
-            background-color: #3c99f7!important;
+            background-color: #86b4e6!important;
     }
     .el-table__body tr.current-row>td {
             background-color:#3c99f7!important;;

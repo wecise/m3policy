@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import _ from 'lodash';
 import TsdbView from './TsdbView.vue';
 import EntityView from './EntityView.vue';
 
@@ -43,7 +44,9 @@ export default {
     init(value){
       let param = encodeURIComponent(value);
       this.m3.callFS("/matrix/m3event/diagnosis/tsdb/getBucketByEntity.js", param).then( rtn=>{
-          this.bucket = rtn.message.bucket;
+          this.bucket = _.head(_.sortBy(_.map(_.groupBy(rtn.message.bucket,'class'), (v,k)=>{
+                return {class:k, children:v};
+            }),['class'],['asc']));
           this.entity = rtn.message.entity;
       })
     },
@@ -64,6 +67,9 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  .el-container{
+    height: calc(100vh - 220px);
+  }
   .el-header{
     line-height: 60px;
   }

@@ -10,7 +10,7 @@ import 'mxgraph/javascript/src/css/common.css';
 import _ from 'lodash';
 import $ from 'jquery';
 import mxgraph from './mxGraph.js';
-const {mxEditor,mxConstants,mxEdgeStyle,mxCellTracker,mxUtils,mxCodec,mxEvent,mxHierarchicalLayout,mxMorphing,mxFastOrganicLayout,mxCompactTreeLayout,mxCircleLayout} = mxgraph;
+const {mxEditor,mxConstants,mxCellOverlay,mxImage,mxPoint,mxEdgeStyle,mxCellTracker,mxUtils,mxCodec,mxEvent,mxHierarchicalLayout,mxMorphing,mxFastOrganicLayout,mxCompactTreeLayout,mxCircleLayout} = mxgraph;
 
 export default {
   name: "GraphView",
@@ -23,7 +23,7 @@ export default {
             editor:null,
             data: null,
             control:{
-              ifIcon: false
+              ifIcon: true
             },
             layout: {
                 default: 'hierarchical_vertical'
@@ -108,7 +108,7 @@ export default {
   },
   methods: {
     init(){
-        this.m3.callFS("/matrix/graph/edges.js",null).then( (rtn)=>{
+        this.m3.callFS("/matrix/m3event/graph/edges.js",null).then( (rtn)=>{
             this.graph.edges.list = rtn.message;
         } );
     },
@@ -118,11 +118,17 @@ export default {
             this.onReload();
             return false;
         } else {
-            let param = encodeURIComponent( `match() <- [*3] - ('${this.model.join("','")}') - [*3] ->()` );
-            this.m3.callFS("/matrix/graph/graph_service.js", param).then( (rtn)=>{
-                this.graph.data = rtn.message[0].graph;
-                this.onReload();
-            } )
+            
+            this.m3.dfsRead({parent:"/script/matrix/m3event/graph", name:"config.json"}).then( rtn=>{
+                let matchTemplate = _.template(JSON.parse(rtn).match);
+                let match = matchTemplate({ids: this.model.join("','")});
+                let param = encodeURIComponent( match );
+
+                this.m3.callFS("/matrix/m3event/graph/graphService.js", param).then( res=>{
+                    this.graph.data = res.message[0].graph;
+                    this.onReload();
+                } )
+            })
         }
     },
     initGraph(){
@@ -302,6 +308,10 @@ export default {
             model.endUpdate();    
 
             this.executeLayout();
+
+            setTimeout(()=>{
+                this.onRefreshCellStatus();
+            },10*1000)
 
         }
     },
@@ -507,7 +517,58 @@ export default {
         }
         
     },
-    
+    // 节点状态
+    onRefreshCellStatus(){
+        
+        let graph = this.graph.editor.graph;
+        let parent = graph.getDefaultParent();
+        
+        // 图所有节点
+        let cells = _.map(graph.getChildVertices(parent),v=>{
+                        return {gid: v.id, name: v.value};
+                    });
+
+        this.m3.callFS("/matrix/graph/graph_imap_data.js", encodeURIComponent(JSON.stringify(cells))).then( rtn=>{
+            let status = rtn.message;
+            
+            graph.getModel().beginUpdate();
+
+            try {
+                
+                _.forEach(status,(v)=>{
+                    let id = v.gid;
+                    let status = v.status;
+                    let cell = graph.getModel().getCell(id);
+                    //let state = graph.view.getState(cell);
+                    
+                    if (cell != null) {
+                        
+                        // Resets
+                        graph.removeCellOverlays(cell);
+
+                        if (status >= 5) {
+                            graph.addCellOverlay(cell, this.createOverlayByTip(status, `${id}: 重大告警`));
+                        } else if (status >3 && status < 5) {
+                            graph.addCellOverlay(cell, this.createOverlayByTip(status, `${id}: 严重告警`));
+                        } else {
+                            graph.removeCellOverlays(cell);
+                        } 
+                    
+                    }
+
+                })
+
+            } 
+            finally {
+                graph.getModel().endUpdate();
+            }
+        } );
+    },
+    // 节点状态渲染图标
+    createOverlayByTip(image, tooltip) {                  
+        let overlay = new mxCellOverlay(new mxImage(`/static/assets/images/apps/png/severity/${image}.png`,24,24), tooltip, mxConstants.ALIGN_RIGHT, mxConstants.ALIGN_TOP, new mxPoint(-10,15));
+        return overlay;
+    }
 
   },
 };

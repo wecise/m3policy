@@ -175,10 +175,10 @@ export default {
     }
 
     /* el-table hover actived style */
-    .el-table--enable-row-hover .el-table__body tr:hover>td {
+    /* .el-table--enable-row-hover .el-table__body tr:hover>td {
             background-color: #3c99f7!important;
     }
     .el-table__body tr.current-row>td {
             background-color:#3c99f7!important;;
-    }
+    } */
 </style>

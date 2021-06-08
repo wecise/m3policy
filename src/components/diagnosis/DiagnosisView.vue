@@ -4,7 +4,7 @@
       <el-tabs v-model="tabs.activeTab" type="border-card">
         <el-tab-pane :name="item.name" :key="item.name" v-for="item in tabs.list" lazy>
           <span slot="label">{{item.title}} <span @click="onTip(item)" class="el-icon-question" v-if="item.desc"></span></span>
-          <InfoView :model="model" v-if="item.type==='info'"></InfoView>
+          <InfoView :model="model"  v-if="item.type==='info'"></InfoView>
           <JournalView :model="model" v-else-if="item.type==='journal'"></JournalView>
           <AttributeRelView :model="model" :global="global" v-else-if="item.type==='attribute'"></AttributeRelView>
           <HistoryView :model="model" :global="global" v-else-if="item.type==='history'"></HistoryView>
