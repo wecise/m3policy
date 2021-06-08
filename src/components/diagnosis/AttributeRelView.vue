@@ -194,7 +194,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .el-container{
-    height:calc(100vh - 220px);
+    height:calc(100vh - 190px);
     border:unset!important;
 }
 
@@ -215,7 +215,7 @@ align-items: center;
 
 <style>
 .diagnosis-attr-table.el-table .el-table__body-wrapper {
-    height: calc(100vh - 310px);
+    height: calc(100vh - 290px)!important;
     overflow: auto;
 }
 </style>

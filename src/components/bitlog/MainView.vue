@@ -5,7 +5,7 @@
         @bucket-selected="((data)=>{ onSetBucket(data); })"
         @entity-selected="((data)=>{ onSetEntity(data); })"></entity-view>
     </el-header>
-    <el-main style="padding-top:5px;">
+    <el-main style="padding:5px;">
         <bitlog-view :bucket="bucket" :entity="entity"></bitlog-view>
     </el-main>
   </el-container>
@@ -64,7 +64,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
   .el-container{
-    height: calc(100vh - 220px);
+    height: calc(100vh - 190px);
   }
   .el-header{
     line-height: 60px;

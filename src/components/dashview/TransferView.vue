@@ -69,7 +69,7 @@
                         <template slot-scope="scope">
                             
                             <div v-if="item.field === 'title'">
-                                <el-input v-model="scope.row[item.field]" size="mini"></el-input>
+                                <el-input v-model="scope.row[item.field]" size="mini" @focus.stop.prevent="$event.target.select()"></el-input>
                             </div>
 
                             <div v-else-if="item.field === 'width'">
@@ -221,7 +221,7 @@ export default({
     watch: {
         'dt.right.rows':{
             handler(val){
-                 this.$emit("selected-change",val);
+                this.$emit("selected-change",val);
             },
             deep:true
         },
@@ -284,13 +284,15 @@ export default({
         initRowsDraggable(){
             const tbody = document.querySelector('.right-table .el-table__body-wrapper tbody');
             const self = this;
-            console.log(tbody)
+            
             Sortable.create(tbody, {
                 draggable: ".el-table__row",
                 onEnd ({ newIndex, oldIndex }) {
                     const currRow = self.dt.right.rows.splice(oldIndex, 1)[0];
                     self.dt.right.rows.splice(newIndex, 0, currRow);
-                    self.$emit("site-change");
+                    
+                    self.$emit("selected-change",self.dt.right.rows);
+                    self.$emit("order-change");
                 }
             });
 

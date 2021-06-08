@@ -1,10 +1,10 @@
 <template>
   <el-container>
-    <el-main style="overflow:hidden;">
-        <Split :direction="vertical">
+    <el-main style="overflow:hidden;padding:1px;">
+        <Split>
             <SplitArea :size="30" :minSize="0" style="overflow:hidden;">
                 <el-container>
-                    <el-main style="padding:0 20px 0 0;overflow:hidden;">
+                    <el-main style="padding:0px;overflow:hidden;">
                         <el-table
                             :data="smartGroup.dt.rows"
                             :highlight-current-row="true"
@@ -37,25 +37,38 @@
                 </el-container>
             </SplitArea>
             <SplitArea :size="70" :minSize="0" style="overflow:hidden;">
-                <el-container>
-                    <el-main style="padding:0 0px 0 20px;overflow:hidden;">  
-                        <el-tabs value="listByGroup" type="border-card">
-                            <el-tab-pane name="listByGroup">
-                                <span slot="label">表</span>
-                                <EventList ref="eventList" 
-                                    :model="dt" 
-                                    :global="global" 
-                                    :options="dt.options" 
-                                    @DiagnosisView="onDiagnosis">
-                                </EventList> 
-                            </el-tab-pane>
-                            <el-tab-pane name="graphByGroup">
-                                <span slot="label">图</span>
-                                <GraphView :model="graph.model"></GraphView>
-                            </el-tab-pane>
-                        </el-tabs>
-                    </el-main>
-                </el-container>
+                
+                <Split direction="vertical">
+                    <SplitArea :size="60" :minSize="0" style="overflow:hidden;">
+                        
+                        <GraphView :model="graph.model"></GraphView>
+                        
+                    </SplitArea>
+                    <SplitArea :size="40" :minSize="0" style="overflow:hidden;" id="smartGroupTable">
+                        <EventList ref="eventList" 
+                            :model="dt" 
+                            :global="global" 
+                            :options="dt.options" 
+                            @DiagnosisView="onDiagnosis">
+                        </EventList> 
+                    </SplitArea>
+                </Split>
+                <!-- <el-tabs value="listByGroup" type="border-card">
+                    <el-tab-pane name="listByGroup">
+                        <span slot="label">表</span>
+                        <EventList ref="eventList" 
+                            :model="dt" 
+                            :global="global" 
+                            :options="dt.options" 
+                            @DiagnosisView="onDiagnosis">
+                        </EventList> 
+                    </el-tab-pane>
+                    <el-tab-pane name="graphByGroup">
+                        <span slot="label">图</span>
+                        <GraphView :model="graph.model"></GraphView>
+                    </el-tab-pane>
+                </el-tabs> -->
+                
             </SplitArea>
         </Split>
     </el-main>
@@ -93,7 +106,7 @@ export default {
             selected: [],
             options:{
                 header:false,
-                dtContainerHeight: '320px',
+                dtContainerHeight: '560px',
                 severityBar: false
             }
         },

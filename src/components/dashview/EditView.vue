@@ -84,7 +84,7 @@
                         :data="datasource.fields" 
                         :selected="view.model.datasource.fields"
                         @selected-change="((data)=>{ this.view.model.datasource.fields = data; })"
-                        @site-change="(()=>{ this.onApplyDataSource(); })"
+                        @order-change="(()=>{ this.onApplyDataSource(); })"
                         :titles="['选择属性生成显示视图', '已选属性']"
                         :button-texts="['取消选择', '选择属性']"
                         v-if="datasource.fields"></TransferView>

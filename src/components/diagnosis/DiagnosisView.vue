@@ -1,6 +1,6 @@
 <template>
   <el-container>
-    <el-main>
+    <el-main style="padding:0px;">
       <el-tabs v-model="tabs.activeTab" type="border-card">
         <el-tab-pane :name="item.name" :key="item.name" v-for="item in tabs.list" lazy>
           <span slot="label">{{item.title}} <span @click="onTip(item)" class="el-icon-question" v-if="item.desc"></span></span>

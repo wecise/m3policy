@@ -108,7 +108,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
   .el-container{
-    height: calc(100vh - 220px);
+    height: calc(100vh - 190px);
   }
   .el-header{
     height: 40px!important;
