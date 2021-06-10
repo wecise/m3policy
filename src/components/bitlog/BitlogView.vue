@@ -280,9 +280,9 @@ export default{
                 _.forEach(this.bitlog.buckets,(v)=>{
                     
                     let layout = {
-                                    x: ( this.kpi.list.length * 6) % (this.layout.colNum || 12),
+                                    x: ( this.kpi.list.length * 12) % (this.layout.colNum || 12),
                                     y: this.kpi.list.length + (this.layout.colNum || 12), // puts it at the bottom
-                                    w: 6,
+                                    w: 12,
                                     h: 8,
                                     i: this.layout.index,
                                 };

@@ -56,7 +56,7 @@ export default{
         }
     },
     created(){
-        console.log(this.model)
+        
         // 初始化数据
         this.initData();
 
@@ -86,16 +86,16 @@ export default{
 
                 let param = encodeURIComponent( JSON.stringify(this.model) );
                 this.m3.callFS("/matrix/m3event/diagnosis/tsdb/searchPerformanceByTerm.js",param).then( val=>{
-                    let rtn = val.message.result;
+                    let rtn = val.message.result.reverse();
 
                     //取实时数据的time作为xAxis
-                    this.option.xAxis.data = _.map(rtn.reverse(),(v)=>{
+                    this.option.xAxis.data = _.map(rtn,(v)=>{
                         return this.moment(v[0]).format('YY-MM-DD HH:mm');
                     });
                     
                     this.option.series = [{
                         name: `${this.model.bucket} ${this.model.key}`,
-                        data: _.map(rtn.reverse(),(v)=>{ return v[1];}),
+                        data: _.map(rtn,(v)=>{ return v[1];}),
                         type: 'line',
                         smooth:true,
                         color: 'rgba(108, 212, 11, 1)',
@@ -122,6 +122,7 @@ export default{
             }
         },
         checkChart(){
+            
             try{
                 this.chart.resize();
             } catch(err){

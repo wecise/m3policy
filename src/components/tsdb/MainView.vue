@@ -5,7 +5,7 @@
         @bucket-selected="((data)=>{ onSetBucket(data); })"
         @entity-selected="((data)=>{ onSetEntity(data); })"></entity-view>
     </el-header>
-    <el-main style="padding:5px;">
+    <el-main style="padding:0px;">
         <tsdb-view :bucket="bucket" :entity="entity"></tsdb-view>
     </el-main>
   </el-container>

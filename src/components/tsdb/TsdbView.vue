@@ -1,13 +1,14 @@
 <template>
-    <div style="height: calc(100vh - 300px);">
+    <div style="height:auto;">
+        
         <EntityCascaderView 
             :multiplenable="true" 
             :entity="entity"
             :buckets="bucktets"
             @selected="((data)=>{ onSelectedAttr(data) })" 
             ref="bucketKeys"></EntityCascaderView>
-        
-        <div style="background: #f2f2f2;padding: 5px 20px 20px 20px;margin-top:20px;">
+            
+        <div style="background:#f2f2f2;margin-top:-20px;padding:0 20px;">
             <h4>已选指标：
                 <el-tag
                     :key="index" v-for="(tag,index) in selectedBuckets"
@@ -28,13 +29,15 @@
                     ref="datePicker">
                 </el-date-picker>
             </div>
-
-            <grid-layout 
+        </div>
+        
+        <grid-layout 
                     :layout.sync="kpi.list"
                      :col-num="layout.colNum"
                      :row-height="40"
                      :is-draggable="layout.draggable"
                      :is-resizable="layout.resizable"
+                     :responsive="layout.responsive"
                      :vertical-compact="true"
                      :use-css-transforms="true"
                      style="width:100%;display:flex">
@@ -69,15 +72,13 @@
                             </span>
                             <span v-else>{{item.id}} / {{item.bucket}} / <small>{{item.key}}</small></span>
                         </div>
-                        <ChartView  :model="item" class="no-drag"></ChartView>
+                        <ChartView  :model="item" class="no-drag" :ref="'chart'+item.i"></ChartView>
                     </el-card>
                     <el-button type="text" icon="el-icon-full-screen" @click="onFullScreen(item.i)" style="position: absolute;top: 10px;right: 30px;font-weight: 900;color: #b2b2b2;"></el-button>
                 <el-button type="text" icon="el-icon-close" @click="onRemoveItem(item.i)" style="position: absolute;top: 10px;right: 10px;font-weight: 900;color: #b2b2b2;"></el-button>
                 </grid-item>
 
             </grid-layout>
-        
-        </div>
 
     </div>
 </template>
@@ -87,6 +88,9 @@ import Cookies from 'js-cookie'
 import ChartView from './chart/ChartView.vue';
 import EntityCascaderView from './EntityCascaderView';
 import { GridLayout, GridItem } from "vue-grid-layout";
+
+/* import jsPanel from 'jspanel4/dist/jspanel.min.js';
+import 'jspanel4/dist/jspanel.min.css'; */
 
 export default{
     name: "TsdbView",
@@ -119,6 +123,7 @@ export default{
             layout: {
                 draggable: true,
                 resizable: true,
+                responsive: true,
                 colNum: 12,
                 index: 0
             },
@@ -278,6 +283,36 @@ export default{
         },
         onFullScreen(val){
             this.m3.fullScreenByEl(this.$refs['item'+val][0].$el);
+
+            /* jsPanel.create({
+                headerTitle: "www",
+                headerControls: 'xs',
+                headerLogo: "<span class='el-icon-warning'></span>",
+                theme: 'dark',
+                border: 'thin',
+                content: this.$refs['chart'+val][0].$el,
+                footerToolbar: [`<span style="font-size:12px;">${this.moment().format("LLL")}</span>`],
+                callback: function(){
+                    
+                    $(".jsPanel-headerbar",this).css({
+                        "min-height": "28px",
+                        "border-bottom": "none",
+                        "padding-left": "10px"
+                    });
+                    $(".jsPanel-content",this).css({
+                        "border-top": "none"
+                    });
+                    
+                    $(".jsPanel-titlebar",this).css({
+                        "min-height": "28px"
+                    });
+                    
+                    $(".jsPanel-titlebar h3",this).css({
+                        "font-size": "12px"
+                    });
+
+                }
+            }); */
         },
         onRemoveItem(val) {
             const index = this.kpi.list.map(item => item.i).indexOf(val);
@@ -305,7 +340,6 @@ export default{
 
 <style scoped>
    
-
    .columns {
     -moz-columns: 120px;
     -webkit-columns: 120px;
@@ -320,7 +354,7 @@ export default{
     cursor: pointer;
 }
 .vue-grid-layout {
-    background: #eee;
+    background: #f2f2f2;
 }
 .vue-grid-item:not(.vue-grid-placeholder) {
     box-shadow: 0 2px 4px rgba(0, 0, 0, .12), 0 0 6px rgba(0, 0, 0, .04);

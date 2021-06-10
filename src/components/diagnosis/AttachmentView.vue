@@ -99,8 +99,10 @@ export default {
         this.m3.dfsList(param).then((res)=>{
             this.dt.rows = res.message;
         })
+    },
+    onRefresh(){
+      this.initData();
     }
-
   }
 };
 </script>

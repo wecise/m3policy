@@ -171,7 +171,10 @@ export default {
 
         if(!_.isEmpty(this.attr.dt.selected)){
             this.attr.dt.selected = [];
-            this.$refs.attrTable.clearSelection();
+            
+            if(this.$refs.attrTable){
+                this.$refs.attrTable.clearSelection();
+            }
         }
     },
     onAttrTagClose(tag){

@@ -1,6 +1,70 @@
 <template>
-  <el-container>
-    <el-main ref="graphContainer"></el-main>
+  <el-container >
+    <el-header style="height:40px;line-height:40px;padding:0px;text-align:right;">
+        <el-popover
+            placement="left"
+            trigger="click"
+            popper-class="info-popper">
+            <el-container>
+                <el-main style="padding:0px;">
+                    <el-tabs value="setup">
+                        <el-tab-pane label="设置" name="setup">
+                            <el-form>
+                                <el-form-item label="工具栏">
+                                    <el-switch
+                                        v-model="graph.control.toolbar.show"
+                                        active-color="#13ce66"
+                                        inactive-color="#dddddd">
+                                    </el-switch>
+                                </el-form-item>
+                                <el-form-item label="自动刷新">
+                                    <el-switch
+                                        v-model="graph.control.refresh.enable"
+                                        active-color="#13ce66"
+                                        inactive-color="#dddddd"
+                                        @change="onRefreshChange">
+                                    </el-switch>
+                                </el-form-item>
+                                <el-form-item label="手动刷新">
+                                    <el-button type="text"><i class="el-icon-refresh" @click="onRefreshCellStatus"></i></el-button>
+                                </el-form-item>
+                                <el-form-item label="预览视图">
+                                    <el-switch
+                                        v-model="graph.control.outline.show"
+                                        active-color="#13ce66"
+                                        inactive-color="#dddddd"
+                                        @change="onToggleOutline">
+                                    </el-switch>
+                                </el-form-item>
+                            </el-form>
+                        </el-tab-pane>
+                        <el-tab-pane label="节点" name="vertex">
+                            <el-form>
+                                <el-form-item label="排列">
+                                    
+                                </el-form-item>
+                            </el-form>
+                        </el-tab-pane>
+                        <el-tab-pane label="边线" name="edge">
+                            <el-form>
+                                <el-form-item label="样式">
+                                    
+                                </el-form-item>
+                            </el-form>
+                        </el-tab-pane>
+                    </el-tabs>
+                </el-main>
+            </el-container>
+            <el-button type="text" slot="reference">
+                <i class="el-icon-setting" style="font-size:15px;margin:0 5px;"></i>
+            </el-button>
+        </el-popover>
+    </el-header>
+    <el-main id="graphContainer" ref="graphContainer" style="width:100vw;height:100vh;min-width:100vw;position:releative;overflow:hidden;padding:0px;"></el-main>
+    <div ref="outlineContainer"
+        style="position:absolute;overflow:hidden;top:40px;right:20px;width:200px;height:140px;background:transparent;box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);"
+        v-show="graph.control.outline.show">
+    </div>
   </el-container>
 </template>
 
@@ -10,7 +74,7 @@ import 'mxgraph/javascript/src/css/common.css';
 import _ from 'lodash';
 import $ from 'jquery';
 import mxgraph from './mxGraph.js';
-const {mxEditor,mxConstants,mxCellOverlay,mxImage,mxPoint,mxEdgeStyle,mxCellTracker,mxUtils,mxCodec,mxEvent,mxHierarchicalLayout,mxMorphing,mxFastOrganicLayout,mxCompactTreeLayout,mxCircleLayout} = mxgraph;
+const {mxEditor,mxConstants,mxGraphHandler,mxGuide,mxEdgeHandler,mxClient,mxRectangleShape,mxRubberband,mxCellOverlay,mxOutline,mxImage,mxPoint,mxEdgeStyle,mxCellTracker,mxUtils,mxCodec,mxEvent,mxHierarchicalLayout,mxMorphing,mxFastOrganicLayout,mxCompactTreeLayout,mxCircleLayout} = mxgraph;
 
 export default {
   name: "GraphView",
@@ -23,7 +87,18 @@ export default {
             editor:null,
             data: null,
             control:{
-              ifIcon: true
+                ifIcon: true,
+                outline: {
+                    show: false
+                },
+                toolbar:{
+                    show: false
+                },
+                refresh:{
+                    inst: null,
+                    enable: false,
+                    interval: 15*1000
+                }
             },
             layout: {
                 default: 'hierarchical_vertical'
@@ -93,25 +168,64 @@ export default {
     };
   },
   watch: {
-      model:{
+        model:{
           handler(){
               this.initData();
           },
           deep: true
-      }
+        },
+        'graph.control.refresh.enable':{
+            handler(val){
+                if(val) {
+                    this.graph.control.refresh.inst = setInterval(()=>{
+                        this.onRefreshCellStatus();
+                    },this.graph.control.refresh.interval);
+                    this.$message({
+                        type: "info",
+                        message: "自动刷新开启"
+                    })
+                } else {
+                    clearInterval(this.graph.control.refresh.inst);
+                    this.$message({
+                        type: "info",
+                        message: "自动刷新关闭"
+                    })
+                }
+            },
+            immediate:true
+        },
   },
   created(){
     this.initData();
-  },
-  mounted(){
     this.init();
   },
+  mounted(){
+    
+  },
   methods: {
+    // 初始化
     init(){
         this.m3.callFS("/matrix/m3event/graph/edges.js",null).then( (rtn)=>{
             this.graph.edges.list = rtn.message;
         } );
+
+        // 状态刷新标志
+        this.graph.control.refresh.enable = (localStorage.getItem("GRAPH-STATUS-IFREFRESH") == 'true');
+
+        // 节点是否可以移动 
+        mxGraphHandler.prototype.setMoveEnabled(true);
+        //显示节点位置标尺  
+        mxGraphHandler.prototype.guidesEnabled = true;
+
+        // Alt disables guides
+        mxGuide.prototype.isEnabledForEvent = function(evt){
+            return !mxEvent.isAltDown(evt);
+        };
+
+        // Enables snapping waypoints to terminals
+        mxEdgeHandler.prototype.snapToTerminals = true;
     },
+    // 加载图数据
     initData(){
         
         if(_.isEmpty(this.model)) {
@@ -131,11 +245,54 @@ export default {
             })
         }
     },
+    // 初始化图板
     initGraph(){
         this.graph.editor = new mxEditor();
         this.graph.editor.setGraphContainer(this.$refs.graphContainer.$el);
         let graph = this.graph.editor.graph;
+
+        // 是否允许平移。true：表示按住Shift+左键拖动时，整个graph移动；
+        // false：按住Shift+左键拖动时，选中的图形水平方向或者垂直方向平移。
+        graph.setPanning(true);
+        /* mxPanningHandler.prototype.isPanningTrigger = function(me) {
+            var evt = me.getEvent();
+            return true;
+        }; */
+
+        // 禁止改变节点大小
+        graph.setCellsResizable(false);
+        // 禁止节点文字编辑功能
+        graph.setCellsEditable(false);
         
+        // 禁止连线移动
+        graph.disconnectOnMove = false;
+        
+
+        // 允许连线的目标和源是同一元素 
+        graph.setAllowLoops(true); 
+        // 居中缩放
+        graph.centerZoom = true;
+        // Tooltips on touch devices
+        graph.setTooltips(!mxClient.IS_TOUCH);
+        // 支持Html
+        graph.setHtmlLabels(true);
+
+        // 去锯齿效果
+        mxRectangleShape.prototype.crisp = true;
+
+        // 鼠标框选
+        new mxRubberband(graph);
+        
+        // 预览时鼠标悬浮到节点时，改变鼠标样式
+        graph.getCursorForCell = function(cell){
+            if (cell != null && cell.value != null && cell.vertex ==1 ){
+                return 'pointer';
+            }
+        }
+        
+        // 预览时鼠标悬浮到节点时，改变节点样式
+        new mxCellTracker(graph);
+
         // Sets global styles
         var style = graph.getStylesheet().getDefaultEdgeStyle();
         style[mxConstants.STYLE_EDGE] = mxEdgeStyle.EntityRelation;
@@ -165,6 +322,62 @@ export default {
         graph.popupMenuHandler.factoryMethod = (menu, cell, evt)=>{
             this.createPopupMenu(this.graph.editor, graph, menu, cell, evt);
         };
+
+        this.initGraphEvent(graph);
+
+    },
+    initGraphEvent(graph){
+        // 初始化滚轮图缩放事件监听
+        this.addScrollListener(graph);
+    },
+    // 滚轮缩放事件监听
+    addScrollListener(graph){
+        var t = (function a(element, wheelHandle) {
+                if (typeof element != 'object') return;
+                if (typeof wheelHandle != 'function') return;
+
+                // 监测浏览器
+                if (typeof a.browser == 'undefined') {
+                    var user = navigator.userAgent;
+                    var b = {};
+                    b.opera = user.indexOf("Opera") > -1 && typeof window.opera == "object";
+                    b.khtml = (user.indexOf("KHTML") > -1 || user.indexOf("AppleWebKit") > -1 || user.indexOf("Konqueror") > -1) && !b.opera;
+                    b.ie = user.indexOf("MSIE") > -1 && !b.opera;
+                    b.gecko = user.indexOf("Gecko") > -1 && !b.khtml;
+                    a.browser = b;
+                }
+                if (element == window)
+                    element = document;
+                if (a.browser.ie)
+                    element.attachEvent('onmousewheel', wheelHandle);
+                else
+                    element.addEventListener(a.browser.gecko ? 'DOMMouseScroll' : 'mousewheel', wheelHandle, false);
+        });
+        t(graph.container, this.wheelHandle);
+    },
+    // 滚轮缩放图
+    wheelHandle(e) {
+        var upcheck;
+
+        if (e.wheelDelta) {
+            upcheck = e.wheelDelta > 0 ? 1 : 0;
+        } else {
+            upcheck = e.detail < 0 ? 1 : 0;
+        }
+        if (upcheck) {
+            this.graph.editor.graph.zoomIn();
+        }
+        else {
+            this.graph.editor.graph.zoomOut();
+        }
+
+        if (window.event) {
+            e.returnValue = false;
+            window.event.cancelBubble = true;
+        } else {
+            e.preventDefault();
+            e.stopPropagation();
+        }
     },
     checkImgExists(){
         //let term = {parent:"/assets/images/entity/png", name:name};
@@ -179,6 +392,19 @@ export default {
             return `/static/assets/images/entity/png/${icon}.png`;
         }
 
+    },
+    // 切换预览
+    onToggleOutline(){
+        this.control.outline.show = !this.control.outline.show;
+        if(this.control.outline.show) {
+            new mxOutline(this.editor.graph, this.$refs.outlineContainer);
+        }
+    },
+    // 自动刷新控制
+    onRefreshChange(val){
+        this.onRefreshCellStatus();
+        this.graph.control.refresh.enable = val;
+        localStorage.setItem("GRAPH-STATUS-IFREFRESH", this.graph.control.refresh.enable);
     },
     onReload(){
         try{
@@ -201,6 +427,7 @@ export default {
 
         }
     },
+    // 图绘制
     renderGraph(editor){
         
         let graph = editor.graph;
@@ -308,10 +535,6 @@ export default {
             model.endUpdate();    
 
             this.executeLayout();
-
-            setTimeout(()=>{
-                this.onRefreshCellStatus();
-            },10*1000)
 
         }
     },
@@ -517,7 +740,7 @@ export default {
         }
         
     },
-    // 节点状态
+    // 节点告警状态
     onRefreshCellStatus(){
         
         let graph = this.graph.editor.graph;
@@ -529,13 +752,12 @@ export default {
                     });
 
         this.m3.callFS("/matrix/graph/graph_imap_data.js", encodeURIComponent(JSON.stringify(cells))).then( rtn=>{
-            let status = rtn.message;
             
             graph.getModel().beginUpdate();
 
             try {
                 
-                _.forEach(status,(v)=>{
+                _.forEach(rtn.message,(v)=>{
                     let id = v.gid;
                     let status = v.status;
                     let cell = graph.getModel().getCell(id);
@@ -579,7 +801,4 @@ export default {
     .el-container{
         height: calc(100vh - 190px)!important;
     }
-
-    
-
 </style>

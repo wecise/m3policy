@@ -21,7 +21,7 @@
       </el-header>
       <el-main ref="mainView" style="padding:0px 20px;">
           <!-- <el-image style="width: 80px; height: 80px;position: absolute;top:5px;left:5px; z-index: 100;" :src="model | pickIcon" fit="scale-down" @error="onErrorPickIcon" v-if="model"></el-image> -->
-          <el-form :model="model" ref="form" label-width="140px" :label-position="labelPosition">
+          <el-form :model="model" ref="form" label-width="140px" :label-position="labelPosition" v-if="model">
               <el-form-item :label="item.label" :key="index" v-for="(item,index) in model.components">
                   <span v-if="item.visible">
                     <el-select v-model="item.data" :placeholder="item.placeholder" v-if="item.type==='select'">

@@ -230,8 +230,6 @@ import {Howl} from 'howler';
 import Cookies from 'js-cookie';
 import VueContext from 'vue-context';
 import 'vue-context/dist/css/vue-context.css';
-// import jsPanel from 'jspanel4/dist/jspanel.min.js';
-// import 'jspanel4/dist/jspanel.min.css';
 import TagView from './tags/TagView';
 import ToolsView from './tools/ToolsView';
 
