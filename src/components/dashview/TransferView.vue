@@ -87,8 +87,8 @@
                                     popper-class="props-render-popper"
                                     trigger="click">
                                     <div style="width:100%;height:40px;line-height:40px;">
-                                        <el-button type="default" @click="onSetRender(option,item)" :key="index" v-for="(item,index) in render">
-                                            {{item.name}}
+                                        <el-button type="default" @click="onSetRender(scope.row,item.field,code)" :key="index" v-for="(code,index) in render">
+                                            {{code.name}}
                                         </el-button>
                                     </div>
                                     <Editor
@@ -297,8 +297,9 @@ export default({
             });
 
         },
-        onSetRender(data,item){
-            _.extend(data, {render: item.code});
+        onSetRender(row,field,item){
+            console.log(row, field, row[field], item)
+            row[field] = item.code;
         },
         onTip(){
         

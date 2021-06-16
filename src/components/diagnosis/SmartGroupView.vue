@@ -39,12 +39,12 @@
             <SplitArea :size="70" :minSize="0" style="overflow:hidden;">
                 
                 <Split direction="vertical">
-                    <SplitArea :size="60" :minSize="0" style="overflow:hidden;">
+                    <SplitArea :size="64" :minSize="0" style="overflow:hidden;">
                         
                         <GraphView :model="graph.model"></GraphView>
                         
                     </SplitArea>
-                    <SplitArea :size="40" :minSize="0" style="overflow:hidden;" id="smartGroupTable">
+                    <SplitArea :size="36" :minSize="0" style="overflow:hidden;" id="smartGroupTable">
                         <EventList ref="eventList" 
                             :model="dt" 
                             :global="global" 
@@ -53,22 +53,6 @@
                         </EventList> 
                     </SplitArea>
                 </Split>
-                <!-- <el-tabs value="listByGroup" type="border-card">
-                    <el-tab-pane name="listByGroup">
-                        <span slot="label">表</span>
-                        <EventList ref="eventList" 
-                            :model="dt" 
-                            :global="global" 
-                            :options="dt.options" 
-                            @DiagnosisView="onDiagnosis">
-                        </EventList> 
-                    </el-tab-pane>
-                    <el-tab-pane name="graphByGroup">
-                        <span slot="label">图</span>
-                        <GraphView :model="graph.model"></GraphView>
-                    </el-tab-pane>
-                </el-tabs> -->
-                
             </SplitArea>
         </Split>
     </el-main>

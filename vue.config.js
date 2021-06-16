@@ -5,7 +5,6 @@ function resolve(dir) {
     return path.join(__dirname, dir)
 }
 
-
 module.exports = {
     devServer: {
         open: process.platform === 'darwin',

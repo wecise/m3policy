@@ -176,7 +176,6 @@ export default {
     },
     computed:{
         rootPath(){
-            console.log(232323,this.root,this.root?this.root:["",this.auth.signedUser.Company.ospace].join("/"))
             return this.root?this.root:["",this.auth.signedUser.Company.ospace].join("/");
         }
     },

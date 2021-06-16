@@ -145,11 +145,35 @@ export default {
         }
     },
     onNew(){
-      let param = encodeURIComponent(JSON.stringify({  action: "add", data:"" }));
-      this.m3.callFS("/matrix/m3event/policy/action.js", param).then((rtn)=>{
-          this.dt.rows = rtn.message;
-          this.onRefresh();
-      })
+
+      this.$prompt('请输入策略名称', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(({ value }) => {
+        
+        if(_.isEmpty(value)){
+            this.$message({
+                type: 'warning',
+                message: '请输入策略名称！'
+            });
+            return false;
+        }
+
+        let param = encodeURIComponent(JSON.stringify({  action: "add", data:"", name: value }));
+        this.m3.callFS("/matrix/m3event/policy/action.js", param).then( rtn=>{
+            this.dt.rows = rtn.message;
+            this.onRefresh();
+        })
+
+        
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消新建策略操作'
+        });       
+      });
+
+      
     },
     onEdit(item){
       this.dt.selected = item;

@@ -72,6 +72,9 @@
           </el-header>
           <el-main style="border-top: 1px solid #ffffff;">
             <el-form label-position="right" :model="dialog.newTrigger.data" ref="dialogNewTrigger">
+              <el-form-item label="对应类">
+                  <el-input v-model="view.value" placeholder="对应类" disabled></el-input>
+              </el-form-item>
               <el-form-item label="名称" :rules="[{ required: true, message: '请输入名称', trigger: 'blur' }]">
                   <el-input v-model="dialog.newTrigger.data.name" placeholder="名称" :disabled="dialog.newTrigger.type=='edit'?true:false"></el-input>
               </el-form-item>
@@ -129,6 +132,9 @@
                   </el-header>
                   <el-main style="border-top: 1px solid #ffffff;">
                     <el-form label-position="right" :model="dialog.newTrigger.data" ref="dialogNewTrigger">
+                      <el-form-item label="对应类">
+                          <el-input v-model="view.value" placeholder="对应类" disabled></el-input>
+                      </el-form-item>
                       <el-form-item label="名称" :rules="[{ required: true, message: '请输入名称', trigger: 'blur' }]">
                           <el-input v-model="dialog.newTrigger.data.name" placeholder="名称" :disabled="dialog.newTrigger.type=='edit'?true:false"></el-input>
                       </el-form-item>
@@ -225,7 +231,6 @@ export default {
     }
   },
   created(){
-     this.initData();
      this.initView();
   },
   methods: {
@@ -233,6 +238,7 @@ export default {
       let param = encodeURIComponent(JSON.stringify({action:'getDefaultView'}));
       this.m3.callFS("/matrix/m3event/view/action.js",param).then(rtn=>{
         this.view.value = rtn.message;
+        this.initData();
       })
     },
     parseTrigger(data){
@@ -249,7 +255,8 @@ export default {
         });
     },
     initData(){
-        this.m3.triggerList('/matrix/devops/alert_status').then(rtn=>{
+        this.m3.triggerList(this.view.value).then(rtn=>{
+            this.dt.rows = [];
             let parse = this.parseTrigger(rtn.message[0]);
             this.dt.rows = _.map(parse,v=>{
                 return   {
@@ -325,8 +332,9 @@ export default {
         }).catch((err)=>{
           this.$message({
             type: "error",
-            message: "删除失败 " + err
+            message: "删除有误 " + err.message
           })
+          this.onRefresh();
         });
       }).catch(() => {
         this.$message({

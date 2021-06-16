@@ -20,13 +20,13 @@
                                 <svg-icon icon-class="play"/>
                             </el-button>
                         </el-tooltip>
-                        <el-divider direction="vertical"></el-divider>
+                        <!-- <el-divider direction="vertical"></el-divider>
                         <el-tooltip content="执行日志" >
                             <el-button type="text" icon="el-icon-monitor" @click="onToggleRunningView('log')"></el-button>
                         </el-tooltip>
                         <el-tooltip content="执行结果" >
                             <el-button type="text" icon="el-icon-tickets" @click="onToggleRunningView('result')"></el-button>
-                        </el-tooltip>
+                        </el-tooltip> -->
                     </span>
                     <span v-if="currentTab.data.ftype=='html' || currentTab.data.ftype=='js' || currentTab.data.ftype=='json'">
                         <el-divider direction="vertical"></el-divider>
@@ -298,11 +298,11 @@ export default {
             let ftype = fs.data.ftype;
             let formatted = "";
             
-            if(ftype=='html'){
+            if(ftype==='html'){
                 formatted = this.m3.htmlFormat(content, 4, ' ', 200);
-            } else if(ftype=='js'){
+            } else if(ftype==='js'){
                 formatted = this.m3.jsFormat(content, 4, ' ', 0);
-            } else if(ftype=='json'){
+            } else if(ftype==='json'){
                 formatted = JSON.stringify(JSON.parse(content),null,2);
             } else { 
                 return false;

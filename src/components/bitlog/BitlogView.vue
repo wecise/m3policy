@@ -81,20 +81,36 @@
                         {{ item.id }} / {{ item.field }} / {{ item.file }}
                     </div>
 
-                    <bitlog-console-view :model="item" class="no-drag"></bitlog-console-view>
+                    <bitlog-console-view :model="item" class="no-drag" v-if="item"></bitlog-console-view>
                     
                 </el-card>
-                <el-button type="text" icon="el-icon-full-screen" @click="onFullScreen(item.i)" style="position: absolute;top: 10px;right: 30px;font-weight: 900;color: #b2b2b2;"></el-button>
+                <el-button type="text" icon="el-icon-full-screen" @click="onFullScreen(item)" style="position: absolute;top: 10px;right: 30px;font-weight: 900;color: #b2b2b2;"></el-button>
                 <el-button type="text" icon="el-icon-close" @click="onRemoveItem(item.i)" style="position: absolute;top: 10px;right: 10px;font-weight: 900;color: #b2b2b2;"></el-button>
             </grid-item>
 
         </grid-layout>
 
+        <el-dialog :visible.sync="dialog.max.show" v-if="dialog.max.show" custom-class="bitlog-max-dialog">
+            
+            <el-card style="height:60vh;">
+                <div slot="header" class="clearfix" style="padding:5px;">
+                    {{ dialog.max.data.id }} / {{ dialog.max.data.field }} / {{ dialog.max.data.file }}
+                </div>
+
+                <bitlog-console-view :model="dialog.max.data" class="no-drag" v-if="dialog.max.data"></bitlog-console-view>
+                
+            </el-card>
+            
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="dialog.max.show = false">取 消</el-button>
+            </div>
+        </el-dialog>
+
     </div>
 </template>
 <script>
 import _ from 'lodash';
-import Cookies from 'js-cookie'
+import Cookies from 'js-cookie';
 import { GridLayout, GridItem } from "vue-grid-layout";
 import BitlogConsoleView from './BitlogConsoleView.vue';
 
@@ -220,6 +236,12 @@ export default{
                     inputVisible: false,
                     inputValue: ''
                 }
+            },
+            dialog: {
+                max: {
+                    show: false,
+                    data: null
+                }
             }
 
         }
@@ -295,7 +317,11 @@ export default{
             //this.kpi.list = _.uniqBy(this.kpi.list,'field');
         },
         onFullScreen(val){
-            this.m3.fullScreenByEl(this.$refs['item'+val][0].$el);
+            
+            //let el = this.$refs['item'+val][0].$el
+            this.dialog.max.show = true;
+            this.dialog.max.data = val;
+            
         },
         onRemoveItem(val) {
             const index = this.kpi.list.map(item => item.i).indexOf(val);
@@ -340,6 +366,11 @@ export default{
 <style>
 .el-card__body{
     height:100%;
+}
+
+.bitlog-max-dialog{
+    width: 80vw;
+    height: 80vh;
 }
 </style>
 <style scoped>

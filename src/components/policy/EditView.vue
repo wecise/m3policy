@@ -280,7 +280,8 @@ export default {
         handler(val){
             let editor = this.$refs.editor.editor;
             editor.getSession().setUseSoftTabs(val);
-        }
+        },
+        immediate: true
     },
     'editor.data':{
         handler(val){

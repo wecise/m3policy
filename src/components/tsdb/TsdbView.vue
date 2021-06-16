@@ -32,54 +32,79 @@
         </div>
         
         <grid-layout 
-                    :layout.sync="kpi.list"
-                     :col-num="layout.colNum"
-                     :row-height="40"
-                     :is-draggable="layout.draggable"
-                     :is-resizable="layout.resizable"
-                     :responsive="layout.responsive"
-                     :vertical-compact="true"
-                     :use-css-transforms="true"
-                     style="width:100%;display:flex">
+                :layout.sync="kpi.list"
+                    :col-num="layout.colNum"
+                    :row-height="40"
+                    :is-draggable="layout.draggable"
+                    :is-resizable="layout.resizable"
+                    :responsive="layout.responsive"
+                    :vertical-compact="true"
+                    :use-css-transforms="true"
+                    style="width:100%;display:flex">
 
-                <grid-item :static="item.static"
-                       :x="item.x"
-                       :y="item.y"
-                       :w="item.w"
-                       :h="item.h"
-                       :i="item.i"
-                        v-for="(item,index) in kpi.list"
-                        :key="index"
-                        @resize="onGridItemResizeEvent"
-                        @move="onGridItemMoveEvent"
-                        @resized="onGridItemResizedEvent"
-                        @container-resized="onGridItemContainerResizedEvent"
-                        @moved="onGridItemMovedEvent"
-                        drag-ignore-from=".no-drag"
-                        :ref="'item'+item.i">
-                    <el-card style="height:100%;">
-                        <div slot="header" class="clearfix" style="padding:5px;">
-                            <span v-if="item.subKeys != null">
-                                {{item.id}} / {{item.bucket}} / <small>{{item.key}}</small>
-                                <el-select v-model="item.defaultSubKey" placeholder="请选择子对象" @change="onChange">
-                                    <el-option
-                                        v-for="key in item.subKeys"
-                                        :key="key.value"
-                                        :label="key.name"
-                                        :value="key.value">
-                                    </el-option>
-                                </el-select>
-                            </span>
-                            <span v-else>{{item.id}} / {{item.bucket}} / <small>{{item.key}}</small></span>
-                        </div>
-                        <ChartView  :model="item" class="no-drag" :ref="'chart'+item.i"></ChartView>
-                    </el-card>
-                    <el-button type="text" icon="el-icon-full-screen" @click="onFullScreen(item.i)" style="position: absolute;top: 10px;right: 30px;font-weight: 900;color: #b2b2b2;"></el-button>
+            <grid-item :static="item.static"
+                    :x="item.x"
+                    :y="item.y"
+                    :w="item.w"
+                    :h="item.h"
+                    :i="item.i"
+                    v-for="(item,index) in kpi.list"
+                    :key="index"
+                    @resize="onGridItemResizeEvent"
+                    @move="onGridItemMoveEvent"
+                    @resized="onGridItemResizedEvent"
+                    @container-resized="onGridItemContainerResizedEvent"
+                    @moved="onGridItemMovedEvent"
+                    drag-ignore-from=".no-drag"
+                    :ref="'item'+item.i">
+                <el-card style="height:100%;">
+                    <div slot="header" class="clearfix" style="padding:5px;">
+                        <span v-if="item.subKeys != null">
+                            {{item.id}} / {{item.bucket}} / <small>{{item.key}}</small>
+                            <el-select v-model="item.defaultSubKey" placeholder="请选择子对象" @change="onChange">
+                                <el-option
+                                    v-for="key in item.subKeys"
+                                    :key="key.value"
+                                    :label="key.name"
+                                    :value="key.value">
+                                </el-option>
+                            </el-select>
+                        </span>
+                        <span v-else>{{item.id}} / {{item.bucket}} / <small>{{item.key}}</small></span>
+                    </div>
+                    <ChartView  :model="item" class="no-drag" :ref="'chart'+item.i"></ChartView>
+                </el-card>
+                <el-button type="text" icon="el-icon-refresh" @click="onRefresh(item.i)" style="position: absolute;top: 10px;right: 53px;font-weight: 900;color: #b2b2b2;"></el-button>
+                <el-button type="text" icon="el-icon-full-screen" @click="onFullScreen(item)" style="position: absolute;top: 10px;right: 30px;font-weight: 900;color: #b2b2b2;"></el-button>
                 <el-button type="text" icon="el-icon-close" @click="onRemoveItem(item.i)" style="position: absolute;top: 10px;right: 10px;font-weight: 900;color: #b2b2b2;"></el-button>
-                </grid-item>
+            </grid-item>
 
-            </grid-layout>
+        </grid-layout>
 
+        <el-dialog :visible.sync="dialog.max.show" v-if="dialog.max.show" custom-class="bitlog-max-dialog">
+            
+            <el-card style="height:60vh;">
+                <div slot="header" class="clearfix" style="padding:5px;">
+                    <span v-if="dialog.max.data.subKeys != null">
+                        {{dialog.max.data.id}} / {{dialog.max.data.bucket}} / <small>{{dialog.max.data.key}}</small>
+                        <el-select v-model="dialog.max.data.defaultSubKey" placeholder="请选择子对象" @change="onChange">
+                            <el-option
+                                v-for="key in dialog.max.data.subKeys"
+                                :key="key.value"
+                                :label="key.name"
+                                :value="key.value">
+                            </el-option>
+                        </el-select>
+                    </span>
+                    <span v-else>{{dialog.max.data.id}} / {{dialog.max.data.bucket}} / <small>{{dialog.max.data.key}}</small></span>
+                </div>
+                <ChartView  :model="dialog.max.data" class="no-drag" :ref="'chart'+dialog.max.data.i"></ChartView>
+            </el-card>
+            
+            <div slot="footer" class="dialog-footer">
+                <el-button type="primary" @click="dialog.max.show = false">取 消</el-button>
+            </div>
+        </el-dialog>
     </div>
 </template>
 <script>
@@ -223,6 +248,12 @@ export default{
                         }
                 ]}
             },
+            dialog: {
+                max: {
+                    show: false,
+                    data: null
+                }
+            },
             selectedBuckets:null
         }
     },
@@ -251,6 +282,9 @@ export default{
             _.forEach(this.kpi.list,(v)=>{
                 this.$set(v,'defaultSubKey',val);
             })
+        },
+        onRefresh(i){
+            this.$refs['chart'+i][0].initData();
         },
         onSelectedAttr(val){
             
@@ -282,37 +316,11 @@ export default{
             })
         },
         onFullScreen(val){
-            this.m3.fullScreenByEl(this.$refs['item'+val][0].$el);
+            // this.m3.fullScreenByEl(this.$refs['item'+val][0].$el);
 
-            /* jsPanel.create({
-                headerTitle: "www",
-                headerControls: 'xs',
-                headerLogo: "<span class='el-icon-warning'></span>",
-                theme: 'dark',
-                border: 'thin',
-                content: this.$refs['chart'+val][0].$el,
-                footerToolbar: [`<span style="font-size:12px;">${this.moment().format("LLL")}</span>`],
-                callback: function(){
-                    
-                    $(".jsPanel-headerbar",this).css({
-                        "min-height": "28px",
-                        "border-bottom": "none",
-                        "padding-left": "10px"
-                    });
-                    $(".jsPanel-content",this).css({
-                        "border-top": "none"
-                    });
-                    
-                    $(".jsPanel-titlebar",this).css({
-                        "min-height": "28px"
-                    });
-                    
-                    $(".jsPanel-titlebar h3",this).css({
-                        "font-size": "12px"
-                    });
-
-                }
-            }); */
+            this.dialog.max.show = true;
+            this.dialog.max.data = val;
+            this.eventHub.$emit("WINDOW-RESIZE-EVENT");
         },
         onRemoveItem(val) {
             const index = this.kpi.list.map(item => item.i).indexOf(val);

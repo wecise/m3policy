@@ -191,7 +191,7 @@
                             </el-radio-group>
                         </el-form-item>
                     </template>
-                    <template v-if="dialog.new.data.type=='url'">
+                    <template v-else-if="dialog.new.data.type=='url'">
                         <el-form-item label="URL">
                             <el-input v-model="dialog.new.data.url.value"></el-input>
                         </el-form-item>
@@ -205,7 +205,7 @@
                             <el-input v-model="dialog.new.data.url.param"></el-input>
                         </el-form-item>
                     </template>
-                    <template v-if="dialog.new.data.type === 'action'">
+                    <template v-else-if="dialog.new.data.type === 'action'">
                         <el-form-item label="动作编辑">
                             <editor
                                 v-model="dialog.new.data.action.name"
@@ -299,7 +299,8 @@ export default {
       'dialog.new.type':{
           handler(val){
               this.dialog.new.data = this.m3.EventViewTools[val];
-          }
+          },
+          immediate:true
       }
   },
   created(){
@@ -327,6 +328,7 @@ export default {
     onNew(){
         this.dialog.new.show = true;
         this.dialog.new.data = null;
+        this.dialog.new.data = this.m3.EventViewTools[this.dialog.new.type];
     },
     onSave(val){
         

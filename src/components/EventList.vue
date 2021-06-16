@@ -499,6 +499,7 @@ export default {
         onRefresh(){
             this.onCellClick();
             this.$refs.table.clearSort();
+            this.initContextMenu();
             this.$emit("onSearch");
         },
         pickFtype(key){
@@ -587,6 +588,8 @@ export default {
                         _.forEach(rows,(v)=>{
                             v.status = menu[menu.type].value;
                         })
+
+                        this.$emit("onSearch");
                         
                      }
                 } 

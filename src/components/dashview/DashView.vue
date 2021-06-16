@@ -13,7 +13,6 @@
                 </el-header>
                 <el-main>
                   
-                  
                     <el-card :body-style="{ padding: '10px' }" 
                         style="text-align: center;padding:0px;cursor:pointer;" :key="index" v-for="(item,index) in dt.rows"
                         @dblclick.native="onEdit(item)"
@@ -43,6 +42,7 @@
                     </el-card>
                   
                 </el-main>
+
                 <el-dialog :title="'视图编辑 ' + dt.selected.name.replace(/.json/,'')" 
                     :visible.sync="edit.show" 
                     :show-close="false"
@@ -55,10 +55,12 @@
                     v-if="dt.selected">
                   <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose" @view-delete="(()=>{ edit.show=false; this.onRefresh();})"></EditView>
                 </el-dialog>
+
               </el-container>
             </SplitArea>
         </Split>
-    </el-main></el-container>
+    </el-main>
+  </el-container>
 </template>
 
 <script>
@@ -113,6 +115,7 @@ export default {
     },
     onRefresh(){
       this.initData();
+      this.$emit("toggle-view");
     },
     onRefreshByTag(tag){
       if(_.isEmpty(tag)){
@@ -126,18 +129,39 @@ export default {
         }
     },
     onNew(){
-      let param = encodeURIComponent(JSON.stringify({  action: "add", data:this.m3.EventViewDataObj }));
-      this.m3.callFS("/matrix/m3event/view/action.js", param).then((rtn)=>{
-          this.dt.rows = rtn.message;
-          this.onRefresh();
-      })
+       this.$prompt('请输入视图名称', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消'
+      }).then(({ value }) => {
+        
+        if(_.isEmpty(value)){
+            this.$message({
+                type: 'warning',
+                message: '请输入视图名称！'
+            });
+            return false;
+        }
+
+        let param = encodeURIComponent(JSON.stringify({  action: "add", data:this.m3.EventViewDataObj, name:value }));
+        this.m3.callFS("/matrix/m3event/view/action.js", param).then((rtn)=>{
+            this.dt.rows = rtn.message;
+            this.onRefresh();
+        })
+
+        
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '取消新建视图操作'
+        });       
+      });
+      
     },
     onSetDefaultView(item){
       let param = encodeURIComponent(JSON.stringify({  action: "setDefaultView", data: { key: 'defaultView', value: item.fullname } }));
       this.m3.callFS("/matrix/m3event/view/action.js", param).then(()=>{
           this.onRefresh();
           this.$notify.success(`已设置 ${item.name.replace(/.json/,'')} 为默认视图`);
-          this.$emit("toggle-view");
       })
     },
     onEdit(item){
@@ -160,8 +184,11 @@ export default {
         }).catch((err)=>{
           this.$message({
             type: "error",
-            message: "删除失败 " + err
+            message: "删除有误 " + err.message
           })
+          setTimeout(()=>{
+            this.onRefresh();
+          },1000)
         });
       }).catch(() => {
         this.$message({
