@@ -14,7 +14,7 @@ module.exports = {
         hotOnly: false,
     },
 
-    outputDir: 'app/matrix/m3event',
+    outputDir: 'app/matrix/' + process.env.VUE_APP_M3_APP,
     productionSourceMap: false,
 
     configureWebpack: config => {
@@ -28,10 +28,10 @@ module.exports = {
                     new WebpackZipPlugin({
                         initialFile: 'app',
                         endPath: './',
-                        zipName: 'app.zip',
+                        zipName: process.env.VUE_APP_M3_APP+'.zip',
                         //frontShell: 'sed -i \'\' \'s/src="/src="\\/static\\/app\\/matrix\\/m3event/g\; s/href="/href="\\/static\\/app\\/matrix\\/m3event/g\' ./app/matrix/m3event/index.html',
                         //frontShell: 'sed -i \'\' \'s/src="/src="\\/static\\/app\\/matrix\\/m3event/g\; s/href="/href="\\/static\\/app\\/matrix\\/m3event/g\' ./app/matrix/m3event/index.html',
-                        behindShell: './deploy.sh'
+                        behindShell: './deploy.sh ' + process.env.VUE_APP_M3_HOST + ' ' + process.env.VUE_APP_M3_COMPANY + ' ' + process.env.VUE_APP_M3_USERNAME + ' ' + process.env.VUE_APP_M3_PASSWORD + ' ' + process.env.VUE_APP_M3_APP+".zip"
                     })
                 ]
             }
@@ -59,5 +59,5 @@ module.exports = {
           .end()
     },
 
-    publicPath: process.env.NODE_ENV === 'production'?'/static/app/matrix/m3event':''
+    publicPath: process.env.NODE_ENV === 'production'?'/static/app/matrix/'+process.env.VUE_APP_M3_APP:''
 }
