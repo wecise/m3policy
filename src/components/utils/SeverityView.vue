@@ -11,36 +11,45 @@
     <el-main>
       <el-table
         :data="dt.rows"
+        :highlight-current-row="true"
         stripe
-        style="width: 100%;"
+        style="width:100%;"
         ref="table"
-        v-if="dt.rows">
-        <el-table-column :label="item.title" :prop="item.field" sortable :key="index" v-for="(item,index) in dt.columns">
-          <template slot-scope="scope" v-if="item.visible">
-            <el-color-picker
-              :value="scope.row.color"
-              show-alpha
-              v-if="item.field=='color'">
-            </el-color-picker>
-            <el-tag v-else-if="item.field=='name'">{{scope.row[item['field']]}}</el-tag>
-            <span style="font-weight:600;padding-left:20px;" v-else>{{scope.row[item['field']]}}</span>
-          </template>
-        </el-table-column>
+        v-if="dt.rows"
+        class="severity-table">
+        <template v-for="(item,index) in dt.columns">
+          <el-table-column 
+            :label="item.title" 
+            :prop="item.field"
+            show-overflow-tooltip
+            sortable 
+            :key="index" v-if="item.visible">
+            <template slot-scope="scope">
+              <el-color-picker
+                :value="scope.row.color"
+                show-alpha
+                v-if="item.field==='color'">
+              </el-color-picker>
+              <el-tag v-else-if="item.field==='name'">{{scope.row[item['field']]}}</el-tag>
+              <div style="font-weight:600;padding-left:20px;" v-else>{{scope.row[item['field']]}}</div>
+            </template>
+          </el-table-column>
+        </template>
         <el-table-column
           label="操作"
-          width="120"
-          fixed="right">
+          width="120">
           <template slot-scope="scope">
             <el-button @click="onEdit(scope.row)" type="text">编辑</el-button>
             <el-button @click="onDelete(scope.row)" type="text">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
+      
       <el-dialog
         title="级别管理"
         :visible.sync="dialog.severity.show"
         :append-to-body="true"
-        custom-class="severity-dialog">
+        v-if="dialog.severity.show">
         <el-form :model="dialog.severity.data"  :rules="dialog.severity.rules" ref="severityForm" label-width="100px">
           <el-form-item label="级别" prop="name">
            <el-input-number v-model="dialog.severity.data.name" :min="0" :max="10000" :disabled="dialog.severity.action==='update'?true:false"></el-input-number>
@@ -63,6 +72,7 @@
           <el-button @click="dialog.severity.show = false">取 消</el-button>
           <el-button type="primary" @click="onSave">确 定</el-button>
         </span>
+
       </el-dialog>
 
     </el-main>
@@ -71,11 +81,13 @@
 
 <script>
 import _ from 'lodash';
+// import TemplateView from '../notify/TemplateView.vue';
 
 export default {
   name: "SeverityView",
   props: {
-    model: Object
+    model: Object,
+    global: Object
   },
   data(){
     return {
@@ -114,9 +126,6 @@ export default {
   created(){
     this.initData();
   },
-  mounted() {
-    
-  },
   methods:{
     onRefresh(){
       this.$refs.table.clearSort();
@@ -132,6 +141,12 @@ export default {
       this.onReset();
       this.dialog.severity.show = true;
       this.dialog.severity.action = "add";
+      this.dialog.severity.data =  {
+              name: null,
+              title_en:"",
+              title_cn:"",
+              color: ""
+            };
     },
     onReset(){
       if(this.$refs['severityForm']){
@@ -181,7 +196,7 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
   .el-container{
-    height: calc(100vh - 115px);
+    height: calc(100vh - 115px)!important;
     background: #f2f2f2;
   }
   .el-main{
@@ -192,4 +207,12 @@ export default {
     line-height:60px;
   }
 
+</style>
+
+<style>
+  .severity-table.el-table .el-table__body-wrapper {
+        overflow: auto;
+        position: relative;
+        height: calc(100% - 50px)!important;
+    }
 </style>
