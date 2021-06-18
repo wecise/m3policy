@@ -58,9 +58,8 @@
                             </p>
                         </div>
 
-                        <ToolsView @tool-click="((data)=>{onToolsKeep(data)})"></ToolsView>
+                        <ToolsView @tool-click="((data)=>{onToolsKeep(data)})" @click.native="onToolsCommand"></ToolsView>
 
-                        
                         <div class="tool" :loading="dt.downloadLoading">
                             <div>选择导出</div>
                             <p>
@@ -458,6 +457,9 @@ export default {
     methods: {
         checkSeverity(key){
             return _.includes(this.dt.selectedSeverity,key)?'severity-active':'';
+        },
+        onToolsCommand(){
+            $(".el-dropdown-menu.el-popper.el-dropdown-menu--small").hide();
         },
         onToggleSeverity(btn,key){
             this.dt.selectedSeverity = _.xor(this.dt.selectedSeverity,[key]);

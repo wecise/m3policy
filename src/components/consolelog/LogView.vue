@@ -84,9 +84,15 @@ import _ from 'lodash';
 export default {
   name: "LogView",
   props: {
+    // 日志类型
     logType: String,
-    //规则名称
-    fullname: String
+    // 规则名称
+    fullname: String,
+    // 所属类
+    ownerClass: {
+        type: String,
+        default: ""
+    }
   },
   data() {
     return {
@@ -181,7 +187,7 @@ export default {
             require(`brace/theme/${this.editor.theme.value}`); //language
         },
         onLoad(){
-            let param = {type:this.logType,name:this.fullname.replace(/\/script/g,""),param:this.consolelog};
+            let param = {type:this.logType, name: this.fullname.replace(/\/script/g,""),param:this.consolelog, class: this.ownerClass};
             this.m3.consolelogTrace(param).then( (rtn)=>{
                 this.dt.rows = rtn.message.logs;
             })

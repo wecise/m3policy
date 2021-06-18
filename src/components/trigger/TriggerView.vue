@@ -45,100 +45,111 @@
         custom-class="trigger-dialog"
         v-if="dialog.newTrigger.show">
           <el-container style="background:#f2f2f2;" v-if="dialog.newTrigger.type=='add'">
-            <el-header style="height: 35px;line-height: 35px;border-bottom: 1px solid #dddddd;">
-              <el-tooltip content="选择主题">
-                  <el-dropdown style="padding-left:10px;float:right;">
-                      <span class="el-dropdown-link">
-                          <svg-icon icon-class="theme"/>
-                      </span>
-                      <el-dropdown-menu slot="dropdown">
-                          <el-dropdown-item v-for="group in editor.theme.list" :key="group.name">
-                              <el-dropdown @command="onToggleTheme">
-                                  <span class="el-dropdown-link">
-                                  {{ group.name }}
-                                  <i class="el-icon-arrow-down el-icon--right"></i>
-                                  </span>
-                                  <el-dropdown-menu slot="dropdown">
-                                      <el-dropdown-item
-                                          v-for="item in group.items"
-                                          :key="item.name"
-                                          :command="item.name">{{ item.name }}</el-dropdown-item>
-                                      </el-dropdown-menu>
-                              </el-dropdown>
-                          </el-dropdown-item>
-                      </el-dropdown-menu>
-                  </el-dropdown>
-              </el-tooltip>
-          </el-header>
-          <el-main style="border-top: 1px solid #ffffff;">
-            <el-form label-position="right" :model="dialog.newTrigger.data" ref="dialogNewTrigger">
-              <el-form-item label="对应类">
-                  <el-input v-model="view.value" placeholder="对应类" disabled></el-input>
-              </el-form-item>
-              <el-form-item label="名称" :rules="[{ required: true, message: '请输入名称', trigger: 'blur' }]">
-                  <el-input v-model="dialog.newTrigger.data.name" placeholder="名称" :disabled="dialog.newTrigger.type=='edit'?true:false"></el-input>
-              </el-form-item>
-              <el-form-item label="定义">
-                  <Editor
-                      v-model="dialog.newTrigger.data.script"
-                      @init="onEditorInit"
-                      :lang="editor.lang.value"
-                      :theme="editor.theme.value"
-                      width="99.8%"
-                      height="calc(75vh - 270px)"
-                      style="border:1px solid #f2f2f2;"
-                      ref="editor"
-                  ></Editor>
-              </el-form-item>
-            </el-form>
+            
+            <el-main style="border-top: 1px solid #ffffff;">
+              <el-form label-position="right" :model="dialog.newTrigger.data" ref="dialogNewTrigger">
+                <el-form-item label="对应类">
+                    <el-input v-model="view.value" placeholder="对应类" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="名称" :rules="[{ required: true, message: '请输入名称', trigger: 'blur' }]">
+                    <el-input v-model="dialog.newTrigger.data.name" placeholder="名称" :disabled="dialog.newTrigger.type=='edit'?true:false"></el-input>
+                </el-form-item>
+                <el-form-item label="定义">
+                    <el-tooltip content="选择主题">
+                        <el-dropdown style="padding-left:10px;float:right;">
+                            <span class="el-dropdown-link">
+                                <svg-icon icon-class="theme"/>
+                            </span>
+                            <el-dropdown-menu slot="dropdown">
+                                <el-dropdown-item v-for="group in editor.theme.list" :key="group.name">
+                                    <el-dropdown @command="onToggleTheme">
+                                        <span class="el-dropdown-link">
+                                        {{ group.name }}
+                                        <i class="el-icon-arrow-down el-icon--right"></i>
+                                        </span>
+                                        <el-dropdown-menu slot="dropdown">
+                                            <el-dropdown-item
+                                                v-for="item in group.items"
+                                                :key="item.name"
+                                                :command="item.name">{{ item.name }}</el-dropdown-item>
+                                            </el-dropdown-menu>
+                                    </el-dropdown>
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
+                    </el-tooltip>
+                    <Editor
+                        v-model="dialog.newTrigger.data.script"
+                        @init="onEditorInit"
+                        :lang="editor.lang.value"
+                        :theme="editor.theme.value"
+                        width="99.8%"
+                        height="calc(75vh - 270px)"
+                        style="border:1px solid #f2f2f2;"
+                        ref="editor"
+                    ></Editor>
+                </el-form-item>
+                <el-form-item>
+                          
+                  <el-switch v-model="dialog.newTrigger.data.before"
+                      active-color="#13ce66"
+                      inactive-color="#dddddd"
+                      active-value="true"
+                      inactive-value="false"
+                      active-text="插入前触发"
+                      inactive-text="插入后触发"></el-switch>
+                  
+                </el-form-item>
+                <el-form-item label="优先级">
+                  <el-input-number v-model="dialog.newTrigger.data.level"></el-input-number>
+                </el-form-item>
+              </el-form>
             </el-main>
             <el-footer style="text-align:right;">
-                <el-button type="default" @click="dialog.newTrigger.show = false;">取消</el-button>
-                <el-button type="success" @click="onSave" :loading="dialog.newTrigger.loading">
-                    提交
-                </el-button>
+                  <el-button type="default" @click="dialog.newTrigger.show = false;">取消</el-button>
+                  <el-button type="success" @click="onSave" :loading="dialog.newTrigger.loading">
+                      提交
+                  </el-button>
             </el-footer>
-          </el-container>
-          <el-container v-else>
+        </el-container>
+        <el-container v-else>
             <el-main>
               <el-tabs value="base" type="border-card">
                 <el-tab-pane name="base" style="padding:0px;">
-                  <span slot="label">{{dialog.newTrigger.data.name}}</span>
+                  <span slot="label">{{dialog.newTrigger.data.name}} <small>({{view.value}})</small></span>
                   <el-container style="background:#f2f2f2;">
-                    <el-header style="height: 35px;line-height: 35px;border-bottom: 1px solid #dddddd;">
-                      <el-tooltip content="选择主题">
-                          <el-dropdown style="padding-left:10px;float:right;">
-                              <span class="el-dropdown-link">
-                                  <svg-icon icon-class="theme"/>
-                              </span>
-                              <el-dropdown-menu slot="dropdown">
-                                  <el-dropdown-item v-for="group in editor.theme.list" :key="group.name">
-                                      <el-dropdown @command="onToggleTheme">
-                                          <span class="el-dropdown-link">
-                                          {{ group.name }}
-                                          <i class="el-icon-arrow-down el-icon--right"></i>
-                                          </span>
-                                          <el-dropdown-menu slot="dropdown">
-                                              <el-dropdown-item
-                                                  v-for="item in group.items"
-                                                  :key="item.name"
-                                                  :command="item.name">{{ item.name }}</el-dropdown-item>
-                                              </el-dropdown-menu>
-                                      </el-dropdown>
-                                  </el-dropdown-item>
-                              </el-dropdown-menu>
-                          </el-dropdown>
-                      </el-tooltip>
-                  </el-header>
                   <el-main style="border-top: 1px solid #ffffff;">
                     <el-form label-position="right" :model="dialog.newTrigger.data" ref="dialogNewTrigger">
-                      <el-form-item label="对应类">
+                      <!-- <el-form-item label="对应类">
                           <el-input v-model="view.value" placeholder="对应类" disabled></el-input>
-                      </el-form-item>
+                      </el-form-item> -->
                       <el-form-item label="名称" :rules="[{ required: true, message: '请输入名称', trigger: 'blur' }]">
                           <el-input v-model="dialog.newTrigger.data.name" placeholder="名称" :disabled="dialog.newTrigger.type=='edit'?true:false"></el-input>
                       </el-form-item>
                       <el-form-item label="定义">
+                          <el-tooltip content="选择主题">
+                            <el-dropdown style="padding-left:10px;float:right;">
+                                <span class="el-dropdown-link">
+                                    <svg-icon icon-class="theme"/>
+                                </span>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item v-for="group in editor.theme.list" :key="group.name">
+                                        <el-dropdown @command="onToggleTheme">
+                                            <span class="el-dropdown-link">
+                                            {{ group.name }}
+                                            <i class="el-icon-arrow-down el-icon--right"></i>
+                                            </span>
+                                            <el-dropdown-menu slot="dropdown">
+                                                <el-dropdown-item
+                                                    v-for="item in group.items"
+                                                    :key="item.name"
+                                                    :command="item.name">{{ item.name }}</el-dropdown-item>
+                                                </el-dropdown-menu>
+                                        </el-dropdown>
+                                    </el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+                        </el-tooltip>
                           <Editor
                               v-model="dialog.newTrigger.data.script"
                               @init="onEditorInit"
@@ -150,19 +161,33 @@
                               ref="editor"
                           ></Editor>
                       </el-form-item>
+                      <el-form-item>
+                        
+                        <el-switch v-model="dialog.newTrigger.data.before"
+                            active-color="#13ce66"
+                            inactive-color="#dddddd"
+                            active-value="true"
+                            inactive-value="false"
+                            active-text="插入前触发"
+                            inactive-text="插入后触发"></el-switch>
+                        
+                      </el-form-item>
+                      <el-form-item label="优先级">
+                        <el-input-number v-model="dialog.newTrigger.data.level"></el-input-number>
+                      </el-form-item>
                     </el-form>
-                    </el-main>
-                    <el-footer style="text-align:right;">
+                  </el-main>
+                  <el-footer style="text-align:right;">
                         <el-button type="default" @click="dialog.newTrigger.show = false;">取消</el-button>
                         <el-button type="success" @click="onSave" :loading="dialog.newTrigger.loading">
                             提交
                         </el-button>
-                    </el-footer>
-                  </el-container>
+                  </el-footer>
+                </el-container>
                 </el-tab-pane>
                 <el-tab-pane label="日志" name="log">
                   <span slot="label">日志 <i class="el-icon-date"></i></span>
-                  <LogView :fullname="dialog.newTrigger.data.name" logType="trigger"></LogView> 
+                  <LogView :fullname="dialog.newTrigger.data.name" :ownerClass="view.value" logType="trigger"></LogView> 
                 </el-tab-pane>
               </el-tabs>
             </el-main>
@@ -214,6 +239,8 @@ export default {
           data: {
             name: "",
             disable: "true",
+            before: "true",
+            level: "1",
             vtime: _.now(),
             class: "",
             script: ""
@@ -262,6 +289,8 @@ export default {
                 return   {
                     name: _.trim(v.name),
                     disable: v.disable,
+                    before: v.before,
+                    level: v.level,
                     vtime: v.vtime,
                     class: v.class,
                     script: v.script
@@ -271,7 +300,7 @@ export default {
         
     },
     onChangeStatus(item){
-      let param = {class: this.view.value, name: item.name, script: item.script, attr:{disable: item.disable}};
+      let param = {class: this.view.value, name: item.name, script: item.script, attr:{ disable: item.disable, before: item.before, level: String(item.level)}};
       this.m3.triggerNew(param).then(()=>{
           this.onRefresh();
       } );
@@ -284,6 +313,8 @@ export default {
       this.dialog.newTrigger.type = "add";
       this.dialog.newTrigger.data.name = "";
       this.dialog.newTrigger.data.disable = "false";
+      this.dialog.newTrigger.data.before = "true";
+      this.dialog.newTrigger.data.level = "1";
       this.dialog.newTrigger.data.vtime = _.now();
       this.dialog.newTrigger.data.class = "";
       this.dialog.newTrigger.data.script = "";
@@ -302,13 +333,17 @@ export default {
         return false;
       }
 
-      let param = {class: this.dialog.newTrigger.data.class, name: this.dialog.newTrigger.data.name, script: this.dialog.newTrigger.data.script, attr:{disable: this.dialog.newTrigger.data.disable}};
+      let param = {class: this.dialog.newTrigger.data.class, name: this.dialog.newTrigger.data.name, script: this.dialog.newTrigger.data.script, attr:{
+          disable: this.dialog.newTrigger.data.disable,
+          before: this.dialog.newTrigger.data.before,
+          level: String(this.dialog.newTrigger.data.level)
+          }};
       this.m3.triggerNew(param).then(()=>{
           this.onRefresh();
-          this.dialog.newTrigger.show = false;
+          // this.dialog.newTrigger.show = false;
       } ).catch(err=>{
         console.error(err);
-        this.dialog.newTrigger.show = false;
+        // this.dialog.newTrigger.show = false;
       });
     },
     onEdit(item){

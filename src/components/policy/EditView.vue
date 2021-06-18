@@ -19,102 +19,112 @@
         </el-tab-pane>
         <el-tab-pane label="策略定义" name="policy">
             <el-container style="height: calc(100vh - 275px);">
-                <el-header style="height: 35px;line-height: 35px;background:#f2f2f2;">
+                <el-header style="height: 35px;line-height: 35px;background:#f2f2f2;display:flex;">
                     <el-tooltip content="刷新" >
                         <el-button type="text" @click="initData">
                             <svg-icon icon-class="refresh" style="width: 1.3em;height: 1.3em;"/>
                         </el-button>
                     </el-tooltip>
+                    
+                    <el-popover
+                        title="粘贴自文本"
+                        placement="right"
+                        trigger="click">
+                        <el-container style="height:60vh;width:60vw;">
+                            <el-header style="height:30px;line-height:30px;width:100%;text-align:right;">
+                                <el-tooltip content="选择主题">
+                                    <el-dropdown>
+                                        <span class="el-dropdown-link">
+                                            <svg-icon icon-class="theme"/>
+                                        </span>
+                                        <el-dropdown-menu slot="dropdown">
+                                            <el-dropdown-item v-for="group in editor.theme.list" :key="group.name">
+                                                <el-dropdown @command="onToggleTheme">
+                                                    <span class="el-dropdown-link">
+                                                    {{ group.name }}
+                                                    <i class="el-icon-arrow-down el-icon--right"></i>
+                                                    </span>
+                                                    <el-dropdown-menu slot="dropdown">
+                                                        <el-dropdown-item
+                                                            v-for="item in group.items"
+                                                            :key="item.name"
+                                                            :command="item.name">{{ item.name }}</el-dropdown-item>
+                                                        </el-dropdown-menu>
+                                                </el-dropdown>
+                                            </el-dropdown-item>
+                                        </el-dropdown-menu>
+                                    </el-dropdown>
+                                </el-tooltip>
+                            </el-header>
+                            <el-main>
+                                <Editor
+                                    v-model="editor.data"
+                                    @init="onEditorInit"
+                                    :lang="editor.lang.value"
+                                    :theme="editor.theme.value"
+                                    width="99.8%"
+                                    height="100%"
+                                    ref="editor"
+                                ></Editor>
+                            </el-main>
+                        </el-container>
+                        <el-button type="text" slot="reference">
+                            <svg-icon icon-class="clipboard" style="width: 1.1em;height: 1.1em; padding-left:10px;"/>
+                        </el-button>
+                    </el-popover>
+                    
+                    <el-tooltip content="文件导入" >
+                        <el-button type="text" @click="onUploadFromFile" style="padding-left:10px;">
+                            <svg-icon icon-class="documentation" style="width: 1.0em; height: 1.0em;"/>
+                        </el-button>
+                    </el-tooltip>
+
                     <el-tooltip content="保存" >
                         <el-button type="text" @click="onApplyPolicy" :loading="policy.loading">
                             <svg-icon icon-class="save" style="width: 1.2em;height: 1.2em;"/>
                         </el-button>
                     </el-tooltip>
-                    <el-tooltip content="选择主题">
-                        <el-dropdown style="padding-left:10px;float:right;">
-                            <span class="el-dropdown-link">
-                                <svg-icon icon-class="theme"/>
-                            </span>
-                            <el-dropdown-menu slot="dropdown">
-                                <el-dropdown-item v-for="group in editor.theme.list" :key="group.name">
-                                    <el-dropdown @command="onToggleTheme">
-                                        <span class="el-dropdown-link">
-                                        {{ group.name }}
-                                        <i class="el-icon-arrow-down el-icon--right"></i>
-                                        </span>
-                                        <el-dropdown-menu slot="dropdown">
-                                            <el-dropdown-item
-                                                v-for="item in group.items"
-                                                :key="item.name"
-                                                :command="item.name">{{ item.name }}</el-dropdown-item>
-                                            </el-dropdown-menu>
-                                    </el-dropdown>
-                                </el-dropdown-item>
-                            </el-dropdown-menu>
-                        </el-dropdown>
-                    </el-tooltip>
-                    <el-popover
-                        placement="left"
-                        trigger="click"
-                        popper-class="info-popper"
-                        style="float:right;padding-left:10px;font-size: 15px;">
-                        <el-container>
-                            <el-main style="padding:0px;">
-                                <el-tabs value="setup" label-position="top">
-                                    <el-tab-pane label="编辑器设置" name="setup">
-                                        <el-form>
-                                            <el-form-item label="TabSize">
-                                                <el-input v-model="editor.options.tabSize"></el-input>
-                                            </el-form-item>
-                                            <el-form-item label="UseSoftTabs">
-                                                <el-switch
-                                                    v-model="editor.options.useSoftTabs"
-                                                    active-color="#13ce66"
-                                                    inactive-color="#dddddd">
-                                                </el-switch>
-                                            </el-form-item>
-                                            <el-form-item label="分隔符">
-                                                <el-select v-model="editor.options.split">
-                                                    <el-option label="," value=","></el-option>
-                                                    <el-option label="tab" value="  "></el-option>
-                                                    <el-option label="space" value=" "></el-option>
-                                                </el-select>
-                                            </el-form-item>
-                                        </el-form>
-                                    </el-tab-pane>
-                                </el-tabs>
-                            </el-main>
-                        </el-container>
-                        <el-button type="text" slot="reference">
-                            <i class="el-icon-setting" style="float:right;"> </i>
-                        </el-button>
-                    </el-popover>
+
+                    <el-input v-model="policy.dt.term" placeholder="关键字过滤" @change="onFilter" @clear="initData" clearable style="padding-left:15px;width:30%;"></el-input>
+
+                    <span>
+                        
+                        <el-popover
+                            placement="left"
+                            trigger="click"
+                            popper-class="info-popper"
+                            style="float:right;padding-left:10px;font-size: 15px;">
+                            <el-container>
+                                <el-main style="padding:0px;">
+                                    <el-tabs value="setup"  label-position="left">
+                                        <el-tab-pane label="设置" name="setup">
+                                            <el-form>
+                                                <el-form-item label="忽略空行">
+                                                    <el-switch
+                                                        v-model="policy.config.skipEmptyLines"
+                                                        active-color="#13ce66"
+                                                        inactive-color="#dddddd">
+                                                    </el-switch>
+                                                </el-form-item>
+                                                <el-form-item label="分隔符">
+                                                    <el-select v-model="policy.config.delimiter">
+                                                        <el-option :label="item.title" :value="item.name" :key="index" v-for="(item,index) in policy.config.delimitersToGuess"></el-option>
+                                                    </el-select>
+                                                </el-form-item>
+                                            </el-form>
+                                        </el-tab-pane>
+                                    </el-tabs>
+                                </el-main>
+                            </el-container>
+                            <el-button type="text" slot="reference">
+                                <i class="el-icon-setting" style="float:right;"> </i>
+                            </el-button>
+                        </el-popover>
+                    </span>
+                    
                 </el-header>
                 <el-main style="overflow:hidden;padding:0px;border-bottom:1px solid #dddddd;border-right:1px solid #dddddd;">
-                     <el-tabs v-model="policy.tabs.activeTab" type="border-card">
-                        <el-tab-pane label="编辑模式" name="edit">
-                            <el-container style="height:calc(100vh - 410px);background:#f2f2f2;margin:-15px -16px;" v-if="policy.dt.data.length>0">
-                                <el-main style="padding:0px;">
-                                    <hot-table :settings="policy.dt" height="100%"></hot-table>
-                                </el-main>
-                            </el-container>
-                        </el-tab-pane>
-                        <el-tab-pane label="源文件" name="source">
-                            <el-container style="height:calc(100vh - 120px);background:#f2f2f2;margin:-15px -16px;">
-                                <el-main style="padding:0px;overflow:auto;">
-                                    <Editor
-                                        v-model="editor.data"
-                                        @init="onEditorInit"
-                                        :lang="editor.lang.value"
-                                        :theme="editor.theme.value"
-                                        width="99.8%"
-                                        height="100%"
-                                        ref="editor"
-                                    ></Editor>
-                                </el-main>
-                            </el-container>
-                        </el-tab-pane>
-                    </el-tabs>
+                     <hot-table :settings="policy.dt" height="100%" ref="hotTableComponent"></hot-table>
                 </el-main>
                 <el-footer style="line-height:60px;width:100%;">
                     <span v-if="policy.parse.data">
@@ -152,6 +162,30 @@
                     <span style="float:right;"><el-button @click="onClose">取消</el-button></span>
                 </el-footer>
             </el-container>
+            <el-dialog
+                title="粘贴自文本"
+                :visible.sync="dialog.copyFrom.show"
+                :modal-append-to-body="false"
+                custom-class="policy-dialog"
+                v-if="dialog.copyFrom.show">
+                <el-container style="height:60vh;">
+                    <el-main>
+                        <Editor
+                            v-model="editor.data"
+                            @init="onEditorInit"
+                            :lang="editor.lang.value"
+                            :theme="editor.theme.value"
+                            width="99.8%"
+                            height="100%"
+                            ref="editor"
+                        ></Editor>
+                    </el-main>
+                </el-container>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="dialog.copyFrom.show = false">取 消</el-button>
+                    <el-button type="primary" @click="dialog.copyFrom.show = false">确 定</el-button>
+                </span>
+                </el-dialog>
         </el-tab-pane>
     </el-tabs>
 </template>
@@ -161,6 +195,7 @@ import _ from 'lodash';
 import TagView from '../tags/TagView';
 import Papa from 'papaparse';
 import { HotTable } from '@handsontable/vue';
+import Handsontable from 'handsontable';
 
 export default {
   name: "EditView",
@@ -178,16 +213,46 @@ export default {
             loading: false,
             data: null,
             parse: null,
-            tabs: {
-                activeTab: 'edit'
+            config: {
+                delimiter: "\t",	// auto-detect
+                newline: "",	// auto-detect
+                quoteChar: '"',
+                escapeChar: '"',
+                header: false,
+                transformHeader: undefined,
+                dynamicTyping: false,
+                preview: 0,
+                encoding: "",
+                worker: false,
+                comments: false,
+                step: undefined,
+                complete: undefined,
+                error: undefined,
+                download: false,
+                downloadRequestHeaders: undefined,
+                downloadRequestBody: undefined,
+                skipEmptyLines: true,
+                chunk: undefined,
+                chunkSize: undefined,
+                fastMode: undefined,
+                beforeFirstChunk: undefined,
+                withCredentials: undefined,
+                transform: undefined,
+                delimitersToGuess: [
+                                        { name: ',', title:"逗号"}, 
+                                        { name: '\t', title:"Tab"},
+                                        { name: '|', title:"分隔符"},
+                                        { name: ';', title:"分号"}
+                                    ]
             },
             dt: {
-                data: [],
+                data: Handsontable.helper.createSpreadsheetData(6, 10),
                 rowHeaders: true,
                 colHeaders: true,
                 autoWrapRow: false,
                 minRows: 50,
-                
+                autoRowSize: true,
+                autoColumnSize: true,
                 stretchH: 'all',
                 afterChange: (changes, source)=> {
                     console.log(changes, source)
@@ -255,6 +320,14 @@ export default {
                 useSoftTabs: false,
                 split: " "
             }
+        },
+        dialog: {
+            copyFrom: {
+                show: false
+            },
+            upload: {
+                show: false
+            }
         }
     };
   },
@@ -267,39 +340,21 @@ export default {
      model:{
          handler(){
              this.initData();
-         },
-         immediate: true
-    },
-    'editor.options.tabSize':{
-        handler(val){
-            let editor = this.$refs.editor.editor;
-            editor.getSession().setTabSize(val);
-        }
-    },
-    'editor.options.useSoftTabs':{
-        handler(val){
-            let editor = this.$refs.editor.editor;
-            editor.getSession().setUseSoftTabs(val);
-        },
-        immediate: true
+         }
     },
     'editor.data':{
         handler(val){
+            if(_.isEmpty(val)) return false;
             this.policy.parse = Papa.parse(val);
-            console.log(111,this.policy.parse.data)
-            this.policy.dt.data = this.policy.parse.data;
-            console.log(222,this.policy.dt.data)
-            // this.policy.dt.data.slice(1);
-            // this.policy.dt.data.shift(this.policy.parse.data[0][0].split(this.editor.options.split));
-            //this.policy.dt.colHeaders = this.policy.parse.data[0][0].split(" ");
-        },
-        immediate:true
-    },
-    'editor.options.split':{
-        handler(val){
-            this.policy.dt.data[0] = this.policy.parse.data[0][0].split(val);
+            this.$refs.hotTableComponent.hotInstance.loadData(this.policy.parse.data);
         }
     }
+  },
+  mounted(){
+      setTimeout(()=>{
+          this.initData();
+      },2000)
+      
   },
   methods: {
     initFileInfo(){
@@ -317,12 +372,38 @@ export default {
              _.extend(this.policy.data, {attr:  {remark: "", icon: ""} });   
         }
     },
+    onFilter:_.debounce(function(){
+        let term = this.policy.dt.term;
+        var row, r_len, col, c_len;
+		var data = this.policy.dt.data;
+		var array = [];
+
+        for (row = 0, r_len = data.length; row < r_len; row++) {
+            for(col = 0, c_len = data[row].length; col < c_len; col++) {
+                
+                if(('' + data[row][col]).indexOf(term) > -1) {
+                    array.push(data[row]);
+                    break;
+                }
+            }
+        }
+        
+        this.$refs.hotTableComponent.hotInstance.loadData(array);
+
+    },500),
     initData(){
         
         let param = encodeURIComponent(JSON.stringify({  action: "read", data: this.model }));
+        
         this.m3.callFS("/matrix/m3event/policy/action.js", param).then(rtn=>{
             
-            this.editor.data = rtn.message;
+            if(!_.isEmpty(rtn.message)){
+                this.policy.parse = Papa.parse(rtn.message);
+                this.policy.dt.data = this.policy.parse.data;
+            } else {
+                this.policy.parse = Papa.parse("    ");
+                this.policy.dt.data = this.policy.parse.data;
+            }
             
             this.policy.data = _.cloneDeep(this.model);
             this.policy.data.name = this.policy.data.name.split(".")[0];
@@ -333,6 +414,13 @@ export default {
             console.log(err);
             this.policy.data = null;
         })
+    },
+    onCopyFromStr(){
+        this.dialog.copyFrom.show = true;
+        //this.editor.data = null;
+    },
+    onUploadFromFile(){
+        this.dialog.upload.show = true;
     },
     onApplyInfo(){
         this.onApplyName();
@@ -399,6 +487,9 @@ export default {
         })
     },
     onClose(){
+        this.editor.data = null;
+        this.policy.data = null;
+        this.policy.dt.data = [];
         this.$emit('dialog:close');
     },
     onEditorInit(){
@@ -411,7 +502,9 @@ export default {
         
         this.policy.loading = true;
 
-        let content = this.editor.data;
+        let content = Papa.unparse(this.$refs.hotTableComponent.hotInstance.getData(),{ 
+                delimiter: this.policy.config.delimiter,
+                skipEmptyLines: this.policy.config.skipEmptyLines });
     
         let param = {
                       parent: this.model.parent, name: this.model.name, 
