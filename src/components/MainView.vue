@@ -36,7 +36,7 @@
                 ></el-button>
               </el-input>
             </el-header>
-            <el-main :loading="loading">
+            <el-main>
               <EventList ref="eventList" :model="search.result.list" :global="global" :options="search.result.options"
                 @onSearch="onSearch" 
                 @DiagnosisView="((data)=>{ addTab(data.row,data.menu) })"
@@ -234,7 +234,7 @@ export default {
     },
     onSearch() {
       
-      this.loading = true;
+      const rLoading = this.openLoading();
 
       let param = {
         view: this.search.model.view=this.views.value,
@@ -248,10 +248,10 @@ export default {
         encodeURIComponent(JSON.stringify(param))
       ).then( (rtn)=>{
           this.search.result.list = rtn.message;
-          this.loading = false;
+          rLoading.close();
       }).catch( err=>{
         this.search.result.list = null;
-        this.loading = false;
+        rLoading.close();
         console.error(err);
       } );
 

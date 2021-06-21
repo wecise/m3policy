@@ -41,7 +41,7 @@
                 <Split direction="vertical">
                     <SplitArea :size="64" :minSize="0" style="overflow:hidden;">
                         
-                        <GraphView :model="graph.model"></GraphView>
+                        <GraphView :model="graph.model" v-if="graph.model && graph.model.length>0"></GraphView>
                         
                     </SplitArea>
                     <SplitArea :size="36" :minSize="0" style="overflow:hidden;" id="smartGroupTable">
@@ -119,7 +119,7 @@ export default {
   mounted(){
         
         this.$refs.groupedTable.setCurrentRow(this.smartGroup.dt.rows[0]);
-        this.smartGroup.dt.selected = this.smartGroup.dt.rows[0].ids.split(";");
+        this.smartGroup.dt.selected = !_.isEmpty(this.smartGroup.dt.rows)?this.smartGroup.dt.rows[0].ids.split(";"):[];
       
   },
   methods: {
@@ -152,6 +152,11 @@ export default {
         this.smartGroup.dt.selected = row.ids.split(";");
     },
     loadEventListByGroup(val){
+
+        if(_.isEmpty(val)){
+            this.dt.rows = [];
+            return false;   
+        }
 
         let term = encodeURIComponent(JSON.stringify(val));
 

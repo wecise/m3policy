@@ -114,12 +114,14 @@
             </el-dialog>
             <el-table
                 :data="dt.rows"
+                v-el-table-infinite-scroll="onLoad"
+                height="auto"
                 :highlight-current-row="true"
                 :row-class-name="rowClassName"                
                 @row-contextmenu="onRowContextmenu"
                 @row-dblclick="onRowContextmenu"
                 @current-change="onCurrentChange"
-                 @selection-change="(data)=>{ dt.selected = data; }"
+                @selection-change="(data)=>{ dt.selected = data; }"
                 @cell-click="onCellClick"
                 ref="table"
                 class="event-list"
@@ -231,6 +233,7 @@ import VueContext from 'vue-context';
 import 'vue-context/dist/css/vue-context.css';
 import TagView from './tags/TagView';
 import ToolsView from './tools/ToolsView';
+import elTableInfiniteScroll from 'el-table-infinite-scroll';
 
 window.moment = require("moment");
 
@@ -240,6 +243,9 @@ export default {
         model: Object,
         global: Object,
         options: Object
+    },
+    directives: {
+        'el-table-infinite-scroll': elTableInfiniteScroll
     },
     components: {
         VueContext,
@@ -255,6 +261,9 @@ export default {
                     header:true,
                     severityBar: true
                 },
+                chunk:[],
+                pageNum: 0,
+                pageSize: 50,
                 rows:[],
                 columns: [],
                 selected: [],
@@ -324,26 +333,30 @@ export default {
     },
     watch: {
         'model.rows': {
-            handler(){
+            handler(val){
                 this.dt.rows = [];
                 this.initData();
-                this.dt.summary = _.groupBy(this.dt.rows,'severity');
+                this.dt.summary = _.groupBy(this.model.rows,'severity');
                 _.delay(()=>{
                     this.$refs.table.doLayout();
                 },1000)
-            },
-            deep:true
+
+                this.info = [];
+                this.info.push(`共 ${val.length} 项`);
+                this.info.push(`已选择 ${this.dt.selected.length} 项`);
+                this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS"));
+            }
         },
-        dt: {
-            handler(){
+        /* 'dt.rows': {
+            handler(val){
+                if(_.isEmpty(val)) return false;
                 this.info = [];
                 this.info.push(`共 ${this.dt.rows.length} 项`);
                 this.info.push(`已选择 ${this.dt.selected.length} 项`);
                 this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS"));
             },
-            deep:true,
             immediate:true
-        },
+        }, */
         'control.ifRefresh':{
             handler(val){
                 this.onCountdownTimeRefresh(val);
@@ -515,6 +528,26 @@ export default {
             return rtn;
 
         },
+        onLoad() {
+            let dom = this.$refs.table.bodyWrapper;
+            // 滚动距离
+            let scrollTop = dom.scrollTop
+            // 变量windowHeight是可视区的高度
+            let windowHeight = dom.clientHeight || dom.clientHeight
+            // 变量scrollHeight是滚动条的总高度
+            let scrollHeight = dom.scrollHeight || dom.scrollHeight
+            
+            if (scrollTop === 0) {
+                this.dt.rows = this.dt.chunk[0];
+            } else if (scrollTop + windowHeight === scrollHeight) {
+                this.dt.pageNum++;
+                if(_.isEmpty(this.dt.chunk[this.dt.pageNum - 1])){
+                    this.dt.pageNum = 0;
+                }
+                this.dt.rows = this.dt.chunk[this.dt.pageNum];    
+            }
+            
+        },
         initData(){
             
             try{
@@ -537,8 +570,12 @@ export default {
                 *   1、默认排序
                 *   2、配合多选
                 */
-                let rows = _.map(_.orderBy(this.model.rows,this.dt.orderBy[0], this.dt.orderBy[1]),(v,index)=>{  v.index = index; return v; });
-                _.extend(this.dt, { rows: rows });
+                //this.dt.chunk = _.chunk(_.map(_.orderBy(this.model.rows,),(v,index)=>{  v.index = index; return v; }), this.dt.chunkSize);
+                this.dt.chunk = _.chain(this.model.rows)
+                                .orderBy(this.dt.orderBy[0], this.dt.orderBy[1])
+                                .map((v,index)=>{  v.index = index; return v; })
+                                .chunk(this.dt.pageSize).value();
+                _.extend(this.dt, { rows: this.dt.chunk[0] });
 
             } catch(err){
                 console.log(err)
@@ -591,7 +628,9 @@ export default {
                             v.status = menu[menu.type].value;
                         })
 
-                        this.$emit("onSearch");
+                        if(menu.action.value=='12' || menu.action.value=='13'){
+                            this.$emit("onSearch");
+                        }
                         
                      }
                 } 

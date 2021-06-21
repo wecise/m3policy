@@ -126,4 +126,5 @@ export default {
     height: 1.2em!important;
     padding: 0px 5px 0 0;
   }
+  
 </style>

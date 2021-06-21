@@ -51,7 +51,7 @@
                             <Editor
                                 v-model="view.model.datasource.filter"
                                 @init="onEditorInit"
-                                :lang="editor.lang.value"
+                                :lang="text"
                                 :theme="editor.theme.value"
                                 width="100%"
                                 height="20vh"
