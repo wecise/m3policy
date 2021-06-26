@@ -22,15 +22,15 @@
                     <template slot="title">
                         <svg-icon icon-class="user"/> {{ auth.username }}
                     </template>
-                    <el-menu-item index="/matrix/user" style="height:80px;">
+                    <el-menu-item index="/matrix/user">
                         <template slot="title">
                             <svg-icon icon-class="user2"/> 
                             <span slot="title">用户
-                                <div>
+                                <!--div>
                                 <el-button type="text" @click.stop="onToggleTheme('dark')" style="background:#252D47;padding: 5px;border-radius: 10px;"></el-button>
                                 <el-button type="text" @click.stop="onToggleTheme('light')" style="background: #1890ff;padding: 5px;border-radius: 10px;"></el-button>
                                 </div>
-                                <el-divider style="margin:0px;"></el-divider>
+                                <el-divider style="margin:0px;"></el-divider-->
                             </span>
                         </template>
                     </el-menu-item>

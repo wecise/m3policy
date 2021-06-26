@@ -74,7 +74,7 @@ import 'mxgraph/javascript/src/css/common.css';
 import _ from 'lodash';
 import $ from 'jquery';
 import mxgraph from './mxGraph.js';
-const {mxEditor,mxGraph,mxConstants,mxGraphHandler,mxGuide,mxEdgeHandler,mxClient,mxRectangleShape,mxRubberband,mxCellOverlay,mxOutline,mxImage,mxPoint,mxEdgeStyle,mxCellTracker,mxUtils,mxCodec,mxEvent,mxHierarchicalLayout,mxMorphing,mxFastOrganicLayout,mxCompactTreeLayout,mxCircleLayout} = mxgraph;
+const {mxEditor,mxGraph,mxConstants,mxPanningHandler,mxGraphHandler,mxGuide,mxEdgeHandler,mxClient,mxRectangleShape,mxRubberband,mxCellOverlay,mxOutline,mxImage,mxPoint,mxEdgeStyle,mxCellTracker,mxUtils,mxCodec,mxEvent,mxHierarchicalLayout,mxMorphing,mxFastOrganicLayout,mxCompactTreeLayout,mxCircleLayout} = mxgraph;
 
 export default {
   name: "GraphView",
@@ -255,10 +255,9 @@ export default {
         // 是否允许平移。true：表示按住Shift+左键拖动时，整个graph移动；
         // false：按住Shift+左键拖动时，选中的图形水平方向或者垂直方向平移。
         graph.setPanning(true);
-        /* mxPanningHandler.prototype.isPanningTrigger = function(me) {
-            var evt = me.getEvent();
+        mxPanningHandler.prototype.isPanningTrigger = function() {
             return true;
-        }; */
+        };
 
         // 禁止改变节点大小
         graph.setCellsResizable(false);
@@ -330,6 +329,11 @@ export default {
     initGraphEvent(graph){
         // 初始化滚轮图缩放事件监听
         this.addScrollListener(graph);
+
+        // Add the source vertex
+        graph.addListener(mxEvent.ADD_CELLS, _.debounce(()=> {
+            this.onRefreshCellStatus();
+        }),1000);
     },
     // 滚轮缩放事件监听
     addScrollListener(graph){
@@ -1130,7 +1134,7 @@ export default {
                         return {gid: v.id, name: v.value};
                     });
 
-        this.m3.callFS("/matrix/graph/graph_imap_data.js", encodeURIComponent(JSON.stringify(cells))).then( rtn=>{
+        this.m3.callFS("/matrix/m3event/graph/graph_imap_data.js", encodeURIComponent(JSON.stringify(cells))).then( rtn=>{
             
             graph.getModel().beginUpdate();
 

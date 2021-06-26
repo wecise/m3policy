@@ -56,6 +56,7 @@
                                 width="100%"
                                 height="20vh"
                                 style="border:1px solid #f2f2f2;border-left: unset;"
+                                ref="datasourceEditor"
                             ></Editor>
                         </el-form-item>
                         <el-form-item>
@@ -315,11 +316,10 @@ export default {
 
         this.editor.loading = true;
 
-        let view = this.model.name.replace(/.json/,'');
-        let term = this.view.model.datasource.filter;
-        let param = encodeURIComponent(JSON.stringify({  view: view, term: term }));
+        let term = this.$refs.datasourceEditor.editor.getValue();//this.view.model.datasource.filter;
+        let param = encodeURIComponent(JSON.stringify({  datasource: this.view.model.datasource, term: term }));
         
-        this.m3.callFS("/matrix/m3event/event_list.js", param).then((rt)=>{
+        this.m3.callFS("/matrix/m3event/view/datasourceTest.js", param).then((rt)=>{
             
             this.editor.data = rt.message;
 

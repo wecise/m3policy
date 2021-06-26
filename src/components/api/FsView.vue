@@ -198,8 +198,10 @@ export default {
                 this.tabs.activeIndex = id;
                 
                 this.m3.dfsRead(data).then(rtn=>{
+                    console.log(11,rtn)
                     this.tabs.list.push({data: data, content: rtn});
                 }).catch(err=>{
+                    console.log(22,err)
                     console.error(err)
                 })
 

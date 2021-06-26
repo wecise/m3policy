@@ -1,5 +1,5 @@
 <template>
-    <el-container :style="dtContainerHeight">
+    <el-container :style="dtContainerHeight" class="event-console">
         <el-header v-if="dtOptions.header">
             
             <el-tooltip :content="$t('event.actions.refresh')"  placement="top">
@@ -114,8 +114,6 @@
             </el-dialog>
             <el-table
                 :data="dt.rows"
-                v-el-table-infinite-scroll="onLoad"
-                height="auto"
                 :highlight-current-row="true"
                 :row-class-name="rowClassName"                
                 @row-contextmenu="onRowContextmenu"
@@ -233,7 +231,6 @@ import VueContext from 'vue-context';
 import 'vue-context/dist/css/vue-context.css';
 import TagView from './tags/TagView';
 import ToolsView from './tools/ToolsView';
-import elTableInfiniteScroll from 'el-table-infinite-scroll';
 
 window.moment = require("moment");
 
@@ -242,10 +239,12 @@ export default {
     props: {
         model: Object,
         global: Object,
-        options: Object
-    },
-    directives: {
-        'el-table-infinite-scroll': elTableInfiniteScroll
+        options: Object,
+        height: String,
+        rowClass: {
+            type: String,
+            default: "event-console"
+        }
     },
     components: {
         VueContext,
@@ -333,10 +332,10 @@ export default {
     },
     watch: {
         'model.rows': {
-            handler(val){
+            handler(){
                 this.dt.rows = [];
                 this.initData();
-                this.dt.summary = _.groupBy(this.model.rows,'severity');
+               /*  this.dt.summary = _.groupBy(this.model.rows,'severity');
                 _.delay(()=>{
                     this.$refs.table.doLayout();
                 },1000)
@@ -344,10 +343,10 @@ export default {
                 this.info = [];
                 this.info.push(`共 ${val.length} 项`);
                 this.info.push(`已选择 ${this.dt.selected.length} 项`);
-                this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS"));
+                this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS")); */
             }
         },
-        /* 'dt.rows': {
+        'dt.rows': {
             handler(val){
                 if(_.isEmpty(val)) return false;
                 this.info = [];
@@ -356,7 +355,7 @@ export default {
                 this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS"));
             },
             immediate:true
-        }, */
+        },
         'control.ifRefresh':{
             handler(val){
                 this.onCountdownTimeRefresh(val);
@@ -391,7 +390,11 @@ export default {
             return _.extend(this.dt.options,this.options);
         },
         dtContainerHeight(){
-            return `height:calc(100vh - ${this.dtOptions.dtContainerHeight})!important;`
+            if(this.height){
+                return `height:calc(100% - ${this.height})!important;`
+            } else {
+                return `height:calc(100vh - ${this.dtOptions.dtContainerHeight})!important;`
+            }
         },
         dtMainStyle(){
             if(this.dtOptions.header){
@@ -452,20 +455,6 @@ export default {
         
         window.global = this.global;
 
-        /* this.$refs.table.bodyWrapper.addEventListener('scroll', (res) => {
-
-            let height = res.target;
-            let clientHeight = height.clientHeight;
-            let scrollTop = height.scrollTop;
-            let scrollHeight = height.scrollHeight;
-
-            if(clientHeight + scrollTop + 300 > scrollHeight){
-                console.log(clientHeight + scrollTop);
-                console.log(scrollHeight);
-            }
-
-        },true); */
-
     },
     methods: {
         checkSeverity(key){
@@ -516,6 +505,10 @@ export default {
             this.$refs.table.clearSort();
             this.initContextMenu();
             this.$emit("onSearch");
+            /* _.delay(()=>{
+                this.$refs.table.sort('id','asc');
+                this.$refs.table.doLayout();
+            },3000) */
         },
         pickFtype(key){
 
@@ -528,23 +521,33 @@ export default {
             return rtn;
 
         },
-        onLoad() {
+        onLoadMore() {
+            
             let dom = this.$refs.table.bodyWrapper;
             // 滚动距离
             let scrollTop = dom.scrollTop
             // 变量windowHeight是可视区的高度
-            let windowHeight = dom.clientHeight || dom.clientHeight
+            let windowHeight = dom.clientHeight;
             // 变量scrollHeight是滚动条的总高度
-            let scrollHeight = dom.scrollHeight || dom.scrollHeight
+            let scrollHeight = dom.scrollHeight;
             
-            if (scrollTop === 0) {
-                this.dt.rows = this.dt.chunk[0];
-            } else if (scrollTop + windowHeight === scrollHeight) {
-                this.dt.pageNum++;
+            console.log(scrollTop, windowHeight, scrollHeight)
+
+            // 脚底
+            if (scrollTop + windowHeight === scrollHeight) {
+                
                 if(_.isEmpty(this.dt.chunk[this.dt.pageNum - 1])){
                     this.dt.pageNum = 0;
                 }
-                this.dt.rows = this.dt.chunk[this.dt.pageNum];    
+
+                this.dt.pageNum++;
+                
+                if(this.dt.pageNum > 0){
+                    this.dt.rows = this.dt.rows.concat(this.dt.chunk[this.dt.pageNum - 1]);
+                } else {
+                    this.dt.rows = this.dt.chunk[this.dt.pageNum];
+                }
+
             }
             
         },
@@ -570,12 +573,13 @@ export default {
                 *   1、默认排序
                 *   2、配合多选
                 */
-                //this.dt.chunk = _.chunk(_.map(_.orderBy(this.model.rows,),(v,index)=>{  v.index = index; return v; }), this.dt.chunkSize);
-                this.dt.chunk = _.chain(this.model.rows)
+                this.dt.chunk = _.map(_.orderBy(this.model.rows,),(v,index)=>{  v.index = index; return v; });
+                /* this.dt.chunk = _.chain(this.model.rows)
                                 .orderBy(this.dt.orderBy[0], this.dt.orderBy[1])
                                 .map((v,index)=>{  v.index = index; return v; })
-                                .chunk(this.dt.pageSize).value();
-                _.extend(this.dt, { rows: this.dt.chunk[0] });
+                                .chunk(this.dt.pageSize)
+                                .value(); */
+                _.extend(this.dt, { rows: this.dt.chunk });
 
             } catch(err){
                 console.log(err)
@@ -583,7 +587,7 @@ export default {
             
         },
         rowClassName({rowIndex}){
-            return `row-${rowIndex}`;
+            return `${this.rowClass}-row-${rowIndex}`;
         },
         // 监听鼠标操作 停止自动刷新
         onMainClick(){
@@ -801,13 +805,16 @@ export default {
                 this.notify.sound.stop();
             }
 
-            let src = `/static/assets/audio/notification.mp3`;
-            this.notify.sound = new Howl({
-                src: [src],
-                volume: 1,
-                loop: true
-            });
-            this.notify.sound.play();
+            this.m3.dfsRead({parent:"/script/matrix/m3event/notify", name:"config.json"}).then( rtn=>{
+                let src = '/static'+JSON.parse(rtn).voice;
+                this.notify.sound = new Howl({
+                    src: [src],
+                    volume: 1,
+                    loop: true
+                });
+                this.notify.sound.play();
+            })
+            
         },
         /* 声音停止 */
         onNotifyStop(){
@@ -950,6 +957,10 @@ export default {
     .el-table {
         height:100%!important;
         overflow: hidden!important;
+        -webkit-user-select:none;/*谷歌 /Chrome*/
+        -moz-user-select:none; /*火狐/Firefox*/
+        -ms-user-select:none;    /*IE 10+*/
+        user-select:none;
     }
     .el-table--small td, 
     .el-table--small th {
@@ -959,16 +970,10 @@ export default {
         white-space: nowrap!important;
         line-height: 18px!important;
     }
-    .event-list.el-table .el-table__body-wrapper {
+    .event-console .event-list.el-table .el-table__body-wrapper:not(#smartGroupTable .event-list.el-table .el-table__body-wrapper) {
         overflow: auto;
         position: relative;
         height: calc(100% - 50px)!important;
-    }
-    .el-table{
-        -webkit-user-select:none;/*谷歌 /Chrome*/
-        -moz-user-select:none; /*火狐/Firefox*/
-        -ms-user-select:none;    /*IE 10+*/
-        user-select:none;
     }
 
     .severity-active{

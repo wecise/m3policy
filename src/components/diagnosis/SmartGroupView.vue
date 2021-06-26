@@ -4,6 +4,16 @@
         <Split>
             <SplitArea :size="30" :minSize="0" style="overflow:hidden;">
                 <el-container>
+                    <el-header style="height:30px;line-height:30px;">
+                        <span style="font-weight:600;color:#555;">
+                            <span class="el-icon-s-grid"></span> 分组列表
+                        </span>
+                        <el-tooltip :content="$t('event.actions.refresh')"  placement="top">
+                            <el-button type="text" @click="onRefresh" style="float:right;">
+                                <span class="el-icon-refresh" style="cursor:pointer;"></span>
+                            </el-button>
+                        </el-tooltip>
+                    </el-header>
                     <el-main style="padding:0px;overflow:hidden;">
                         <el-table
                             :data="smartGroup.dt.rows"
@@ -44,12 +54,15 @@
                         <GraphView :model="graph.model" v-if="graph.model && graph.model.length>0"></GraphView>
                         
                     </SplitArea>
-                    <SplitArea :size="36" :minSize="0" style="overflow:hidden;" id="smartGroupTable">
+                    <SplitArea :size="36" :minSize="0" style="overflow:hidden;">
                         <EventList ref="eventList" 
+                            id="smartGroupTable"
                             :model="dt" 
                             :global="global" 
                             :options="dt.options" 
-                            @DiagnosisView="onDiagnosis">
+                            rowClass="smartGroupEvent"
+                            @DiagnosisView="onDiagnosis"
+                            height="0px">
                         </EventList> 
                     </SplitArea>
                 </Split>
@@ -119,12 +132,19 @@ export default {
   mounted(){
         
         this.$refs.groupedTable.setCurrentRow(this.smartGroup.dt.rows[0]);
-        this.smartGroup.dt.selected = !_.isEmpty(this.smartGroup.dt.rows)?this.smartGroup.dt.rows[0].ids.split(";"):[];
+        
+        setTimeout(()=>{
+            this.smartGroup.dt.selected = !_.isEmpty(this.smartGroup.dt.rows)?this.smartGroup.dt.rows[0].ids.split(";"):[];
+            this.$refs.groupedTable.setCurrentRow(this.smartGroup.dt.rows[0]);
+        },1000)
       
   },
   methods: {
     rowClassName({rowIndex}){
-        return `row-${rowIndex}`;
+        return `smartGroupList-row-${rowIndex}`;
+    },
+    onRefresh(){
+        this.initData();
     },
     initData(){
         let term = encodeURIComponent(JSON.stringify(this.model));
@@ -199,6 +219,15 @@ export default {
     .smartGroup-list .el-table .cell {
         white-space: nowrap!important;
         line-height: 18px!important;
-    }
+    } 
     
 </style>
+
+<style>
+    #smartGroupTable .event-list.el-table .el-table__body-wrapper {
+        overflow: auto;
+        position: relative;
+        height: calc(100vh - 590px)!important;
+    }
+</style>
+

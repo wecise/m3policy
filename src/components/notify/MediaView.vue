@@ -44,6 +44,8 @@
             <el-button type="text" icon="el-icon-video-play"  @click="onPlay(scope.$index, scope.row)" v-if="!scope.row.isPlay"> 播放</el-button>
             <el-button type="text" icon="el-icon-video-pause"  @click="onStop(scope.$index, scope.row)" v-else> 停止</el-button>
             <el-button type="text" icon="el-icon-delete"  @click="onDelete(scope.$index, scope.row)"> 删除</el-button>
+            <el-button type="text" icon="el-icon-phone-outline"  v-if="scope.row.fullname===config.content.voice" style="color:green;"></el-button>
+            <el-button type="text" icon="el-icon-phone-outline"  @click="onSetDefault(scope.$index, scope.row)" v-else>设为默认</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -104,6 +106,12 @@ export default {
         show: false,
         fileList: [],
         rtnInfo: null
+      },
+      config:{
+        root: '/script/matrix/m3event/notify',
+        name: 'config.json',
+        type: 'json',
+        content: null
       }
     };
   },
@@ -112,6 +120,11 @@ export default {
   },
   methods: {
     initData(){
+
+      this.m3.dfsRead({parent: this.config.root, name: this.config.name}).then( rtn=>{
+          this.config.content = JSON.parse(rtn);
+      })
+
       this.m3.callFS("/matrix/m3event/notify/getVoiceList.js",null).then((rt)=>{
         let rtn = rt.message;
         this.$set(this.dt,'rows', rtn.rows);
@@ -179,6 +192,31 @@ export default {
         
         
       });
+    },
+    onSetDefault(index,row){
+      console.log(index)
+      
+      _.extend(this.config.content,{voice: row.fullname});
+      let content = JSON.stringify(this.config.content,null,2);
+  
+      let param = {
+                    parent: this.config.root, name: this.config.name, 
+                    data: { content: content, type: this.config.type, attr: "", index: true }    
+                  };
+      
+      this.m3.dfsWrite(param).then(()=>{
+          this.$message({
+            type: "success",
+            message: "设置成功"
+          })  
+          this.initData();
+
+      }).catch((err)=>{
+          this.$message({
+            type: "error",
+            message: "设置失败 " + err.message
+          })
+      })
     },
     onUploadChange(file) {
       this.dialog.fileList = [file.raw];

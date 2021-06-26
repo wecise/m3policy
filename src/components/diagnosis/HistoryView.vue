@@ -5,6 +5,7 @@
                 :model="dt" 
                 :global="global" 
                 :options="dt.options" 
+                rowClass="historySameEvent" 
                 @DiagnosisView="onDiagnosis">
             </EventList> 
         </el-main>

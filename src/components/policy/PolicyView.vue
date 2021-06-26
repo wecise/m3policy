@@ -48,9 +48,10 @@
                       :close-on-press-escape="true"
                       :close-on-click-modal="false"
                       :destroy-on-close="true"
+                      @closed="(()=>{ this.dt.selected = null; })"
                       append-to-body
                       v-if="dt.selected">
-                    <EditView :model.sync="dt.selected" ref="editView" @dialog:close="onClose"></EditView>
+                    <EditView :model="dt.selected" ref="editView" @dialog:close="onClose"></EditView>
                   </el-dialog>
 
                   <el-dialog :title="'策略下发 ' + dialog.deploy.data.name" 

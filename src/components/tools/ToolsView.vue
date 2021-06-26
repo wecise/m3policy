@@ -40,7 +40,7 @@ export default({
                     if(this.m3.auth.signedUser.isadmin){ 
                         return v;
                     } else {
-                        return null;//!_.includes(['fsView','pipeView'],v.id);
+                        return v['id'] === 'smartGroupView';//!_.includes(['fsView','pipeView'],v.id);
                     }
                 })
             })

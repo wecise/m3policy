@@ -87,6 +87,9 @@
           <TriggerView :model="item.data" :global="global" v-else-if="item.callback==='TriggerView'"></TriggerView>
           <!-- 规则设计 -->
           <PipeView :model="item.data" :global="global" v-else-if="item.callback==='PipeView'"></PipeView>
+          <!-- 采集管理 -->
+          <CollectorView :model="item.data" :global="global" v-else-if="item.callback==='CollectorView'"></CollectorView>
+          
         </el-tab-pane>
       </el-tabs>
     </el-main>
@@ -106,6 +109,7 @@ import SeverityView from './utils/SeverityView';
 import DashView from './dashview/DashView';
 import NotifyView from './notify/NotifyView';
 import RuleView from './rule/RuleView';
+import CollectorView from './collector/RuleView';
 import JobView from './job/JobView';
 import FsView from './api/FsView';
 import PolicyView from './policy/PolicyView';
@@ -131,7 +135,8 @@ export default {
     FsView,
     PolicyView,
     TriggerView,
-    PipeView
+    PipeView,
+    CollectorView
   },
   data() {
     return {
@@ -173,8 +178,6 @@ export default {
     'views.value':{
       handler(val){
         this.onToggleDefaultView(val);
-        this.onSearch();
-        this.$refs.eventList.control.ifVoiceNotify = false;
       }
     },
     'search.model.term':{
@@ -211,6 +214,9 @@ export default {
       this.m3.callFS("/matrix/m3event/view/action.js", param).then(()=>{
           this.$notify.success(`已设置 ${view.name.replace(/.json/,'')} 为默认视图`);
           this.initViews();
+          
+          this.$refs.eventList.onRefresh();
+          this.$refs.eventList.control.ifVoiceNotify = false;
       })
     },
     initViews(){
@@ -266,7 +272,7 @@ export default {
         let data = row;
         /* 智能分组需要传入ids */
         if( _.includes(['smartGroupView'],row.id) ){
-            data = _.compact(_.map(this.$refs.eventList.dt.rows,'id'));
+            data = _.chain(this.$refs.eventList.model.rows).map('id').compact().uniq().value().slice(0,50);
         } else if(  _.includes(['entityEtl'],row.id) ){
             data = _.compact(_.map(this.$refs.eventList.dt.rows,'entity'));
         } 

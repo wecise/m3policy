@@ -63,7 +63,7 @@
             </div>
         </el-header>
         <el-main style="padding:0px;overflow:hidden;">
-            <EventList :model="result.dt" :global="global" :options="result.dt.options" @DiagnosisView="onDiagnosis" v-if="result.dt.rows"></EventList>
+            <EventList :model="result.dt" :global="global" :options="result.dt.options" rowClass="attributeRelEvent" @DiagnosisView="onDiagnosis" v-if="result.dt.rows"></EventList>
         </el-main>
     </el-container>
 

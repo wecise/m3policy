@@ -52,6 +52,8 @@ export default {
       
       _.extend(this.dt, {columns: _.map(this.model.columns, function(v){
                 
+                _.extend(v, {field: v.name});
+                
                 if(_.isUndefined(v.visible)){
                     _.extend(v, { visible: true });
                 }
