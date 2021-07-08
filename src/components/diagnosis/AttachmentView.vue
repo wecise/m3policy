@@ -21,7 +21,9 @@
                 :key="row.id"
                 :icon="row.ftype | formatType"
                 :color="row.ftype | formatColor"
-                :timestamp="row.vtime | formatDateTime">
+                :timestamp="row.vtime | formatDateTime"
+                @click.native="onAttachOpen(row)"
+                style="cursor:pointer;">
               名称：{{row.name}}
               <p>
                   大小：{{row.size | formatSize}}
@@ -33,6 +35,7 @@
           </el-timeline>
           <el-checkbox-group v-model="dt.selected" v-else>
               <el-button type="default" 
+                      @click="onAttachOpen(item)"
                       style="max-width: 12em;width: 12em;height:110px;border-radius: 10px!important;margin: 5px;border: unset;box-shadow: 0 0px 5px 0 rgba(0, 0, 0, 0.2);"
                       :key="item.id"
                       v-for="item in dt.rows">
@@ -44,7 +47,7 @@
                       <p style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:5px;text-align:center;">
                           {{item.name}}
                       </p>
-                      <el-checkbox :label="item.id" :ref="'checkBox_'+item.id"></el-checkbox>
+                      <!-- <el-checkbox :label="item.id" :ref="'checkBox_'+item.id"></el-checkbox> -->
               </el-button>
           </el-checkbox-group>
       </el-main>
@@ -102,6 +105,9 @@ export default {
     },
     onRefresh(){
       this.initData();
+    },
+    onAttachOpen(item){
+      window.open(`/static${item.fullname}`,'_blank');
     }
   }
 };

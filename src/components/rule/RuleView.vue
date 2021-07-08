@@ -166,10 +166,7 @@ export default {
     },
     created() {
         // 默认边栏显示状态
-        this.control.configTree.show = (localStorage.getItem("CONFIG-TREE-IFSHOW") == 'true');
-    },
-    mounted() {
-        
+        this.control.configTree.show = true;//(localStorage.getItem("CONFIG-TREE-IFSHOW") == 'true');
     },
     methods: {
         saveStatus(){

@@ -62,6 +62,7 @@
                             :options="dt.options" 
                             rowClass="smartGroupEvent"
                             @DiagnosisView="onDiagnosis"
+                            @smartGroupEvent-row-click="onPositionAtGraph"
                             height="0px">
                         </EventList> 
                     </SplitArea>
@@ -90,6 +91,7 @@ export default {
   },
   data() {
     return {
+        ids: [],
         smartGroup:{
             dt: {
                 rows: [],
@@ -118,6 +120,18 @@ export default {
               this.loadEventListByGroup(val);
           }
       },
+      'model':{
+          handler(val){
+              this.ids = val;
+          },
+          immediate: true
+      },
+      ids:{
+          handler:function(){
+            this.initData();
+          },
+          immediate: true
+        },
       'dt.rows':{
           handler(val){
               this.graph.model = _.compact(_.map(val,'entity'));
@@ -125,9 +139,9 @@ export default {
       }
   },
   created(){
-      
-        this.initData();  
-      
+      this.eventHub.$on("smartGroup-refresh",(data)=>{
+          this.ids = data;
+      });
   },
   mounted(){
         
@@ -147,7 +161,12 @@ export default {
         this.initData();
     },
     initData(){
-        let term = encodeURIComponent(JSON.stringify(this.model));
+
+        this.smartGroup.dt.rows = [];
+        this.graph.model = [];
+        this.dt.rows = [];
+
+        let term = encodeURIComponent(JSON.stringify(this.ids));
         this.m3.callFS("/matrix/m3event/diagnosis/smartGroup.js", term).then((rtn)=>{
             let rt = rtn.message;
             _.extend(this.smartGroup.dt, {columns: _.map(rt.template, (v)=>{
@@ -202,8 +221,10 @@ export default {
     },
     onDiagnosis(data){
         this.eventHub.$emit("event-diagnosis", data);
+    },
+    onPositionAtGraph(data){
+        this.eventHub.$emit('graph-position',{ row:data, hFlag:true,vFlag:true});
     }
-
   },
 };
 </script>

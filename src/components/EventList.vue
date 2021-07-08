@@ -118,6 +118,7 @@
                 :row-class-name="rowClassName"                
                 @row-contextmenu="onRowContextmenu"
                 @row-dblclick="onRowContextmenu"
+                @row-click="onRowClick"
                 @current-change="onCurrentChange"
                 @selection-change="(data)=>{ dt.selected = data; }"
                 @cell-click="onCellClick"
@@ -356,6 +357,14 @@ export default {
             },
             immediate:true
         },
+        'dt.selected': {
+            handler(val){
+                this.info = [];
+                this.info.push(`共 ${this.dt.rows.length} 项`);
+                this.info.push(`已选择 ${val.length} 项`);
+                this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS"));
+            }
+        },
         'control.ifRefresh':{
             handler(val){
                 this.onCountdownTimeRefresh(val);
@@ -505,10 +514,6 @@ export default {
             this.$refs.table.clearSort();
             this.initContextMenu();
             this.$emit("onSearch");
-            /* _.delay(()=>{
-                this.$refs.table.sort('id','asc');
-                this.$refs.table.doLayout();
-            },3000) */
         },
         pickFtype(key){
 
@@ -601,6 +606,10 @@ export default {
             event.preventDefault();
             this.$refs.contextmenu.open(event,row);
             this.dt.contextmenu.show = true;
+        },
+        // row单击事件
+        onRowClick(row){
+            this.$emit(`${this.rowClass}-row-click`,row);
         },
         // 右键菜单事件
         onContextmenuClick(row,menu){

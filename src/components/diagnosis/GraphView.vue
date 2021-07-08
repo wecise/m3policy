@@ -90,7 +90,8 @@ export default {
             control:{
                 ifIcon: true,
                 outline: {
-                    show: false
+                    show: false,
+                    inst: null
                 },
                 toolbar:{
                     show: false
@@ -201,7 +202,9 @@ export default {
     this.init();
   },
   mounted(){
-    
+      this.eventHub.$on("graph-position",(v)=>{
+          this.onCellPosition(v.row,v.hFlag,v.vFlag);
+      })
   },
   methods: {
     // 初始化
@@ -334,6 +337,9 @@ export default {
         graph.addListener(mxEvent.ADD_CELLS, _.debounce(()=> {
             this.onRefreshCellStatus();
         }),1000);
+
+        // 初始化鹰眼视图
+        this.onInitOutline(graph);
     },
     // 滚轮缩放事件监听
     addScrollListener(graph){
@@ -399,11 +405,11 @@ export default {
 
     },
     // 切换预览
-    onToggleOutline(){
-        this.control.outline.show = !this.control.outline.show;
-        if(this.control.outline.show) {
-            new mxOutline(this.editor.graph, this.$refs.outlineContainer);
-        }
+    onInitOutline(graph){
+        new mxOutline(graph, this.$refs.outlineContainer);
+    },
+    onToggleOutline(val){
+        this.graph.control.outline.show = val;
     },
     // 自动刷新控制
     onRefreshChange(val){
@@ -833,8 +839,6 @@ export default {
     // 右键菜单
     createPopupMenu(editor, graph, menu, cell, evt){
         
-        console.log(evt);
-
         // 节点或边菜单
         if (cell != null){
             
@@ -1199,7 +1203,61 @@ export default {
             }
         }
     },
+    // 节点高亮定位显示
+    onCellPosition(row,hFlag,vFlag){
+        
+        let id = row.entity;
+        let editor = this.graph.editor; 
+        let graph = editor.graph;
+        let cell = graph.getModel().getCell(id);
 
+        try{
+            // 根据cell数量决定视图是否缩放
+            if(this.graph.data.nodes.length > 10){
+                editor.execute("fit");    
+            } else {
+                editor.execute("actualSize");  
+            }
+            
+            let containerW = graph.container.clientWidth;
+            let containerH = graph.container.clientHeight;
+            let x =-cell.geometry.x + ( containerW - cell.geometry.width) / 2;
+            let y =-cell.geometry.y + ( containerH - cell.geometry.height) / 2;
+            
+            if( hFlag ){
+                x = x / 2;
+            }
+
+            if( vFlag ){
+                y = y / 2;
+            }
+            
+            graph.getView().setTranslate(x,y);
+            graph.scrollCellToVisible(cell);
+            graph.setSelectionCells([cell]);
+
+            _.delay(()=>{
+                let state = graph.view.getState(cell);
+                
+                if(this.graph.control.ifIcon){
+                    state.shape.node.getElementsByTagName("image")[0].setAttribute('class', 'animated flash');
+                } else {
+                    state.shape.node.getElementsByTagName("ellipse")[0].setAttribute('class', 'animated flash');
+                }
+            },500)
+
+            // 选择节点突出显示
+            graph.setCellStyles(mxConstants.STYLE_PERIMETER_SPACING, 8, [cell]);
+            
+        } catch(err){
+            
+            // 当前画布中不包含该实体
+            this.$message({
+                type: "info",
+                message: "没有该实体 "
+            })
+        }
+    }
   },
 };
 </script>

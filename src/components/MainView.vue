@@ -58,7 +58,7 @@
                   {{item.title}} {{ item.data.id }}
               </span>
               <span v-else>
-                 {{item.title}}
+                 {{item.title}} ({{views.value}})
               </span>
             </span>
           <!-- 分析 -->
@@ -217,7 +217,12 @@ export default {
           
           this.$refs.eventList.onRefresh();
           this.$refs.eventList.control.ifVoiceNotify = false;
-      })
+          
+          setTimeout(()=>{
+            let ids = _.chain(this.$refs.eventList.model.rows).map('id').compact().uniq().value().slice(0,100);
+            this.eventHub.$emit("smartGroup-refresh", ids);
+          },1500)
+        })
     },
     initViews(){
         let term = encodeURIComponent(JSON.stringify({  action: "list"  }));
@@ -272,7 +277,7 @@ export default {
         let data = row;
         /* 智能分组需要传入ids */
         if( _.includes(['smartGroupView'],row.id) ){
-            data = _.chain(this.$refs.eventList.model.rows).map('id').compact().uniq().value().slice(0,50);
+            data = _.chain(this.$refs.eventList.model.rows).map('id').compact().uniq().value().slice(0,100);
         } else if(  _.includes(['entityEtl'],row.id) ){
             data = _.compact(_.map(this.$refs.eventList.dt.rows,'entity'));
         } 
