@@ -3,7 +3,7 @@
         <el-header v-if="dtOptions.header">
             
             <el-tooltip :content="$t('event.actions.refresh')"  placement="top">
-                <el-button type="text" @click="onRefresh">
+                <el-button type="text" @click="onReloadAndRefresh">
                     <span class="el-icon-refresh" style="cursor:pointer;font-size:16px;"></span>
                 </el-button>
             </el-tooltip>
@@ -122,6 +122,8 @@
                 @current-change="onCurrentChange"
                 @selection-change="(data)=>{ dt.selected = data; }"
                 @cell-click="onCellClick"
+                @sort-change="onSortChange"
+                :header-cell-class-name="headerCellClassName"
                 ref="table"
                 class="event-list"
                 style="width:100%;">
@@ -167,7 +169,17 @@
             </div>
             <div class="footbar">
                 {{ info.join(' &nbsp; | &nbsp;') }}
-                <span style="float:right;padding-right:10px;" id="countDownTimer"></span>
+                <span style="float:right;padding-right:10px;">
+                    <countdown 
+                        :left-time="60000"
+                        @finish="onCountDownS" ref="vac" v-if="control.ifRefresh"> 
+                        <span
+                        slot="process"
+                        slot-scope="{ timeObj }">
+                            {{ `距离下次刷新：${timeObj.ceil.s} 秒` }}
+                        </span>
+                    </countdown>
+                </span>
             </div>
         </el-footer>
         <vue-context 
@@ -175,9 +187,7 @@
             :close-on-scroll="dt.contextmenu.closeOnScroll"
             ref="contextmenu" v-slot="{data}"
             v-show="dt.contextmenu.show">
-
             <li>
-
                 <el-link :underline="false"> 
                     <span v-if="data"> {{data.id}}</span>
                     <span style="position: absolute;top: 4px;left: 10px;">
@@ -189,7 +199,6 @@
                     </span>
                 </el-link>
             </li>
-
             <template v-for="(menu,index) in dt.contextmenu.list">
 
                 <li :key="index" v-if="data">
@@ -232,6 +241,10 @@ import VueContext from 'vue-context';
 import 'vue-context/dist/css/vue-context.css';
 import TagView from './tags/TagView';
 import ToolsView from './tools/ToolsView';
+import Vue from 'vue';
+import vueAwesomeCountdown from 'vue-awesome-countdown'
+Vue.use(vueAwesomeCountdown, 'vac') 
+
 
 window.moment = require("moment");
 
@@ -250,7 +263,7 @@ export default {
     components: {
         VueContext,
         TagView,
-        ToolsView
+        ToolsView        
     },
     data(){
    
@@ -292,7 +305,7 @@ export default {
                     itemSelector: ['.custom-item-class'],
                 },
                 summary: null,
-                orderBy: [['severity','vtime'],['desc','desc']],
+                orderBy: [{name:'severity',value:'desc'},{name:'vtime',value:'desc'}],
                 selectedSeverity:[],
                 origin: -1, // 这里给一个变量作为起点
                 pin: false, 
@@ -301,7 +314,7 @@ export default {
             info: [],
             control:{
                 ifSmart: false,
-                ifRefresh: false,
+                ifRefresh: true,
                 ifVoiceNotify: false,
                 mode: {
                     value: {name:'r',title:'运维模式',value:true},
@@ -333,30 +346,35 @@ export default {
     },
     watch: {
         'model.rows': {
-            handler(){
-                this.dt.rows = [];
-                this.initData();
-               /*  this.dt.summary = _.groupBy(this.model.rows,'severity');
-                _.delay(()=>{
-                    this.$refs.table.doLayout();
-                },1000)
-
-                this.info = [];
-                this.info.push(`共 ${val.length} 项`);
-                this.info.push(`已选择 ${this.dt.selected.length} 项`);
-                this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS")); */
-            }
-        },
-        'dt.rows': {
             handler(val){
-                if(_.isEmpty(val)) return false;
-                this.info = [];
-                this.info.push(`共 ${this.dt.rows.length} 项`);
-                this.info.push(`已选择 ${this.dt.selected.length} 项`);
-                this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS"));
+
+                this.dt.pageNum = 0;
+
+                //this.dt.rows = [];
+
+                if(val){
+                    this.dt.summary = _.groupBy(val,'severity');
+
+                    this.info = [];
+                    this.info.push(`共 ${val.length} 项`);
+                    this.info.push(`已选择 ${this.dt.selected.length} 项`);
+                    this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS"));
+
+                    this.initData();
+                }
             },
             immediate:true
         },
+        /* 'dt.rows': {
+            handler(val){
+                // if(_.isEmpty(val)) return false;
+                // this.info = [];
+                // this.info.push(`共 ${this.dt.rows.length} 项`);
+                // this.info.push(`已选择 ${this.dt.selected.length} 项`);
+                // this.info.push(this.moment().format("YYYY-MM-DD HH:mm:ss.SSS"));
+            },
+            immediate:true
+        }, */
         'dt.selected': {
             handler(val){
                 this.info = [];
@@ -366,9 +384,12 @@ export default {
             }
         },
         'control.ifRefresh':{
-            handler(val){
-                this.onCountdownTimeRefresh(val);
-            }
+            handler(){
+                this.$nextTick(()=>{
+                    //this.onCountdownTimeRefresh(val);
+                })
+            },
+            immediate: true
         },
         'control.ifVoiceNotify':{
             handler(val){
@@ -464,6 +485,22 @@ export default {
         
         window.global = this.global;
 
+        this.$refs.table.bodyWrapper.addEventListener('scroll', (evt) => {
+            // 滚动距离
+            let scrollTop = parseInt(evt.target.scrollTop); 
+            // 变量windowHeight是可视区的高度
+            let windowHeight = evt.target.clientHeight;
+            // 变量scrollHeight是滚动条的总高度
+            let scrollHeight = evt.target.scrollHeight;
+            
+            //console.log(scrollTop, windowHeight, scrollHeight)
+
+            // 脚底
+            if (scrollTop + windowHeight === scrollHeight) {
+                this.onLoadMore(); 
+            }
+            
+        })
     },
     methods: {
         checkSeverity(key){
@@ -483,32 +520,19 @@ export default {
                 this.dt.contextmenu.show = false;
             })
         },
-        startTimer(duration, display) {
-            var timer = duration, minutes, seconds;
-            window.countdownInterval = setInterval( ()=> {
-                minutes = parseInt(timer / 60, 10)
-                seconds = parseInt(timer % 60, 10);
-
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-                
-                let format = minutes + ":" + seconds;
-                
-                if(format === '00:00'){
-                    this.$emit("onSearch");
-                }
-
-                display.textContent = "刷新时间：" + format;
-                
-                if (--timer < 0) {
-                    timer = duration;
-                }
-            }, 1000);
+        /* 倒计时刷新 */
+        onCountDownS(){
+            this.$refs.vac.startCountdown(true);
+            this.$emit("onSearch");
         },
         /* 
             重新加载数据 
             重置样式
         */
+        onReloadAndRefresh(){
+            this.onRefresh();
+            this.dt.orderBy = [];
+        },
         onRefresh(){
             this.onCellClick();
             this.$refs.table.clearSort();
@@ -528,37 +552,24 @@ export default {
         },
         onLoadMore() {
             
-            let dom = this.$refs.table.bodyWrapper;
-            // 滚动距离
-            let scrollTop = dom.scrollTop
-            // 变量windowHeight是可视区的高度
-            let windowHeight = dom.clientHeight;
-            // 变量scrollHeight是滚动条的总高度
-            let scrollHeight = dom.scrollHeight;
-            
-            console.log(scrollTop, windowHeight, scrollHeight)
+            this.dt.pageNum++;
 
-            // 脚底
-            if (scrollTop + windowHeight === scrollHeight) {
+            if( this.dt.pageNum < this.dt.chunk.length){
                 
-                if(_.isEmpty(this.dt.chunk[this.dt.pageNum - 1])){
-                    this.dt.pageNum = 0;
-                }
-
-                this.dt.pageNum++;
-                
-                if(this.dt.pageNum > 0){
-                    this.dt.rows = this.dt.rows.concat(this.dt.chunk[this.dt.pageNum - 1]);
-                } else {
-                    this.dt.rows = this.dt.chunk[this.dt.pageNum];
-                }
+                this.dt.rows = this.dt.rows.concat(this.dt.chunk[this.dt.pageNum]);
 
             }
+
+            this.$nextTick(()=>{
+                this.$refs.table.doLayout();
+            })
             
         },
         initData(){
             
             try{
+                this.dt.columns = [];
+                
                 _.extend(this.dt, {columns: _.map(this.model.columns, (v)=>{
                     
                     if(_.isUndefined(v.visible)){
@@ -573,18 +584,19 @@ export default {
                     
                 })});
                 
-                _.extend(this.dt, { rows: [] });
                 /* 
                 *   1、默认排序
                 *   2、配合多选
                 */
-                this.dt.chunk = _.map(_.orderBy(this.model.rows,),(v,index)=>{  v.index = index; return v; });
-                /* this.dt.chunk = _.chain(this.model.rows)
-                                .orderBy(this.dt.orderBy[0], this.dt.orderBy[1])
+                // this.dt.chunk = _.map(_.orderBy(this.model.rows,),(v,index)=>{  v.index = index; return v; });
+                let orderByName = _.chain(this.dt.orderBy).map('name').value();
+                let orderByValue = _.chain(this.dt.orderBy).map('value').value();
+                this.dt.chunk = _.chain(this.model.rows)
+                                .orderBy(orderByName, orderByValue)
                                 .map((v,index)=>{  v.index = index; return v; })
                                 .chunk(this.dt.pageSize)
-                                .value(); */
-                _.extend(this.dt, { rows: this.dt.chunk });
+                                .value();
+                _.extend(this.dt, { rows: this.dt.chunk[this.dt.pageNum] });
 
             } catch(err){
                 console.log(err)
@@ -596,10 +608,47 @@ export default {
         },
         // 监听鼠标操作 停止自动刷新
         onMainClick(){
-            this.control.ifRefresh = false;
+            // this.control.ifRefresh = false;
         },
         onSelectionChange(val) {
             this.dt.selected = val;
+        },
+        // 排序样式
+        headerCellClassName({column}) {
+            
+            for (let v of this.dt.orderBy) {
+                
+                if(column.property === v.name){
+                    
+                    if(v.value == 'asc'){    
+                        return `active-ascending`;
+                    } else if(v.value == 'desc'){
+                        return 'active-descending';
+                    } 
+                }
+            }
+            
+        },
+        // 多列排序
+        onSortChange({ prop, order }){
+            let orderValue =  order==='ascending'?'asc':'desc' || '';
+            let index = _.findIndex(this.dt.orderBy, {name:prop});            
+            if(index !== -1){
+                if(order == null){
+                    _.difference(this.dt.orderBy,_.pullAt(this.dt.orderBy,index) );
+                } else {
+                    _.extend(this.dt.orderBy[index],{name:prop, value: orderValue});
+                }
+            } else {
+                this.dt.orderBy.push({name:prop, value: orderValue});
+            }
+
+            let orderByName = _.chain(this.dt.orderBy).map('name').value();
+            let orderByValue = _.chain(this.dt.orderBy).map('value').value();
+            
+            this.model.rows = _.chain(this.model.rows)
+                            .orderBy(orderByName, orderByValue)
+                            .value();
         },
         // 右键菜单
         onRowContextmenu(row,column,event){
@@ -776,21 +825,6 @@ export default {
         openPanel(){
             
         },
-        /* 倒计时刷新 */
-        onCountdownTimeRefresh(val){
-            if(val){
-                let display = document.querySelector('#countDownTimer');
-                this.startTimer(60, display);
-            } else {
-                
-                if (window.countdownInterval != null) {
-                    clearInterval(window.countdownInterval);
-                    window.countdownInterval = null;
-                }
-                let display = document.querySelector('#countDownTimer');
-                display.textContent = "";
-            }
-        },  
         onToolsKeep(menu){
             let row = {id: menu.id};
             this.$emit("addTab",{row:row, data:menu});
@@ -989,4 +1023,14 @@ export default {
         /* filter: drop-shadow(black 2px 4px 6px); */
         border-top: 2px solid #333333!important;
     }
+</style>
+
+<style>
+    .el-table .active-ascending .sort-caret.ascending {
+        border-bottom-color: #252D47!important;
+    }
+    .el-table .active-descending .sort-caret.descending {
+        border-top-color: #252D47!important;
+    }
+    
 </style>

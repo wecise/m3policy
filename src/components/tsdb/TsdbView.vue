@@ -32,15 +32,15 @@
         </div>
         
         <grid-layout 
-                :layout.sync="kpi.list"
-                    :col-num="layout.colNum"
-                    :row-height="40"
-                    :is-draggable="layout.draggable"
-                    :is-resizable="layout.resizable"
-                    :responsive="layout.responsive"
-                    :vertical-compact="true"
-                    :use-css-transforms="true"
-                    style="width:100%;display:flex">
+                :layout="kpi.list"
+                :col-num="layout.colNum"
+                :row-height="40"
+                :is-draggable="layout.draggable"
+                :is-resizable="layout.resizable"
+                :responsive="layout.responsive"
+                :vertical-compact="true"
+                :use-css-transforms="true"
+                style="width:100%;display:flex">
 
             <grid-item :static="item.static"
                     :x="item.x"
@@ -50,27 +50,24 @@
                     :i="item.i"
                     v-for="(item,index) in kpi.list"
                     :key="index"
-                    @resize="onGridItemResizeEvent"
-                    @move="onGridItemMoveEvent"
-                    @resized="onGridItemResizedEvent"
-                    @container-resized="onGridItemContainerResizedEvent"
-                    @moved="onGridItemMovedEvent"
                     drag-ignore-from=".no-drag"
                     :ref="'item'+item.i">
                 <el-card style="height:100%;">
                     <div slot="header" class="clearfix" style="padding:5px;">
-                        <span v-if="item.subKeys != null">
-                            {{item.id}} / {{item.bucket}} / <small>{{item.key}}</small>
-                            <el-select v-model="item.defaultSubKey" placeholder="请选择子对象" @change="onChange">
+                        <span v-if="item.key==item.defaultSubKey">
+                            {{item.id}} / {{item.bucket}} / <small>{{item.key}}</small> /
+                            <el-select v-model="item.crcKey" placeholder="请选择子对象" @change="onChange" size="mini" class="bucket-select">
                                 <el-option
-                                    v-for="key in item.subKeys"
-                                    :key="key.value"
-                                    :label="key.name"
-                                    :value="key.value">
+                                    v-for="key in item.crcKeys"
+                                    :key="key[1]"
+                                    :label="key[1]"
+                                    :value="key[1]">
                                 </el-option>
                             </el-select>
                         </span>
-                        <span v-else>{{item.id}} / {{item.bucket}} / <small>{{item.key}}</small></span>
+                        <span v-else>
+                            {{item.id}} / {{item.bucket}} / <small>{{item.key}}</small>
+                        </span>
                     </div>
                     <ChartView  :model="item" class="no-drag" :ref="'chart'+item.i"></ChartView>
                 </el-card>
@@ -85,14 +82,15 @@
             
             <el-card style="height:60vh;">
                 <div slot="header" class="clearfix" style="padding:5px;">
-                    <span v-if="dialog.max.data.subKeys != null">
+                    <span v-if="dialog.max.data.key==dialog.max.data.defaultSubKey">
+                        
                         {{dialog.max.data.id}} / {{dialog.max.data.bucket}} / <small>{{dialog.max.data.key}}</small>
-                        <el-select v-model="dialog.max.data.defaultSubKey" placeholder="请选择子对象" @change="onChange">
+                        <el-select v-model="dialog.max.data.defaultSubKey" placeholder="请选择子对象" @change="onChange" size="mini" class="bucket-select">
                             <el-option
-                                v-for="key in dialog.max.data.subKeys"
-                                :key="key.value"
-                                :label="key.name"
-                                :value="key.value">
+                                v-for="key in dialog.max.data.crcKeys"
+                                :key="key[1]"
+                                :label="key[1]"
+                                :value="key[1]">
                             </el-option>
                         </el-select>
                     </span>
@@ -132,10 +130,32 @@ export default{
     computed:{
         bucktets(){
             try{
+
                 return _.map(this.bucket.children,(v)=>{
+                    
+
                     let children = _.map(v.param,(r,index)=>{
-                        return { value: r, title: v['remark'][index], ptype: v['ptype'][index], precision: v['precision'][index], unit: v['unit'][index],subKeys:[] };
+                        let crc = false;
+                        /* 判断是否定义了CRC */
+                        if(_.includes(v['crc32'],r)){
+                            crc = true;
+                            /* let param = encodeURIComponent(JSON.stringify({bucket:v.field, crc:r, class:v.class,id: this.entity[0].id}));
+                            
+                            this.m3.callFS("/matrix/m3event/diagnosis/tsdb/getCrcKeyByName.js", param ).then(rs=>{
+                                
+                                let childrenByCrc = _.map(rs.message,cc=>{
+                                    return {value:cc, title:cc};
+                                })
+                                let findChildren = _.find(children,{value:r});
+                                console.log(findChildren)
+                                this.$set(findChildren, 'children', childrenByCrc);
+                                
+                            }) */
+                        }
+                        
+                        return { value: r, title: v['remark'][index], ptype: v['ptype'][index], precision: v['precision'][index], unit: v['unit'][index],subKeys:[], crc: crc };
                     });
+                    
                     return _.extend(v, {value: v.field, title: v.field, children:children, subKeys:v.crc32} );
                 })
             }catch(err){
@@ -280,7 +300,7 @@ export default{
         },
         onChange(val){
             _.forEach(this.kpi.list,(v)=>{
-                this.$set(v,'defaultSubKey',val);
+                this.$set(v,'crcKey',val);
             })
         },
         onRefresh(i){
@@ -289,13 +309,16 @@ export default{
         onSelectedAttr(val){
             
             this.selectedBuckets = val.bucketKeys;
+
             this.kpi.list = [];
+            
             _.forEach(this.entity,e=>{
                 
                 _.forEach(val.bucketKeys,(v)=>{
                     
-                    let subKeys = this.entity.crc32;
-                    let defaultSubKey = "";
+                    let subKeys = _.find(val.options,{value:v[0]}).crc32;
+                    let crcKeys = _.find(val.options,{value:v[0]})[subKeys];
+                    let defaultSubKey = subKeys[0];
                     
                     // let selectedBucket = _.find(val.options,{value:v[0]}).subKeys;
                     
@@ -306,40 +329,29 @@ export default{
                     let layout = {
                                     x: ( this.kpi.list.length * 6) % (this.layout.colNum || 12),
                                     y: this.kpi.list.length + (this.layout.colNum || 12), // puts it at the bottom
-                                    w: 6,
+                                    w: 12,
                                     h: 6,
                                     i: this.layout.index,
                                 };
                     this.layout.index++;
-                    this.kpi.list.push( _.extend(layout,{id: e.id, class: e.class, bucket: v[0], key: v[1], time: this.kpi.time, subKeys: subKeys, defaultSubKey: defaultSubKey}) );
+
+                    let item = _.extend(layout,{id: e.id, class: e.class, bucket: v[0], key: v[1], time: this.kpi.time, subKeys: subKeys[0], crcKeys:crcKeys,defaultSubKey: defaultSubKey});
+                    this.kpi.list.push(item);
+                    
                 })
             })
+            
         },
         onFullScreen(val){
             // this.m3.fullScreenByEl(this.$refs['item'+val][0].$el);
 
             this.dialog.max.show = true;
             this.dialog.max.data = val;
-            this.eventHub.$emit("WINDOW-RESIZE-EVENT");
+            
         },
         onRemoveItem(val) {
             const index = this.kpi.list.map(item => item.i).indexOf(val);
             this.kpi.list.splice(index, 1);
-        },
-        onGridItemResizeEvent(){
-            this.eventHub.$emit("WINDOW-RESIZE-EVENT");
-        },
-        onGridItemMoveEvent(){
-            this.eventHub.$emit("WINDOW-RESIZE-EVENT");
-        },
-        onGridItemResizedEvent(){
-            this.eventHub.$emit("WINDOW-RESIZE-EVENT");
-        },
-        onGridItemContainerResizedEvent(){
-            this.eventHub.$emit("WINDOW-RESIZE-EVENT");
-        },
-        onGridItemMovedEvent(){
-            this.eventHub.$emit("WINDOW-RESIZE-EVENT");
         }
     }
 }
@@ -352,7 +364,7 @@ export default{
     -moz-columns: 120px;
     -webkit-columns: 120px;
     columns: 120px;
-}
+    }
 /*************************************/
 .remove {
     position: absolute;
@@ -409,4 +421,10 @@ export default{
     box-sizing: border-box;
     cursor: pointer;
 }
+</style>
+
+<style>
+    .bucket-select .el-input__inner{
+        border:unset;
+    }
 </style>

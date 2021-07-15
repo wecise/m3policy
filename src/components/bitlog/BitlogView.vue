@@ -52,7 +52,7 @@
         </div>
 
         <grid-layout 
-                :layout.sync="kpi.list"
+                    :layout="kpi.list"
                     :col-num="layout.colNum"
                     :row-height="40"
                     :is-draggable="layout.draggable"
@@ -305,7 +305,7 @@ export default{
                                     x: ( this.kpi.list.length * 12) % (this.layout.colNum || 12),
                                     y: this.kpi.list.length + (this.layout.colNum || 12), // puts it at the bottom
                                     w: 12,
-                                    h: 8,
+                                    h: 12,
                                     i: this.layout.index,
                                 };
                     this.layout.index++;

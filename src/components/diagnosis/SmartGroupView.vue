@@ -14,7 +14,7 @@
                             </el-button>
                         </el-tooltip>
                     </el-header>
-                    <el-main style="padding:0px;overflow:hidden;">
+                    <el-main style="overflow:hidden;">
                         <el-table
                             :data="smartGroup.dt.rows"
                             :highlight-current-row="true"
@@ -161,7 +161,7 @@ export default {
         this.initData();
     },
     initData(){
-
+        const rLoading = this.openLoading('smartGroup-list');
         this.smartGroup.dt.rows = [];
         this.graph.model = [];
         this.dt.rows = [];
@@ -184,6 +184,8 @@ export default {
             })});
             
             _.extend(this.smartGroup.dt, { rows: rt.rows });
+
+            rLoading.close();
 
         })
     },
@@ -245,6 +247,11 @@ export default {
 </style>
 
 <style>
+
+    .smartGroup-list .el-table__body-wrapper{
+        height: calc(100vh - 210px)!important;
+        overflow: auto;
+    }
     #smartGroupTable .event-list.el-table .el-table__body-wrapper {
         overflow: auto;
         position: relative;

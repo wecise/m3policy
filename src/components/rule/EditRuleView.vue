@@ -96,8 +96,8 @@ export default {
     created(){
         
         this.editor.value = this.model.value;
-
-        if(_.startsWith(this.model.key,"/matrix/jobs") || _.includes(this.model.key,"/jobs") !== -1){
+        
+        if(_.startsWith(this.model.key,"/matrix/jobs") || _.includes(this.model.key,"/jobs")){
             this.editor.lang.value = "toml";
         }
 

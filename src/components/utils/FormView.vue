@@ -1,5 +1,5 @@
 <template>
-  <el-container :style="cHeight | pickStyle">
+  <el-container>
       <el-header style="height:40px;line-height: 40px;text-align:right;">
           <span>
               <el-tooltip content="刷新">
@@ -20,10 +20,9 @@
           </span>
       </el-header>
       <el-main ref="mainView" style="padding:0px 20px;">
-          <!-- <el-image style="width: 80px; height: 80px;position: absolute;top:5px;left:5px; z-index: 100;" :src="model | pickIcon" fit="scale-down" @error="onErrorPickIcon" v-if="model"></el-image> -->
           <el-form :model="model" ref="form" label-width="140px" :label-position="labelPosition" v-if="model">
-              <el-form-item :label="item.label" :key="index" v-for="(item,index) in model.components">
-                  <span v-if="item.visible">
+              <template v-for="(item,index) in model.components">
+                <el-form-item :label="item.label" :key="index" v-if="item.visible">
                     <el-select v-model="item.data" :placeholder="item.placeholder" v-if="item.type==='select'">
                         <el-option v-for="data in item.data" :key="data">{{data}}</el-option>
                     </el-select>
@@ -32,8 +31,8 @@
                     <el-input type="textarea" autosize v-model="item.data" :placeholder="item.placeholder" v-else-if="item.type==='input-textarea'"></el-input>
                     <TagView domain='event' :model.sync="item.data" :id="model.dataId" :limit="4" v-else-if="item.type==='tag'">{{item.data}}</TagView>
                     <el-input v-model="item.data" :placeholder="item.placeholder" v-else></el-input>
-                  </span>
-              </el-form-item>
+                </el-form-item>
+              </template>
           </el-form>
       </el-main>
   </el-container>
@@ -65,16 +64,12 @@ export default {
       }
   },
   filters: {
-      pickStyle(){
-          //return `height:calc(100vh - ${h}px);background: #ffffff;`;
-      },
       pickIcon(evt){
           try {
               return `/static/assets/images/entity/png/${_.last(evt.path.split("/"))}.png`;
           } catch(err){
               return `/static/assets/images/entity/png/matrix.png`;
           }
-          
       }
   },
   created(){

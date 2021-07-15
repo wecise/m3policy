@@ -36,7 +36,7 @@
                 ></el-button>
               </el-input>
             </el-header>
-            <el-main>
+            <el-main class="event-console-el-main">
               <EventList ref="eventList" :model="search.result.list" :global="global" :options="search.result.options"
                 @onSearch="onSearch" 
                 @DiagnosisView="((data)=>{ addTab(data.row,data.menu) })"
@@ -245,7 +245,7 @@ export default {
     },
     onSearch() {
       
-      const rLoading = this.openLoading();
+      const rLoading = this.openLoading('event-console-el-main');
 
       let param = {
         view: this.search.model.view=this.views.value,

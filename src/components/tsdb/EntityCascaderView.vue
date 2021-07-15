@@ -59,7 +59,7 @@ export default{
     },
     methods: {
         onChange(val){
-            this.selected = { bucketKeys: val, options: this.options };
+            this.selected = { bucketKeys: val, options: this.buckets };
         }
     }
 }

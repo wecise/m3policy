@@ -1,20 +1,29 @@
 <template>
-    <div style="width:100%;height:300px;" ref="chartContainer"></div>
+    
+    <v-chart :options="options" class="chart" 
+        :autoresize="true"
+        :loading="true">
+    </v-chart>
+    
+    
 </template>
 
 <script>
+import echarts from "echarts";
+import ECharts  from "vue-echarts";
 import _ from 'lodash';
-import $ from 'jquery';
-import echarts from 'echarts';
-export default{
-    name: "ChartView",
+
+export default {
+    name: 'ChartView',
     props:{
-        model:Object
+        model: Object
     },
-    data(){
+    components: {
+        "v-chart": ECharts
+    },
+    data() {
         return {
-            chart: null,
-            option: {
+            options: {
                 tooltip: {
                     trigger: 'axis'
                 },
@@ -33,7 +42,7 @@ export default{
                     top: '15%',
                     left: '3%',
                     right: '4%',
-                    bottom: '35%',
+                    bottom: '45%',
                     containLabel: true
                 },
                 xAxis: {
@@ -44,43 +53,23 @@ export default{
                     type: 'value'
                 },
                 series: []
-            }                            
+            }  
         }
     },
-    watch: {
+    watch:{
         model:{
-            handler(){
-                this.initData();
-            },
-            deep:true
+            handler: _.throttle(function(){
+                const self = this;
+                self.initData();
+            },50)
         }
     },
-    created(){
-        
-        // 初始化数据
-        this.initData();
-
-        // 接收窗体RESIZE事件
-        this.eventHub.$on("WINDOW-RESIZE-EVENT", this.checkChart);
-    },
-    mounted() {
-        this.init();
-
-        // 监听窗口发生变化，resize组件
-        window.addEventListener('resize', this.checkChart)
-        
-        // 通过hook监听组件销毁钩子函数，并取消监听事件
-        this.$once('hook:beforeDestroy', () => {
-            window.removeEventListener('resize', this.checkChart)
+    mounted(){
+        this.$nextTick(()=>{
+            this.initData();
         })
     },
     methods: {
-        init(){
-            _.delay(()=>{
-                this.chart = echarts.init(this.$el);
-                this.chart.setOption(this.option);
-            },3000)
-        },
         initData(){
             try{
 
@@ -89,11 +78,11 @@ export default{
                     let rtn = val.message.result.reverse();
 
                     //取实时数据的time作为xAxis
-                    this.option.xAxis.data = _.map(rtn,(v)=>{
+                    this.options.xAxis.data = _.map(rtn,(v)=>{
                         return this.moment(v[0]).format('YY-MM-DD HH:mm');
                     });
                     
-                    this.option.series = [{
+                    this.options.series = [{
                         name: `${this.model.bucket} ${this.model.key}`,
                         data: _.map(rtn,(v)=>{ return v[1];}),
                         type: 'line',
@@ -111,31 +100,22 @@ export default{
                             }
                         }
                     }];
-
-                    if(this.$refs.chartContainer){
-                        this.chart.setOption(this.option);
-                    }
                 } );
                 
             } catch(err){
                 console.error(err);
             }
         },
-        checkChart(){
-            
-            try{
-                this.chart.resize();
-            } catch(err){
-                console.error(err)
-            }
-        },
         destroyed(){
             $(this.$el).off();
         }
-    }    
-}
+    }
+};
 </script>
 
-<style scoped>
-
+<style >
+    .chart{
+        width:100%;
+        height:100%;
+    }
 </style>
