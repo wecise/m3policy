@@ -1,17 +1,41 @@
 <template>
     
-    <v-chart :options="options" class="chart" 
-        :autoresize="true"
-        :loading="true">
+    <v-chart :option="options" 
+        class="chart" 
+        :autoresize="true">
     </v-chart>
-    
     
 </template>
 
 <script>
-import echarts from "echarts";
-import ECharts  from "vue-echarts";
 import _ from 'lodash';
+import ECharts  from "vue-echarts";
+import { use } from "echarts/core";
+import * as echarts from "echarts/lib/echarts";
+
+import {
+  CanvasRenderer
+} from 'echarts/renderers';
+
+import {
+  LineChart
+} from 'echarts/charts';
+
+import {
+  GridComponent,
+  GraphicComponent,
+  TooltipComponent,
+  ToolboxComponent
+} from 'echarts/components';
+
+use([
+  CanvasRenderer,
+  LineChart,
+  GridComponent,
+  GraphicComponent,
+  TooltipComponent,
+  ToolboxComponent
+]);
 
 export default {
     name: 'ChartView',
@@ -58,10 +82,10 @@ export default {
     },
     watch:{
         model:{
-            handler: _.throttle(function(){
-                const self = this;
-                self.initData();
-            },50)
+            handler(){
+                this.initData();
+            },
+            deep:true
         }
     },
     mounted(){
@@ -112,10 +136,3 @@ export default {
     }
 };
 </script>
-
-<style >
-    .chart{
-        width:100%;
-        height:100%;
-    }
-</style>
