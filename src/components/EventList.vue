@@ -127,6 +127,8 @@
                 ref="table"
                 class="event-list"
                 style="width:100%;">
+                <el-table-column label="序号" type="index" show-overflow-tooltip width="50">
+                </el-table-column>
                 <el-table-column type="selection" align="center"></el-table-column> 
                 <template v-for="(item,index) in dt.columns">
                     <el-table-column 
@@ -487,7 +489,7 @@ export default {
 
         this.$refs.table.bodyWrapper.addEventListener('scroll', (evt) => {
             // 滚动距离
-            let scrollTop = parseInt(evt.target.scrollTop); 
+            let scrollTop = Math.round(evt.target.scrollTop); 
             // 变量windowHeight是可视区的高度
             let windowHeight = evt.target.clientHeight;
             // 变量scrollHeight是滚动条的总高度
@@ -498,6 +500,10 @@ export default {
             // 脚底
             if (scrollTop + windowHeight === scrollHeight) {
                 this.onLoadMore(); 
+                _.delay(()=>{
+                    evt.target.scrollTop = evt.target.scrollTop - 100;
+                })
+                
             }
             
         })
